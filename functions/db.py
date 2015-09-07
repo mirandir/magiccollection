@@ -390,16 +390,19 @@ def prepare_request(search_widgets_list, g_op):
                                                         tmp_request = "layout = 'split'"
                                                 else:
                                                         tmp_request = "layout != 'split'"
+                                                tmp_enum_req = "(" + tmp_request + ")"
                                         elif text == "<>":
                                                 if negate == 0:
                                                         tmp_request = "layout = 'flip'"
                                                 else:
                                                         tmp_request = "layout != 'flip'"
+                                                tmp_enum_req = "(" + tmp_request + ")"
                                         elif text == "||":
                                                 if negate == 0:
                                                         tmp_request = "layout = 'double-faced'"
                                                 else:
                                                         tmp_request = "layout != 'double-faced'"
+                                                tmp_enum_req = "(" + tmp_request + ")"
                                         else:
                                                 nb_args = 0
                                                 list_text_to_find = py_lara(text).strip().split(" ")
