@@ -1,6 +1,23 @@
 #!/usr/bin/env python3
 # -*-coding:Utf-8 -*
 #
+
+# Copyright 2013-2015 mirandir
+
+# This file is part of Magic Collection.
+#
+# Magic Collection is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License (version 3) as published by
+# the Free Software Foundation.
+#
+# Magic Collection is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Magic Collection.  If not, see <http://www.gnu.org/licenses/>.
+
 # AdvancedSearch class for Magic Collection
 
 from gi.repository import Gtk, Gio, GdkPixbuf, GLib, Pango
@@ -92,7 +109,7 @@ class AdvancedSearch:
                 edition_nb_cards_symbol.pack_start(self.label_nb_cards, False, False, 0)
                 edition_nb_cards_symbol.pack_start(self.icon_edition, False, False, 0)
                 
-                select.connect("changed", self.edition_selected, "blip", "blop")
+                select.connect("changed", self.edition_selected, "blip", "blop", tree_editions)
                 scrolledwindow.add(tree_editions)
                 self.store_editions = store_editions
                 self.gen_list_editions()
@@ -169,15 +186,6 @@ class AdvancedSearch:
                 self.button_reset_search.connect("clicked", self.reset_search, entry1, entry2, entry3, entry4)
                 right_content_mid_right.pack_start(self.button_reset_search, False, False, 0)
                 
-                '''button_g_operator = Gtk.MenuButton(defs.STRINGS["operator_and"])
-                self.g_operator = button_g_operator.get_child()
-                right_content_mid_right.pack_start(button_g_operator, False, False, 0)
-                
-                popover_g_operator = self.gen_popover_operator(button_g_operator)
-                
-                button_g_operator.set_popover(popover_g_operator)
-                button_g_operator.set_sensitive(True)'''
-                
                 self.button_search.set_sensitive(False)
                 self.button_search.connect("clicked", self.prepare_request, [[entry1, comboboxtext1], [entry2, comboboxtext2], [entry3, comboboxtext3], [entry4, comboboxtext4]], overlay_right_content_bot)
                 right_content_mid_right.pack_start(self.button_search, False, False, 0)
@@ -197,32 +205,6 @@ class AdvancedSearch:
                 self.load_card(None, 0)
                 
                 self.mainbox.show_all()
-        
-        def gen_popover_operator(self, button_g_operator):
-                def op_and_or_choice(button, button_g_operator, op):
-                        if op == "and":
-                                button_g_operator.get_child().set_text(defs.STRINGS["operator_and"])
-                        elif op == "or":
-                                button_g_operator.get_child().set_text(defs.STRINGS["operator_or"])
-                                        
-                popover_g_operator = Gtk.Popover.new(button_g_operator)
-                popover_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-                
-                label_popover_g_operator = Gtk.Label(defs.STRINGS["operator_choice"])
-                popover_box.pack_start(label_popover_g_operator, True, True, 0)
-                
-                button1 = Gtk.RadioButton.new_with_label_from_widget(None, defs.STRINGS["operator_and"])
-                button1.connect("toggled", op_and_or_choice, button_g_operator, "and")
-                popover_box.pack_start(button1, True, True, 0)
-                
-                button2 = Gtk.RadioButton.new_with_label_from_widget(button1, defs.STRINGS["operator_or"])
-                button2.connect("toggled", op_and_or_choice, button_g_operator, "or")
-                popover_box.pack_start(button2, True, True, 0)
-                
-                button_g_operator.set_popover(popover_g_operator)
-                popover_g_operator.add(popover_box)
-                popover_box.show_all()
-                return(popover_g_operator)
         
         def update_button_search_and_reset(self, entry, entry1, entry2, entry3, entry4):
                 text_in_entry = 0
@@ -408,7 +390,7 @@ class AdvancedSearch:
                 GLib.idle_add(label_wait.show)
                 GLib.idle_add(wait_button_box.pack_start, label_wait, True, True, 0)
         
-        def edition_selected(self, selection, integer, TreeViewColumn):
+        def edition_selected(self, selection, integer, TreeViewColumn, tree_editions):
                 self.sensitive_widgets(False)
                 model, treeiter = selection.get_selected()
                 if treeiter != None:
