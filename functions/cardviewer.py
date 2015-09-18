@@ -567,6 +567,9 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
                         else:
                                 name_for_add_popover = name.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                         cards_selected_list.append([str(id_), name_for_add_popover, edition])
+                        #FIXME: generating and closing the popover when many many rows are selected is slow and can freeze MC (??!!), so we limit to 500
+                        if count > 500:
+                                break
         else:
                 cards_selected_list.append([str(id_ss), name_for_add_popover_ss, edition_longname_ss])
         
@@ -668,6 +671,7 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
                         overlay_labels = Gtk.Overlay()
                         scrolledwindow_labels = Gtk.ScrolledWindow()
                         scrolledwindow_labels.set_min_content_height(150)
+                        scrolledwindow_labels.set_min_content_width(400)
                         overlay_labels.add(scrolledwindow_labels)
                         popover_box.pack_start(overlay_labels, True, True, 0)
                         scrolledwindow_labels.add_with_viewport(box_labels)

@@ -91,6 +91,9 @@ def read_coll(box, coll_object):
                 # this button displays the current selection, if any
                 selectinfo_button = Gtk.MenuButton(defs.STRINGS["info_select_none_coll"])
                 selectinfo_button.set_relief(Gtk.ReliefStyle.NONE)
+                popover_selectinfo = Gtk.Popover.new(selectinfo_button)
+                popover_selectinfo.set_position(Gtk.PositionType.BOTTOM)
+                selectinfo_button.set_popover(popover_selectinfo)
                 # we load a specific CSS for this widget
                 context_selectinfo_button = selectinfo_button.get_style_context()
                 style_provider = Gtk.CssProvider()
@@ -98,6 +101,7 @@ def read_coll(box, coll_object):
                 Gtk.StyleContext.add_provider(context_selectinfo_button, style_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
                 selectinfo_button.show()
                 box_top.pack_start(selectinfo_button, False, False, 0)
+                selectinfo_button.set_sensitive(False)
                 
                 dict_rowcards_in_coll = {}
                 where_request = []
@@ -156,6 +160,7 @@ def read_coll(box, coll_object):
                 coll_object.select = select
                 select.set_mode(Gtk.SelectionMode.MULTIPLE)
                 select.connect("changed", coll_object.send_id_to_loader_with_selectinfo, "blip", "blop", 0, selectinfo_button)
+                selectinfo_button.connect("clicked", coll_object.selectinfo_click, select, popover_selectinfo)
                 coll_object.mainselect = select
                 scrolledwindow.add(tree_coll)
                 

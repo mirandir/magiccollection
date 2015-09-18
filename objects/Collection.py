@@ -64,7 +64,7 @@ class Collection:
                         functions.collection.read_coll(self.right_content, self)
                 else:
                         label_error_coll = Gtk.Label()
-                        label_error_coll.set_markup("<big>" + defs.STRINGS["db_coll_error"] + "</big>")
+                        label_error_coll.set_markup("<big>" + defs.STRINGS["db_coll_error"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") + "</big>")
                         label_error_coll.props.halign = Gtk.Align.CENTER
                         self.right_content.pack_start(label_error_coll, True, True, 0)
                 
@@ -83,7 +83,7 @@ class Collection:
                 
                 id_list_req = ""
                 for card_tmp in cards_list:
-                        id_list_req = id_list_req + card_tmp[0].replace('"', '""') + ", "
+                        id_list_req = id_list_req + "\"" + card_tmp[0] + "\"" + ", "
                 id_list_req = id_list_req[:-2]
                 reqq = """SELECT * FROM cards WHERE id IN (""" + id_list_req + """)"""
                 c.execute(reqq)
@@ -200,51 +200,62 @@ class Collection:
                         selectinfo_button.set_sensitive(True)
                 else:
                         label_selectinfo.set_text(defs.STRINGS["info_selects_coll"].replace("%%%", str(len(pathlist))))
-                        selectinfo_button.set_sensitive(True)
-                
-                if pathlist != []:
-                        column_name = 1
-                        if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
-                                lang_foreign = functions.config.read_config("fr_language")
-                                if lang_foreign == defs.LANGUAGE:
-                                        # we choose the foreign name
-                                        column_name = 3
-                        
-                        popover = Gtk.Popover.new(selectinfo_button)
-                        selectinfo_button.set_popover(popover)
-                        
-                        popover_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-                        popover_box.set_margin_top(5)
-                        popover_box.set_margin_bottom(5)
-                        popover_box.set_margin_left(5)
-                        popover_box.set_margin_right(5)
-                        box_names = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-                        
-                        if len(pathlist) > 5:
-                                scrolledwindow = Gtk.ScrolledWindow()
-                                scrolledwindow.set_min_content_height(150)
-                                scrolledwindow.set_min_content_width(300)
-                                scrolledwindow.add_with_viewport(box_names)
-                        
-                        for nb_row, bla in enumerate(pathlist):
-                                tree_iter = model.get_iter(pathlist[nb_row])
-                                name = model.get_value(tree_iter, column_name) + " (" + model.get_value(tree_iter, 2) + ")"
-                                label_name = Gtk.Label()
-                                label_name.set_markup("<b>" + name + "</b>")
-                                label_name.set_max_width_chars(70)
-                                label_name.set_line_wrap(True)
-                                label_name.set_lines(3)
-                                label_name.set_ellipsize(Pango.EllipsizeMode.END)
-                                label_name.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
-                                label_name.set_alignment(0.0, 0.5)
-                                box_names.pack_start(label_name, True, True, 0)
-                        
-                        if len(pathlist) > 5:
-                                popover_box.pack_start(scrolledwindow, True, True, 0)
+                        #FIXME: generating and closing the popover when many many rows are selected is slow and can freeze MC (??!!), so we limit to 500
+                        if len(pathlist) < 501:
+                                selectinfo_button.set_sensitive(True)
                         else:
-                                popover_box.pack_start(box_names, True, True, 0)
-                        popover_box.show_all()
-                        popover.add(popover_box)
+                                selectinfo_button.set_sensitive(False)
+                
+        def selectinfo_click(self, selectinfo_button, selection, popover):                
+                if selectinfo_button.get_active():
+                        model, pathlist = selection.get_selected_rows()
+                        if pathlist != []:
+                                column_name = 1
+                                if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
+                                        lang_foreign = functions.config.read_config("fr_language")
+                                        if lang_foreign == defs.LANGUAGE:
+                                                # we choose the foreign name
+                                                column_name = 3
+                                
+                                '''popover = Gtk.Popover.new(selectinfo_button)
+                                popover.set_position(Gtk.PositionType.BOTTOM)
+                                selectinfo_button.set_popover(popover)'''
+                                for widget in popover.get_children():
+                                        popover.remove(widget)
+                                
+                                popover_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+                                popover_box.set_margin_top(5)
+                                popover_box.set_margin_bottom(5)
+                                popover_box.set_margin_left(5)
+                                popover_box.set_margin_right(5)
+                                box_names = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+                                
+                                if len(pathlist) > 5:
+                                        scrolledwindow = Gtk.ScrolledWindow()
+                                        scrolledwindow.set_min_content_height(150)
+                                        scrolledwindow.set_min_content_width(400)
+                                        scrolledwindow.add_with_viewport(box_names)
+                                
+                                for path in pathlist:
+                                        tree_iter = model.get_iter(path)
+                                        name = model.get_value(tree_iter, column_name) + " (" + model.get_value(tree_iter, 2) + ")"
+                                        label_name = Gtk.Label()
+                                        label_name.set_markup("<b>" + name.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") + "</b>")
+                                        label_name.set_max_width_chars(70)
+                                        label_name.set_line_wrap(True)
+                                        label_name.set_lines(3)
+                                        label_name.set_ellipsize(Pango.EllipsizeMode.END)
+                                        label_name.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
+                                        label_name.set_alignment(0.0, 0.5)
+                                        box_names.pack_start(label_name, True, True, 0)
+                                
+                                if len(pathlist) > 5:
+                                        popover_box.pack_start(scrolledwindow, True, True, 0)
+                                else:
+                                        popover_box.pack_start(box_names, True, True, 0)
+                                popover.add(popover_box)
+                                popover_box.show_all()
+                                #popover.show_all()
         
         def send_id_to_loader(self, selection, integer, TreeViewColumn, simple_search):
                 model, pathlist = selection.get_selected_rows()
