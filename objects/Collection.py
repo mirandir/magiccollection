@@ -75,7 +75,10 @@ class Collection:
                 
         def add_collection(self, cards_list, spinner_labels):
                 '''Add cards to the collection. Each member of "cards_list" must have 6 elements : the card ID in the DB, condition, lang, foil, loaned_to, comment, nb.'''                       
-                GLib.idle_add(self.select.unselect_all)
+                try:
+                        GLib.idle_add(self.select.unselect_all)
+                except AttributeError:
+                        pass
                 
                 conn, c = functions.db.connect_db()
                 conn_coll, c_coll = functions.collection.connect_db()
@@ -125,7 +128,8 @@ class Collection:
                                 card_added = 0
                                 if self.mainstore == None:
                                         conn_coll.commit()
-                                        GLib.idle_add(functions.collection.read_coll, self.right_content, self)
+                                        #GLib.idle_add(functions.collection.read_coll, self.right_content, self)
+                                        functions.collection.read_coll(self.right_content, self)
                                         cards = functions.various.prepare_cards_data_for_treeview([reponse])
                                         for card in cards.values():
                                                 cards_data_for_update_store_as.append([card["name"], card["edition_ln"]])

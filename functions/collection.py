@@ -102,6 +102,7 @@ def read_coll(box, coll_object):
                 selectinfo_button.show()
                 box_top.pack_start(selectinfo_button, False, False, 0)
                 selectinfo_button.set_sensitive(False)
+                box_top.show_all()
                 
                 dict_rowcards_in_coll = {}
                 where_request = []
