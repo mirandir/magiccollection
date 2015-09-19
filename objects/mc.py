@@ -321,4 +321,9 @@ class MagicCollection(Gtk.Application):
                 aboutdialog.destroy()
 
         def quit_cb(self, action, parameter):
-                self.quit()
+                if defs.COLL_LOCK:
+                        # don't quit
+                        functions.various.message_dialog(defs.STRINGS["coll_busy"], 0)
+                else:
+                        # quit
+                        self.quit()
