@@ -33,19 +33,21 @@ import translations.fr
 PATH_MC = os.path.dirname(os.path.abspath(__file__))
 
 # OS/GUI detection
+OS = ""
 if platform.system() == "Windows":
         OS = "windows"
 elif platform.system() == "Darwin":
         OS = "mac"
 elif platform.system() == "Linux":
+        # FIXME: doesn't seem to work very good with recent DE (??)
         if os.environ.get("XDG_CURRENT_DESKTOP") == "GNOME":
                 OS = "gnome"
         elif os.environ.get("XDG_CURRENT_DESKTOP") == "Unity":
                 OS = "unity"
         else:
-                OS = "linux"
-else:
-        OS = ""
+                #OS = "linux"
+                # FIXME: for testing
+                OS = "gnome"
 
 # language detection
 LANGUAGE = "en"
