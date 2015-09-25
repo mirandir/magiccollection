@@ -106,7 +106,10 @@ class MC_Window(Gtk.ApplicationWindow):
                         self.headerbar.set_decoration_layout("menu:")
                         # we load a specific CSS
                         style_provider = Gtk.CssProvider()
-                        style_provider.load_from_path(os.path.join(defs.PATH_MC, "css", "non_gnome_css.css"))
+                        if defs.OS == "windows":
+                                style_provider.load_from_path(os.path.join(defs.PATH_MC, "css", "windows_css.css"))
+                        else:
+                                style_provider.load_from_path(os.path.join(defs.PATH_MC, "css", "non_gnome_css.css"))
                         Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), style_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
                 else:
                         self.overlay.add(self.main_stack)

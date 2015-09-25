@@ -39,7 +39,7 @@ if platform.system() == "Windows":
 elif platform.system() == "Darwin":
         OS = "mac"
 elif platform.system() == "Linux":
-        # FIXME: doesn't seem to work very good with recent DE (??)
+        # FIXME: doesn't seem to work very good with recent GNOME (??)
         if os.environ.get("XDG_CURRENT_DESKTOP") == "GNOME":
                 OS = "gnome"
         elif os.environ.get("XDG_CURRENT_DESKTOP") == "Unity":
