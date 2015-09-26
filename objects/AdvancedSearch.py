@@ -318,6 +318,8 @@ class AdvancedSearch:
                                         cards_added.append(card["name"] + "-" + card["edition_ln"])
                                         nb += 1
                         
+                        GLib.idle_add(store_results.set_sort_column_id, 7, Gtk.SortType.ASCENDING)
+                        GLib.idle_add(store_results.set_sort_column_id, 2, Gtk.SortType.ASCENDING)
                         if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
                                 GLib.idle_add(store_results.set_sort_column_id, 3, Gtk.SortType.ASCENDING)
                         else:
