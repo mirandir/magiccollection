@@ -75,6 +75,14 @@ class Collection:
                 
         def add_collection(self, cards_list, spinner_labels):
                 '''Add cards to the collection. Each member of "cards_list" must have 6 elements : the card ID in the DB, condition, lang, foil, loaned_to, comment, nb.'''                       
+                def select_rows(rows_to_select):
+                        po = 0
+                        for nb_row in rows_to_select:
+                                if po == 0:
+                                        self.tree_coll.set_cursor(nb_row)
+                                self.select.select_path(nb_row) # FIXME: this freezes GTK when selecting rows, why ??
+                                po += 1
+                
                 try:
                         GLib.idle_add(self.select.unselect_all)
                 except AttributeError:
@@ -119,7 +127,7 @@ class Collection:
                                 current_date = str(today.year) + "-" + str(month) + "-" + str(day)
                                 
                                 for z in range(nb):
-                                        # we add the card to the collection
+                                        # we add the card to the collection DB
                                         c_coll.execute("""
                                         INSERT INTO collection VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (name, nb_variante, edition_code, current_date, condition, lang, foil, loaned_to, comment, ""))
                                 
@@ -174,14 +182,12 @@ class Collection:
                         GLib.idle_add(self.label_nb_card_coll.set_text, defs.STRINGS["nb_card_coll_s"].replace("%%%", str(count_nb)))
                 
                 # we select the rows of added cards, and set the cursor on the first
-                first_cursor = None
+                rows_to_select = []
                 for nb_row, row in enumerate(self.mainstore):
                         for new_card in cards_list2:
                                 if new_card[7] == row[16]:
-                                        if first_cursor == None:
-                                                GLib.idle_add(self.tree_coll.set_cursor, nb_row)
-                                                first_cursor = nb_row
-                                        GLib.idle_add(self.select.select_path, nb_row)
+                                        rows_to_select.append(nb_row)
+                GLib.idle_add(select_rows, rows_to_select)
                 
                 functions.collection.disconnect_db(conn_coll)
                 defs.COLL_LOCK = False
