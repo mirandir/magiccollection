@@ -76,6 +76,11 @@ class Collection:
         def add_collection(self, cards_list, spinner_labels):
                 '''Add cards to the collection. Each member of "cards_list" must have 6 elements : the card ID in the DB, condition, lang, foil, loaned_to, comment, nb.'''                       
                 def select_rows(rows_to_select):
+                        try:
+                                self.select.unselect_all()
+                        except AttributeError:
+                                pass
+                        
                         po = 0
                         for nb_row in rows_to_select:
                                 if po == 0:
