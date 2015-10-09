@@ -20,6 +20,8 @@
 
 # Some functions for dealing with the database
 
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, GdkPixbuf, GLib
 import os
 import urllib.request, urllib.parse, urllib.error

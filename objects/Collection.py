@@ -20,6 +20,8 @@
 
 # Collection class for Magic Collection
 
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, GdkPixbuf, Pango, GLib
 import sys
 import os

@@ -20,6 +20,8 @@
 
 # Some functions, for the card viewer
 
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, GdkPixbuf, Pango, GObject, GLib, Gdk
 import cairo
 import os
