@@ -45,9 +45,7 @@ elif platform.system() == "Linux":
         elif os.environ.get("XDG_CURRENT_DESKTOP") == "Unity":
                 OS = "unity"
         else:
-                #OS = "linux"
-                # FIXME: for testing
-                OS = "gnome"
+                OS = "linux"
 
 # language detection
 LANGUAGE = "en"
