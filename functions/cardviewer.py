@@ -398,15 +398,15 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         
                         # the text widget
                         manacol = ""
-                        if basename == "Plains":
+                        if basename == "Plains" or basename == "Snow-Covered Plains":
                                 manacol = "w"
-                        elif basename == "Swamp":
+                        elif basename == "Swamp" or basename == "Snow-Covered Swamp":
                                 manacol = "b"
-                        elif basename == "Mountain":
+                        elif basename == "Mountain" or basename == "Snow-Covered Mountain":
                                 manacol = "r"
-                        elif basename == "Forest":
+                        elif basename == "Forest" or basename == "Snow-Covered Forest":
                                 manacol = "g"
-                        elif basename == "Island":
+                        elif basename == "Island" or basename == "Snow-Covered Island":
                                 manacol = "u"
                         
                         if manacol == "":
