@@ -331,10 +331,11 @@ class AdvancedSearch:
                         if wait_button != None:
                                 GLib.idle_add(wait_button.destroy)
                         
-                        if nb > 1:
-                                GLib.idle_add(self.label_nb_cards.set_text, str(nb) + " " + defs.STRINGS["cards"])
+                        nb_cards = nb + 1
+                        if nb_cards > 1:
+                                GLib.idle_add(self.label_nb_cards.set_text, str(nb_cards) + " " + defs.STRINGS["cards"])
                         else:
-                                GLib.idle_add(self.label_nb_cards.set_text, str(nb) + " " + defs.STRINGS["card"])
+                                GLib.idle_add(self.label_nb_cards.set_text, str(nb_cards) + " " + defs.STRINGS["card"])
                         
                         GLib.idle_add(scrolledwindow.show_all)
                 else:
