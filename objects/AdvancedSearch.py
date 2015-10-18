@@ -253,6 +253,10 @@ class AdvancedSearch:
                 
         def disp_result(self, reponses, type_s, wait_button):
                 '''Display the result'''
+                def insert_data(store_results, cards_added, card, bold, italic):
+                        store_results.insert_with_valuesv(-1, range(15), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic])
+                        cards_added.append(card["name"] + "-" + card["edition_ln"])
+                
                 for widget in self.box_results.get_children():
                         GLib.idle_add(self.box_results.remove, widget)
                 if len(reponses) > 0:                
@@ -264,8 +268,8 @@ class AdvancedSearch:
                         scrolledwindow.set_hexpand(True)
                         scrolledwindow.set_vexpand(True)
                         scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
-                        # "id", "name", "edition", "name_french", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", "unique_name"
-                        store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, str, str, str, str, str, str, int, Pango.Style, str)
+                        # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic"
+                        store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, str, str, str, str, str, str, int, Pango.Style)
                         tree_results = Gtk.TreeView(store_results)
                         tree_results.set_enable_search(False)
                         
@@ -283,24 +287,25 @@ class AdvancedSearch:
                         
                         GLib.idle_add(self.box_results.pack_start, scrolledwindow, True, True, 0)
                         
-                        nb = 0
+                        #nb = 0
                         cards_added = []
                         cards = functions.various.prepare_cards_data_for_treeview(reponses)
                         
-                        # we get a list of cards in the collection
+                        # we get a list of ids of cards in the collection
                         conn, c = functions.collection.connect_db()
-                        c.execute("""SELECT id, name, nb_variant, edition FROM collection""")
+                        c.execute("""SELECT id_card FROM collection""")
                         reponses_coll = c.fetchall()
                         functions.collection.disconnect_db(conn)
                         
-                        for card in cards.values():
+                        for nb, card in enumerate(cards.values()):
                                 # if this card is in the collection, we bolding it
                                 bold = 400
-                                for card_coll in reponses_coll:
-                                        id_, name, nb_variant, edition_code = card_coll
-                                        if name == card["real_name"] and nb_variant == card["nb_variant"] and edition_code == card["edition_code"]:
+                                for row_id_card in reponses_coll:
+                                        id_card = row_id_card[0]
+                                        if id_card == card["id_"]:
                                                 bold = 700
                                                 break
+                                
                                 italic = Pango.Style.NORMAL
                                 
                                 add = True
@@ -314,11 +319,7 @@ class AdvancedSearch:
                                         add = False
                                 
                                 if add:
-                                        unique_name = functions.various.get_unique_name(card["real_name"], card["nb_variant"], card["edition_code"])
-                                        store_results.insert_with_valuesv(-1, range(15), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic, unique_name])
-                                        #store_results.append([card["id_"], card["name"], card["edition_ln"], card["namefr"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], backgroundcolor])
-                                        cards_added.append(card["name"] + "-" + card["edition_ln"])
-                                        nb += 1
+                                        GLib.idle_add(insert_data, store_results, cards_added, card, bold, italic)
                         
                         GLib.idle_add(store_results.set_sort_column_id, 7, Gtk.SortType.ASCENDING)
                         GLib.idle_add(store_results.set_sort_column_id, 2, Gtk.SortType.ASCENDING)
@@ -358,10 +359,10 @@ class AdvancedSearch:
                         g_op = None
                 request = functions.db.prepare_request(search_widgets_list, g_op)
                 if request != None:
-                        self.sensitive_widgets(False)
-                        self.icon_edition.hide()
+                        GLib.idle_add(self.sensitive_widgets, False)
+                        GLib.idle_add(self.icon_edition.hide)
                         for widget in self.box_results.get_children():
-                                self.box_results.remove(widget)
+                                GLib.idle_add(self.box_results.remove, widget)
                         
                         wait_button = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
                         wait_button.props.valign = Gtk.Align.CENTER
@@ -369,8 +370,8 @@ class AdvancedSearch:
                         as_spinner.set_size_request(30, 30)
                         wait_button.pack_start(as_spinner, True, True, 0)
                         as_spinner.start()
-                        wait_button.show_all()
-                        overlay_right_content_bot.add_overlay(wait_button)
+                        GLib.idle_add(wait_button.show_all)
+                        GLib.idle_add(overlay_right_content_bot.add_overlay, wait_button)
                         
                         thread_time = threading.Thread(target = self.launch_thread_time, args = [wait_button])
                         thread_time.daemon = True
@@ -406,10 +407,10 @@ class AdvancedSearch:
                         request = """SELECT * FROM cards WHERE edition = \"""" + reponse[0] + """\""""
                         
                         if os.path.isfile(os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(reponse[0]) + ".png")):
-                                self.icon_edition.set_from_file(os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(reponse[0]) + ".png"))
-                                self.icon_edition.show()
+                                GLib.idle_add(self.icon_edition.set_from_file, os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(reponse[0]) + ".png"))
+                                GLib.idle_add(self.icon_edition.show)
                         else:
-                                self.icon_edition.hide()
+                                GLib.idle_add(self.icon_edition.hide)
                         
                         try:
                                 prev_search = defs.MEM_SEARCHS[request]

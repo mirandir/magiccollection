@@ -108,11 +108,8 @@ class Collection:
                 reponse_all = c.fetchall()
                 functions.db.disconnect_db(conn)
                 
-                cards_list2 = list(cards_list)
-                
                 for enum, card_to_add in enumerate(cards_list):
                         cardid, condition, lang, foil, loaned_to, comment, nb = card_to_add
-                        # we need : name, nb_variante, edition
                         card_found = 0
                         for reponse in reponse_all:
                                 if str(reponse[0]) == str(cardid):
@@ -124,8 +121,7 @@ class Collection:
                         else:
                                 id_, name, nb_variante, names, edition_code, name_chinesetrad, name_chinesesimp, name_french, name_german, name_italian, name_japanese, name_korean, name_portuguesebrazil, name_portuguese, name_russian, name_spanish, colors, manacost, cmc, multiverseid, imageurl, type_, artist, text, flavor, power, toughness, loyalty, rarity, layout, number, variations = reponse
                                 
-                                current_unique_name = functions.various.get_unique_name(name, nb_variante, edition_code)
-                                cards_list2[enum].append(current_unique_name)
+                                current_id_ = id_
                                 
                                 # the current date
                                 today = date.today()
@@ -136,7 +132,7 @@ class Collection:
                                 for z in range(nb):
                                         # we add the card to the collection DB
                                         c_coll.execute("""
-                                        INSERT INTO collection VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (name, nb_variante, edition_code, current_date, condition, lang, foil, loaned_to, comment, ""))
+                                        INSERT INTO collection VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?)""", (id_, current_date, condition, lang, foil, loaned_to, comment, ""))
                                 
                                 # we update the collection store / treeview
                                 i = 0
@@ -154,8 +150,8 @@ class Collection:
                                         except:
                                                 pass
                                         for row in self.mainstore:
-                                                unique_name = row[16]
-                                                if current_unique_name == unique_name:
+                                                id_ = row[0]
+                                                if current_id_ == id_:
                                                         # another card like us is in the collection => curent nb + nb
                                                         self.mainstore[i][15] = str(int(self.mainstore[i][15]) + int(nb))
                                                         if comment != "":
@@ -172,10 +168,9 @@ class Collection:
                                                         if comment != "":
                                                                 italic = Pango.Style.ITALIC
                                                         bold = 400
-                                                        unique_name = current_unique_name
-                                                        self.mainstore.insert_with_valuesv(-1, range(17), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic, card["nb_variant"], nb, unique_name])
+                                                        self.mainstore.insert_with_valuesv(-1, range(17), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic, card["nb_variant"], nb])
                                                         cards_data_for_update_store_as.append([card["name"], card["edition_ln"]])
-                                
+                
                 if cards_data_for_update_store_as != []:
                         GLib.idle_add(defs.MAINWINDOW.advancedsearch.update_current_store_bold, cards_data_for_update_store_as)
                 
@@ -191,8 +186,8 @@ class Collection:
                 # we select the rows of added cards, and set the cursor on the first
                 rows_to_select = []
                 for nb_row, row in enumerate(self.mainstore):
-                        for new_card in cards_list2:
-                                if new_card[7] == row[16]:
+                        for new_card in cards_list:
+                                if new_card[0] == row[0]:
                                         rows_to_select.append(nb_row)
                 GLib.idle_add(select_rows, rows_to_select)
                 

@@ -92,10 +92,6 @@ def download_symbols():
                                                 pass
                         i += 1
 
-def get_unique_name(name, nb_variante, edition_code):
-        unique_name = name + nb_variante + edition_code
-        return(unique_name)
-
 def valid_filename_os(nom):
         '''Checks if the file name is valid for the current OS, and corrects it if necessary'''
         if defs.OS == "windows":
@@ -428,9 +424,9 @@ def prepare_cards_data_for_treeview(cards):
                 elif rarity == "Special":
                         rarity = defs.STRINGS["special"]
                 
-                unique_name = get_unique_name(real_name, card[2], card[4])
+                id_str = str(id_)
                 
-                dict_card["id_"] = str(id_)
+                dict_card["id_"] = id_str
                 dict_card["name"] = name
                 dict_card["edition_ln"] = edition_ln
                 dict_card["edition_code"] = edition_code
@@ -449,7 +445,7 @@ def prepare_cards_data_for_treeview(cards):
                 dict_card["nb_variant"] = str(card[2])
                 dict_card["names"] = names_r
                 
-                cards_ok[unique_name] = dict_card
+                cards_ok[id_str] = dict_card
         
         return(cards_ok)
 

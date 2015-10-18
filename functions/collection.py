@@ -37,7 +37,7 @@ def read_coll(box, coll_object):
                 box.remove(widget)
         
         conn, c = connect_db()
-        c.execute("""SELECT id, name, nb_variant, edition, comment, deck FROM collection""")
+        c.execute("""SELECT id_coll, id_card, comment, deck FROM collection""")
         reponses_coll = c.fetchall()
         disconnect_db(conn)
         nb_coll = len(reponses_coll)
@@ -109,9 +109,8 @@ def read_coll(box, coll_object):
                 dict_rowcards_in_coll = {}
                 where_request = []
                 for card_coll in reponses_coll:
-                        id_, name, nb_variant, edition, comment, deck = card_coll
+                        id_coll, id_card, comment, deck = card_coll
                         
-                        unique_name = functions.various.get_unique_name(name, nb_variant, edition)
                         bold = 400
                         italic = Pango.Style.NORMAL
                         if deck != "":
@@ -119,25 +118,25 @@ def read_coll(box, coll_object):
                         if comment != "":
                                 italic = Pango.Style.ITALIC
                         try:
-                                nb_card = dict_rowcards_in_coll[unique_name][0]
+                                nb_card = dict_rowcards_in_coll[id_card][0]
                         except KeyError:
-                                dict_rowcards_in_coll[unique_name] = [1, bold, italic]
+                                dict_rowcards_in_coll[id_card] = [1, bold, italic]
                         else:
-                                current_bold = dict_rowcards_in_coll[unique_name][1]
-                                current_italic = dict_rowcards_in_coll[unique_name][2]
+                                current_bold = dict_rowcards_in_coll[id_card][1]
+                                current_italic = dict_rowcards_in_coll[id_card][2]
                                 if current_bold != bold:
                                         current_bold = 1
                                 if current_italic != italic:
                                         current_italic = 1
-                                dict_rowcards_in_coll[unique_name] = [nb_card + 1, current_bold, current_italic]
+                                dict_rowcards_in_coll[id_card] = [nb_card + 1, current_bold, current_italic]
                 
                 # SQLite limits the number of arguments to 1000                
                 conn, c = functions.db.connect_db()
                 tmp_req = ""
                 for tmp in dict_rowcards_in_coll.keys():
-                        tmp_req = tmp_req + "\"" + tmp.replace('"', '""') + "\", "
+                        tmp_req = tmp_req + "\"" + str(tmp) + "\", "
                 tmp_req = tmp_req[:-2]
-                request = """SELECT * FROM cards WHERE (name || nb_variante || edition) IN (""" + tmp_req + """)"""
+                request = """SELECT * FROM cards WHERE id IN (""" + tmp_req + """)"""
                 c.execute(request)
                 reponses_db = c.fetchall()
                 
@@ -150,8 +149,8 @@ def read_coll(box, coll_object):
                 scrolledwindow.set_vexpand(True)
                 scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
                 
-                # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", "nb_variant", "nb", "unique_name"
-                coll_object.mainstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, str, str, str, str, str, str, int, Pango.Style, str, str, str)
+                # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", "nb_variant", "nb"
+                coll_object.mainstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, str, str, str, str, str, str, int, Pango.Style, str, str)
                 tree_coll = Gtk.TreeView(coll_object.mainstore)
                 coll_object.tree_coll = tree_coll
                 tree_coll.set_enable_search(False)
@@ -174,12 +173,12 @@ def read_coll(box, coll_object):
                 
                 cards = functions.various.prepare_cards_data_for_treeview(reponses_db)
                 
-                for unique_name, card in cards.items():
-                        nb_card = dict_rowcards_in_coll[unique_name][0]
-                        bold_card = dict_rowcards_in_coll[unique_name][1]
-                        italic_card = dict_rowcards_in_coll[unique_name][2]
+                for id_, card in cards.items():
+                        nb_card = dict_rowcards_in_coll[id_][0]
+                        bold_card = dict_rowcards_in_coll[id_][1]
+                        italic_card = dict_rowcards_in_coll[id_][2]
                         
-                        coll_object.mainstore.insert_with_valuesv(-1, range(17), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card, unique_name])
+                        coll_object.mainstore.insert_with_valuesv(-1, range(17), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card])
                 
                 coll_object.mainstore.set_sort_column_id(7, Gtk.SortType.ASCENDING)
                 coll_object.mainstore.set_sort_column_id(2, Gtk.SortType.ASCENDING)
@@ -206,10 +205,8 @@ def create_db_coll():
         # we create the table 'collection'
         c.execute("""
         CREATE TABLE IF NOT EXISTS collection(
-             id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-             name TEXT,
-             nb_variant TEXT,
-             edition TEXT,
+             id_coll INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+             id_card TEXT,
              date TEXT,
              condition TEXT,
              lang TEXT,
@@ -223,7 +220,7 @@ def create_db_coll():
         # we create the table 'decks'
         c.execute("""
         CREATE TABLE IF NOT EXISTS decks(
-             id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+             id_deck INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
              name TEXT,
              comment TEXT,
              proxies TEXT
