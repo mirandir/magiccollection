@@ -406,6 +406,7 @@ def prepare_cards_data_for_treeview(cards):
                 cmc = card[17]
                 type_ = card[21]
                 artist = card[22]
+                text = card[23]
                 power = card[25]
                 toughness = card[26]
                 rarity = card[28]
@@ -442,6 +443,7 @@ def prepare_cards_data_for_treeview(cards):
                 dict_card["real_name"] = real_name
                 dict_card["nb_variant"] = str(card[2])
                 dict_card["names"] = names_r
+                dict_card["text"] = text
                 
                 cards_ok[id_str] = dict_card
         
@@ -648,7 +650,10 @@ def create_window_search_name(request_response, current_object_view):
         
         nb = 0
         cards_added = []
+        cards_added_reprints = []
         cards = prepare_cards_data_for_treeview(request_response)
+        
+        no_reprints = functions.config.read_config("no_reprints")
         
         # we get a list of ids of cards in the collection
         conn, c = functions.collection.connect_db()
@@ -670,13 +675,15 @@ def create_window_search_name(request_response, current_object_view):
                 if card["name"] + "-" + card["edition_ln"] in cards_added:
                         add = False
                 
+                if no_reprints == "1":
+                        if card["nb_variant"] != "" or card["name"] + "-" + card["type_"] + "-" + card["text"] + "-" + card["power"] + "-" + card["toughness"] + "-" + card["colors"] in cards_added_reprints:
+                                add = False
+                
                 if add:
                         store_results.insert_with_valuesv(-1, range(14), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic])
                         cards_added.append(card["name"] + "-" + card["edition_ln"])
-                        """if card["layout"] == "flip" or card["layout"] == "double-faced":
-                                names = card["names"].split("|")
-                                if card["real_name"] != names[0]:
-                                        nb = nb - 1"""
+                        if no_reprints == "1":
+                                cards_added_reprints.append(card["name"] + "-" + card["type_"] + "-" + card["text"] + "-" + card["power"] + "-" + card["toughness"] + "-" + card["colors"])
                         nb += 1
         
         store_results.set_sort_column_id(7, Gtk.SortType.ASCENDING)
@@ -701,7 +708,7 @@ def create_window_search_name(request_response, current_object_view):
         
         if defs.MAINWINDOW != None:
                 window.set_transient_for(defs.MAINWINDOW)
-        return(window)
+        return(window, nb)
 
 def gen_details_widgets():
         def checkbutton_loaned_toggled(cb, entry_loaned):

@@ -318,6 +318,8 @@ class AdvancedSearch:
                         store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, str, str, str, str, str, str, int, Pango.Style)
                         GLib.idle_add(_start, self, store_results, scrolledwindow)
                         cards_added = []
+                        cards_added_reprints = []
+                        
                         cards = functions.various.prepare_cards_data_for_treeview(reponses)
                         
                         # we get a list of ids of cards in the collection
@@ -326,9 +328,11 @@ class AdvancedSearch:
                         reponses_coll = c.fetchall()
                         functions.collection.disconnect_db(conn)
                         
+                        no_reprints = functions.config.read_config("no_reprints")
+                        
                         nb_lines_added = 0
                         
-                        for nb, card in enumerate(cards.values()):
+                        for card in cards.values():
                                 # if this card is in the collection, we bolding it
                                 bold = 400
                                 for row_id_card in reponses_coll:
@@ -350,9 +354,16 @@ class AdvancedSearch:
                                 if card["name"] + "-" + card["edition_ln"] in cards_added:
                                         add = False
                                 
+                                if no_reprints == "1":
+                                        if type_s != "edition":
+                                                if card["nb_variant"] != "" or card["name"] + "-" + card["type_"] + "-" + card["text"] + "-" + card["power"] + "-" + card["toughness"] + "-" + card["colors"] in cards_added_reprints:
+                                                        add = False
+                                
                                 if add:
                                         nb_lines_added += 1
                                         GLib.idle_add(insert_data, store_results, cards_added, card, bold, italic)
+                                        if no_reprints == "1":
+                                                cards_added_reprints.append(card["name"] + "-" + card["type_"] + "-" + card["text"] + "-" + card["power"] + "-" + card["toughness"] + "-" + card["colors"])
                                         functions.various.force_update_gui(0)
                         
                         GLib.idle_add(_end, store_results, wait_button)

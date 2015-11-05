@@ -193,9 +193,13 @@ class MC_Window(Gtk.ApplicationWindow):
                         id_ = reponses[0][0]
                         current_object_view.load_card(id_, 1)
                 else:
-                        result_window = functions.various.create_window_search_name(reponses, current_object_view)
-                        result_window.run()
-                        result_window.destroy()
+                        result_window, nb_result_disp = functions.various.create_window_search_name(reponses, current_object_view)
+                        if nb_result_disp == 1:
+                                id_ = reponses[0][0]
+                                current_object_view.load_card(id_, 1)
+                        else:
+                                result_window.run()
+                                result_window.destroy()
                 search_entry.set_sensitive(True)
         
         def search_button_toggled(self, togglebutton, search_entry):
