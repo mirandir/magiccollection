@@ -20,8 +20,6 @@
 
 # Main Items classes for Magic Collection
 
-import gi
-gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, GdkPixbuf, GLib, Gdk
 import sys
 import os
@@ -96,7 +94,7 @@ class MC_Window(Gtk.ApplicationWindow):
                 #defs.MAINWINDOW.widget_overlay = button
                 #defs.MAINWINDOW.overlay.add_overlay(button)
                 button.show()
-                #functions.various.update_gui(0)
+                #functions.various.force_update_gui(0)
                 
                 self.widget_overlay = button
                 

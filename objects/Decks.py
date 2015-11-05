@@ -20,9 +20,7 @@
 
 # Decks class for Magic Collection
 
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gio, GdkPixbuf
+from gi.repository import Gtk, Gio, GdkPixbuf, GLib
 import sys
 import os
 
@@ -70,9 +68,7 @@ class Decks:
         
         def load_card(self, cardid, simple_search):
                 '''Load a card in the card viewer'''
-                functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)
+                GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
         
         def load_card_from_outside(self, widget, cardid, list_widgets_to_destroy, simple_search):
-                for widget in list_widgets_to_destroy:
-                        widget.destroy()
-                functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)
+                GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)

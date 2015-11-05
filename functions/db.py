@@ -20,8 +20,6 @@
 
 # Some functions for dealing with the database
 
-import gi
-gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, GdkPixbuf, GLib
 import os
 import urllib.request, urllib.parse, urllib.error
@@ -528,7 +526,7 @@ def download_db():
         go = 1
         if functions.various.check_internet():
                 GLib.idle_add(defs.MAINWINDOW.widget_overlay.get_child().set_markup, "<b><big>" + defs.STRINGS["downloading_db"] + "</big></b>")
-                #GLib.idle_add(functions.various.update_gui, 0)
+                #GLib.idle_add(functions.various.force_update_gui, 0)
                 
                 if os.path.isfile(os.path.join(defs.CACHEMC, "datedb_newtmp")) == False:
                         try:
@@ -573,6 +571,8 @@ def check_update_db():
         datebddcartes = fichierdatedb.read(8)
         fichierdatedb.close()
         
+        GLib.idle_add(defs.MAINWINDOW.widget_overlay.get_child().set_markup, "<b><big>" + defs.STRINGS["checking_db_update"] + "</big></b>")
+        
         if functions.various.check_internet():
                 try:
                         urllib.request.urlretrieve(defs.SITEMC + "files/datedb", os.path.join(defs.CACHEMC, "datedb_newtmp"))
@@ -603,7 +603,6 @@ def check_update_db():
                                 check_db2()
         else:
                 GLib.idle_add(functions.various.message_dialog, defs.STRINGS["no_internet_update_db"], 1)
-                #functions.various.message_dialog(defs.STRINGS["no_internet_update_db"], 1)
                 check_db2()
 
 def dialog_confimr_db(dialogconfirm):
@@ -612,6 +611,7 @@ def dialog_confimr_db(dialogconfirm):
         # -8 yes, -9 no
         if responseconfirm == -8:
                 GLib.idle_add(defs.MAINWINDOW.widget_overlay.get_child().set_markup, "<b><big>" + defs.STRINGS["downloading_db"] + "</big></b>")
+                GLib.idle_add(functions.various.force_update_gui, 0)
                 GLib.idle_add(download_db)
         else:
                 check_db2()

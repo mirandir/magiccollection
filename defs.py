@@ -18,14 +18,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Magic Collection.  If not, see <http://www.gnu.org/licenses/>.
 
-# Some defines for Magic Collection
+# This file defines global variables for Magic Collection
 
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
 import platform
 import os
 import locale
 
-# translations
+# translations - each translation must be loaded here
 import translations.en
 import translations.fr
 
@@ -39,7 +39,6 @@ if platform.system() == "Windows":
 elif platform.system() == "Darwin":
         OS = "mac"
 elif platform.system() == "Linux":
-        # FIXME: doesn't seem to work very good with recent GNOME (??)
         if os.environ.get("XDG_CURRENT_DESKTOP") == "GNOME":
                 OS = "gnome"
         elif os.environ.get("XDG_CURRENT_DESKTOP") == "Unity":
@@ -60,7 +59,7 @@ else:
         if locale.getlocale()[0][:2] != "":
                 LANGUAGE = locale.getlocale()[0][:2]
 
-# we load the translation here
+# we load the right translation here - each new translation must be added here
 if LANGUAGE == "fr":
         STRINGS = translations.fr.translate()
 else:
@@ -89,7 +88,7 @@ CONFIG = GLib.get_user_config_dir()
 DATA = GLib.get_user_data_dir()
 CACHE = GLib.get_user_cache_dir()
 if OS == "windows":
-        CACHE = GLib.get_user_data_dir()
+        CACHE = GLib.get_user_data_dir() # we use data dir for cache on Windows, because some tools empty the default GLib cache location
 
 # MC dirs
 HOMEMC = os.path.join(DATA, "magiccollection")
@@ -101,7 +100,8 @@ CACHEMCPR = os.path.join(CACHEMC, "prices")
 # MC website
 SITEMC = "http://mirandir.pagesperso-orange.fr/"
 
-# Config var and default values
+### Config var and default values
+
 # default values, for english language
 ext_fr_name = "0"
 fr_language = "de"
@@ -130,6 +130,7 @@ VARCONFIGDEFAULT = {
 "coll_columns": coll_columns
 }
 
+# column names available for advanced search
 AS_COLUMNS_CHOICE = ["name", "edition", "name_foreign", "colors", "cmc", "type", "artist", "power", "toughness", "rarity"]
 
 SEARCH_ITEMS = {
@@ -156,6 +157,8 @@ CONDITIONS = {
 4: ["poor", STRINGS["condition_poor"]]
 }
 
+# text to replace with a picture in cards' texts
+# text: [file, image size to display]
 PIC_IN_TEXT = {
 "{T}": ["t.png", 15],
 "{Q}": ["q.png", 15],
@@ -211,9 +214,10 @@ MAINWINDOW = None
 DB_DOWNLOAD_PROGRESS = 0
 MEM_SEARCHS = {}
 
-# thread things
+# threads things
 COLL_LOCK = False
 BUTTON_COLL_LOCK = None
+AS_LOCK = False
 
-VERSION = "0.9"
 DB_VERSION = None
+VERSION = "0.9"

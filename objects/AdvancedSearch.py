@@ -20,8 +20,6 @@
 
 # AdvancedSearch class for Magic Collection
 
-import gi
-gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, GdkPixbuf, GLib, Pango
 import sys
 import os
@@ -221,17 +219,6 @@ class AdvancedSearch:
                 self.button_search.set_sensitive(sensitive)
                 self.button_reset_search.set_sensitive(sensitive)
         
-        def sensitive_widgets(self, sensitive):
-                text_in_entry = 0
-                for widget in self.sens_widgets:
-                        widget.set_sensitive(sensitive)
-                        if widget.__class__.__name__ == "Entry":
-                                if widget.get_text() != "":
-                                        text_in_entry = 1
-                if sensitive:
-                        if text_in_entry == 0:
-                                self.button_search.set_sensitive(False)
-        
         def update_current_store_bold(self, cards_data_for_update_store_as):
                 if self.mainstore != None:
                         i = 0
@@ -241,6 +228,10 @@ class AdvancedSearch:
                                                 self.mainstore[i][12] = 700
                                 i += 1
         
+        def empty_box_results(self):
+                for widget in self.box_results.get_children():
+                        self.box_results.remove(widget)
+        
         def launch_ad_search(self, request, type_s, wait_button):
                 '''Launches an advanced search with request'''
                 conn, c = functions.db.connect_db()
@@ -248,46 +239,84 @@ class AdvancedSearch:
                 reponses = c.fetchall()
                 functions.db.disconnect_db(conn)
                 defs.MEM_SEARCHS[request] = reponses
-                #GLib.idle_add(self.disp_result, reponses, type_s, wait_button)
                 self.disp_result(reponses, type_s, wait_button)
-                
+        
         def disp_result(self, reponses, type_s, wait_button):
+                '''Display the result with GLib.idle_add'''
+                #GLib.idle_add(self.empty_box_results)
+                #functions.various.force_update_gui(0)
+                GLib.idle_add(self.disp_result2, reponses, type_s, wait_button)
+        
+        def disp_result2(self, reponses, type_s, wait_button):
                 '''Display the result'''
+                # FIXME : si impossible de corriger les crashs dus aux threads, appeler 'disp_result' via GLib.idle_add semble ne pas crasher
                 def insert_data(store_results, cards_added, card, bold, italic):
                         store_results.insert_with_valuesv(-1, range(15), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic])
                         cards_added.append(card["name"] + "-" + card["edition_ln"])
                 
-                for widget in self.box_results.get_children():
-                        GLib.idle_add(self.box_results.remove, widget)
-                if len(reponses) > 0:                
-                        GLib.idle_add(self.label_nb_cards.set_text, "")
-                        # we create the treeview for displaying results                        
-                        scrolledwindow = Gtk.ScrolledWindow()
+                def _start(AS_object, store_results, scrolledwindow):
+                        AS_object.label_nb_cards.set_text("")
+                        # we create the treeview for displaying results
                         scrolledwindow.set_min_content_width(560)
                         scrolledwindow.set_min_content_height(180)
                         scrolledwindow.set_hexpand(True)
                         scrolledwindow.set_vexpand(True)
                         scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
-                        # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic"
-                        store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, str, str, str, str, str, str, int, Pango.Style)
                         tree_results = Gtk.TreeView(store_results)
                         tree_results.set_enable_search(False)
                         
                         # some work with columns
                         columns_to_display = functions.config.read_config("as_columns").split(";")
                         
-                        self.as_columns_list = functions.various.gen_treeview_columns(columns_to_display, tree_results)
+                        AS_object.as_columns_list = functions.various.gen_treeview_columns(columns_to_display, tree_results)
                         
                         select = tree_results.get_selection()
                         select.set_mode(Gtk.SelectionMode.MULTIPLE)
-                        select.connect("changed", self.send_id_to_loader, "blip", "blop", 0)
-                        self.mainselect = select
+                        select.connect("changed", AS_object.send_id_to_loader, "blip", "blop", 0)
+                        AS_object.mainselect = select
                         scrolledwindow.add(tree_results)
-                        self.mainstore = store_results
+                        AS_object.mainstore = store_results
                         
-                        GLib.idle_add(self.box_results.pack_start, scrolledwindow, True, True, 0)
+                        AS_object.box_results.pack_start(scrolledwindow, True, True, 0)
+                
+                def _end(store_results, wait_button):
+                        store_results.set_sort_column_id(7, Gtk.SortType.ASCENDING)
+                        store_results.set_sort_column_id(2, Gtk.SortType.ASCENDING)
+                        if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
+                                store_results.set_sort_column_id(3, Gtk.SortType.ASCENDING)
+                        else:
+                                store_results.set_sort_column_id(1, Gtk.SortType.ASCENDING)
                         
-                        #nb = 0
+                        if wait_button != None:
+                                wait_button.destroy()
+                
+                def _no_result(AS_object, wait_button):
+                        if wait_button != None:
+                                wait_button.destroy()
+                        
+                        AS_object.label_nb_cards.set_text("")
+                        label_result = Gtk.Label()
+                        label_result.set_markup("<big>" + defs.STRINGS["no_result"] + "</big>")
+                        label_result.set_line_wrap(True)
+                        label_result.set_ellipsize(Pango.EllipsizeMode.END)
+                        label_result.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
+                        label_result.show()
+                        AS_object.box_results.pack_start(label_result, True, True, 0)
+                
+                self.empty_box_results()
+                if len(reponses) > 0:                
+                        if len(reponses) > 5000: 
+                                label_wait = Gtk.Label()
+                                label_wait.set_markup("<big>" + defs.STRINGS["please_wait"] + "</big>")
+                                GLib.idle_add(wait_button.pack_start, label_wait, True, True, 0, priority=GLib.PRIORITY_HIGH_IDLE)
+                                time.sleep(4)
+                                GLib.idle_add(label_wait.show, priority=GLib.PRIORITY_HIGH_IDLE)
+                                functions.various.force_update_gui(0)
+                                       
+                        scrolledwindow = Gtk.ScrolledWindow()
+                        # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic"
+                        store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, str, str, str, str, str, str, int, Pango.Style)
+                        GLib.idle_add(_start, self, store_results, scrolledwindow)
                         cards_added = []
                         cards = functions.various.prepare_cards_data_for_treeview(reponses)
                         
@@ -296,6 +325,8 @@ class AdvancedSearch:
                         c.execute("""SELECT id_card FROM collection""")
                         reponses_coll = c.fetchall()
                         functions.collection.disconnect_db(conn)
+                        
+                        modif_nb_cards = 1
                         
                         for nb, card in enumerate(cards.values()):
                                 # if this card is in the collection, we bolding it
@@ -312,26 +343,21 @@ class AdvancedSearch:
                                 
                                 if card["layout"] == "flip" or card["layout"] == "double-faced" or card["layout"] == "split":
                                         names = card["names"].split("|")
-                                        if card["real_name"] != names[0] and type_s == "edition":
-                                                add = False
+                                        if card["real_name"] != names[0]:
+                                                modif_nb_cards = modif_nb_cards - 1
+                                                if type_s == "edition":
+                                                        add = False
                                 
                                 if card["name"] + "-" + card["edition_ln"] in cards_added:
                                         add = False
                                 
                                 if add:
                                         GLib.idle_add(insert_data, store_results, cards_added, card, bold, italic)
+                                        functions.various.force_update_gui(0)
                         
-                        GLib.idle_add(store_results.set_sort_column_id, 7, Gtk.SortType.ASCENDING)
-                        GLib.idle_add(store_results.set_sort_column_id, 2, Gtk.SortType.ASCENDING)
-                        if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
-                                GLib.idle_add(store_results.set_sort_column_id, 3, Gtk.SortType.ASCENDING)
-                        else:
-                                GLib.idle_add(store_results.set_sort_column_id, 1, Gtk.SortType.ASCENDING)
+                        GLib.idle_add(_end, store_results, wait_button)
                         
-                        if wait_button != None:
-                                GLib.idle_add(wait_button.destroy)
-                        
-                        nb_cards = nb + 1
+                        nb_cards = nb + modif_nb_cards
                         if nb_cards > 1:
                                 GLib.idle_add(self.label_nb_cards.set_text, str(nb_cards) + " " + defs.STRINGS["cards"])
                         else:
@@ -339,92 +365,83 @@ class AdvancedSearch:
                         
                         GLib.idle_add(scrolledwindow.show_all)
                 else:
-                        if wait_button != None:
-                                GLib.idle_add(wait_button.destroy)
-                        
-                        GLib.idle_add(self.label_nb_cards.set_text, "")
-                        label_result = Gtk.Label()
-                        label_result.set_markup("<big>" + defs.STRINGS["no_result"] + "</big>")
-                        label_result.set_line_wrap(True)
-                        label_result.set_ellipsize(Pango.EllipsizeMode.END)
-                        label_result.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
-                        GLib.idle_add(label_result.show)
-                        GLib.idle_add(self.box_results.pack_start, label_result, True, True, 0)
-                GLib.idle_add(self.sensitive_widgets, True)
+                        GLib.idle_add(_no_result, self, wait_button)
+                defs.AS_LOCK = False
         
         def prepare_request(self, widget, search_widgets_list, overlay_right_content_bot):
                 '''Prepares the request to the database'''
-                try:
-                        g_op = self.g_operator.get_text()
-                except:
-                        g_op = None
-                request = functions.db.prepare_request(search_widgets_list, g_op)
-                if request != None:
-                        GLib.idle_add(self.sensitive_widgets, False)
-                        GLib.idle_add(self.icon_edition.hide)
-                        for widget in self.box_results.get_children():
-                                GLib.idle_add(self.box_results.remove, widget)
-                        
-                        wait_button = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-                        wait_button.props.valign = Gtk.Align.CENTER
-                        as_spinner = Gtk.Spinner()
-                        as_spinner.set_size_request(30, 30)
-                        wait_button.pack_start(as_spinner, True, True, 0)
-                        as_spinner.start()
-                        GLib.idle_add(wait_button.show_all)
-                        GLib.idle_add(overlay_right_content_bot.add_overlay, wait_button)
-                        
-                        thread_time = threading.Thread(target = self.launch_thread_time, args = [wait_button])
-                        thread_time.daemon = True
-                        thread_time.start()
-                        
+                if defs.AS_LOCK == False:
                         try:
-                                prev_search = defs.MEM_SEARCHS[request]
-                        except KeyError:
-                                thread = threading.Thread(target = self.launch_ad_search, args = (request, "", wait_button))
-                                thread.daemon = True
-                                thread.start()
-                        else:
-                                thread = threading.Thread(target = self.disp_result, args = (prev_search, "", wait_button))
-                                thread.daemon = True
-                                thread.start()
+                                g_op = self.g_operator.get_text()
+                        except:
+                                g_op = None
+                        request = functions.db.prepare_request(search_widgets_list, g_op)
+                        if request != None:
+                                defs.AS_LOCK = True
+                                GLib.idle_add(self.icon_edition.hide)
+                                GLib.idle_add(self.empty_box_results)
+                                
+                                wait_button = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+                                wait_button.props.valign = Gtk.Align.CENTER
+                                as_spinner = Gtk.Spinner()
+                                as_spinner.set_size_request(30, 30)
+                                wait_button.pack_start(as_spinner, True, True, 0)
+                                as_spinner.start()
+                                GLib.idle_add(wait_button.show_all)
+                                GLib.idle_add(overlay_right_content_bot.add_overlay, wait_button)
+                                
+                                '''thread_time = threading.Thread(target = self.launch_thread_time, args = [wait_button])
+                                thread_time.daemon = True
+                                thread_time.start()'''
+                                
+                                try:
+                                        prev_search = defs.MEM_SEARCHS[request]
+                                except KeyError:
+                                        thread = threading.Thread(target = self.launch_ad_search, args = (request, "", wait_button))
+                                        thread.daemon = True
+                                        thread.start()
+                                else:
+                                        self.empty_box_results()
+                                        thread = threading.Thread(target = self.disp_result, args = (prev_search, "", wait_button))
+                                        thread.daemon = True
+                                        thread.start()
         
         def launch_thread_time(self, wait_button_box):
-                time.sleep(5)
                 label_wait = Gtk.Label()
                 label_wait.set_markup("<big>" + defs.STRINGS["please_wait"] + "</big>")
-                GLib.idle_add(label_wait.show)
                 GLib.idle_add(wait_button_box.pack_start, label_wait, True, True, 0)
+                time.sleep(4)
+                GLib.idle_add(label_wait.show, priority=GLib.PRIORITY_HIGH_IDLE)
         
         def edition_selected(self, selection, integer, TreeViewColumn, tree_editions):
-                self.sensitive_widgets(False)
-                model, treeiter = selection.get_selected()
-                if treeiter != None:
-                        ed_name = model[treeiter][0].replace('"', '""')
-                        conn, c = functions.db.connect_db()
-                        c.execute("""SELECT code FROM editions WHERE name = \"""" + ed_name + """\" OR name_french = \"""" + ed_name + """\"""")
-                        reponse = c.fetchone()
-                        functions.db.disconnect_db(conn)
-                        request = """SELECT * FROM cards WHERE edition = \"""" + reponse[0] + """\""""
-                        
-                        if os.path.isfile(os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(reponse[0]) + ".png")):
-                                GLib.idle_add(self.icon_edition.set_from_file, os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(reponse[0]) + ".png"))
-                                GLib.idle_add(self.icon_edition.show)
-                        else:
-                                GLib.idle_add(self.icon_edition.hide)
-                        
-                        try:
-                                prev_search = defs.MEM_SEARCHS[request]
-                        except KeyError:
-                                #self.launch_ad_search(request, "edition", None)
-                                thread = threading.Thread(target = self.launch_ad_search, args = (request, "edition", None))
-                                thread.daemon = True
-                                thread.start()
-                        else:
-                                #self.disp_result(prev_search, "edition", None)
-                                thread = threading.Thread(target = self.disp_result, args = (prev_search, "edition", None))
-                                thread.daemon = True
-                                thread.start()
+                if defs.AS_LOCK == False:
+                        model, treeiter = selection.get_selected()
+                        if treeiter != None:
+                                defs.AS_LOCK = True
+                                ed_name = model[treeiter][0].replace('"', '""')
+                                conn, c = functions.db.connect_db()
+                                c.execute("""SELECT code FROM editions WHERE name = \"""" + ed_name + """\" OR name_french = \"""" + ed_name + """\"""")
+                                reponse = c.fetchone()
+                                functions.db.disconnect_db(conn)
+                                request = """SELECT * FROM cards WHERE edition = \"""" + reponse[0] + """\""""
+                                
+                                if os.path.isfile(os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(reponse[0]) + ".png")):
+                                        GLib.idle_add(self.icon_edition.set_from_file, os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(reponse[0]) + ".png"))
+                                        GLib.idle_add(self.icon_edition.show)
+                                else:
+                                        GLib.idle_add(self.icon_edition.hide)
+                                
+                                try:
+                                        prev_search = defs.MEM_SEARCHS[request]
+                                except KeyError:
+                                        thread = threading.Thread(target = self.launch_ad_search, args = (request, "edition", None))
+                                        thread.daemon = True
+                                        thread.start()
+                                else:
+                                        self.empty_box_results()
+                                        thread = threading.Thread(target = self.disp_result, args = (prev_search, "edition", None))
+                                        thread.daemon = True
+                                        thread.start()
         
         def reset_search(self, button, entry1, entry2, entry3, entry4):
                 for entry in [entry1, entry2, entry3, entry4]:
@@ -538,9 +555,7 @@ class AdvancedSearch:
         
         def load_card(self, cardid, simple_search):
                 '''Load a card in the card viewer'''
-                functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)
+                GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
         
         def load_card_from_outside(self, widget, cardid, list_widgets_to_destroy, simple_search):
-                for widget in list_widgets_to_destroy:
-                        widget.destroy()
-                functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)
+                GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)

@@ -20,8 +20,6 @@
 
 # Various functions
 
-import gi
-gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, GdkPixbuf, Pango, GLib
 from math import pi
 import os
@@ -57,7 +55,7 @@ def download_symbols():
                 if os.path.isdir(os.path.join(defs.CACHEMCPIC, "icons")) == False:
                         os.mkdir(os.path.join(defs.CACHEMCPIC, "icons"))
                         GLib.idle_add(defs.MAINWINDOW.widget_overlay.get_child().set_markup, "<b><big>" + defs.STRINGS["downloading_symbols"] + "</big></b>")
-                        GLib.idle_add(functions.various.update_gui, 0)
+                        GLib.idle_add(functions.various.force_update_gui, 0)
                         try:
                                 urllib.request.urlretrieve("https://dl.dropboxusercontent.com/u/70787217/mc/symboles_editions/all.tar", os.path.join(defs.CACHEMCPIC, "icons", "all.tar"))
                         except (urllib.error.HTTPError, urllib.request.URLError, timeout, UnicodeEncodeError):
@@ -84,7 +82,7 @@ def download_symbols():
                         if edition[1] == "1":
                                 if os.path.isfile(os.path.join(defs.CACHEMCPIC, "icons", valid_filename_os(edition[0]) + ".png")) == False:
                                         GLib.idle_add(defs.MAINWINDOW.widget_overlay.get_child().set_markup, "<b><big>" + defs.STRINGS["downloading_symbols"] + " " + str(i) + "/" + str(nbicontotal) + "</big></b>")
-                                        GLib.idle_add(functions.various.update_gui, 0)
+                                        GLib.idle_add(functions.various.force_update_gui, 0)
                                         url_icon = "https://dl.dropboxusercontent.com/u/70787217/mc/symboles_editions/" + edition[0] + ".png"
                                         try:
                                                 urllib.request.urlretrieve(url_icon, os.path.join(defs.CACHEMCPIC, "icons", valid_filename_os(edition[0]) + ".png"))
@@ -205,7 +203,7 @@ def downloadPicture(multiverseid, imageurl, name, edition_code):
                 else:
                         return(False)
 
-def update_gui(s):
+def force_update_gui(s):
         '''Force updating the GUI.'''
         while Gtk.events_pending():
                 Gtk.main_iteration()
@@ -651,9 +649,20 @@ def create_window_search_name(request_response, current_object_view):
         nb = 0
         cards_added = []
         cards = prepare_cards_data_for_treeview(request_response)
+        
+        # we get a list of ids of cards in the collection
+        conn, c = functions.collection.connect_db()
+        c.execute("""SELECT id_card FROM collection""")
+        reponses_coll = c.fetchall()
+        functions.collection.disconnect_db(conn)
+        
         for card in cards.values():
-                #FIXME: revenir ici quand la collection sera implémentée
                 bold = 400
+                for row_id_card in reponses_coll:
+                        id_card = row_id_card[0]
+                        if id_card == card["id_"]:
+                                bold = 700
+                                break
                 italic = Pango.Style.NORMAL
                 
                 add = True
@@ -664,6 +673,10 @@ def create_window_search_name(request_response, current_object_view):
                 if add:
                         store_results.insert_with_valuesv(-1, range(14), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic])
                         cards_added.append(card["name"] + "-" + card["edition_ln"])
+                        if card["layout"] == "flip" or card["layout"] == "double-faced":
+                                names = card["names"].split("|")
+                                if card["real_name"] != names[0]:
+                                        nb = nb - 1
                         nb += 1
         
         store_results.set_sort_column_id(7, Gtk.SortType.ASCENDING)

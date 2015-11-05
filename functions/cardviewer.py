@@ -18,10 +18,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Magic Collection.  If not, see <http://www.gnu.org/licenses/>.
 
-# Some functions, for the card viewer
+# Functions for the card viewer
 
-import gi
-gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, GdkPixbuf, Pango, GObject, GLib, Gdk
 import cairo
 import os
@@ -38,14 +36,20 @@ import objects.mc
 import functions.various
 
 def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
-        '''Generates and return a card viewer with card data'''       
-        if cardid != None:
-                cardid = str(cardid)
+        """Generates and returns a card viewer with card's data.
+        
+        @cardid -> a string (an card's id in the database) or None
+        @box_card_viewer -> a Gtk.Box (the parent widget of the card viewer)
+        @object_origin -> an AdvancedSearch, Collection or Decks object (indicates the origin of the card viewer request)
+        @simple_search -> an int (indicates if the card viewer is used with a simple search or another type of search)
+        
+        """
         
         for widget in box_card_viewer.get_children():
                 box_card_viewer.remove(widget)
         
         if cardid == None:
+                # if cardid is None, we show a random mana picture
                 if len(defs.LIST_LANDS_SELECTED) == 5:
                         defs.LIST_LANDS_SELECTED = []
                 lchoice = random.choice(["b", "g", "r", "u", "w"])
@@ -64,6 +68,8 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                 box_card_viewer.pack_start(image, True, True, 0)
         
         elif cardid != "":
+                # we get an id, we load and display the card
+                
                 # we check if we must retrieve foreign names for flip / split cards
                 # FIXME : chinese variants !
                 foreign_name = defs.LOC_NAME_FOREIGN[functions.config.read_config("fr_language")]
@@ -76,13 +82,13 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                 split_flip_df_data = []
                 
                 if len(reponse) > 1:
-                        print("Something is wrong in the universe. In fact, only in the database but...")
+                        print("Something is wrong in the database. IDs should be unique.")
                 else:
                         id_, name, nb_variante, names, edition_code, name_chinesetrad, name_chinesesimp, name_french, name_german, name_italian, name_japanese, name_korean, name_portuguesebrazil, name_portuguese, name_russian, name_spanish, colors, manacost, cmc, multiverseid, imageurl, type_, artist, text, flavor, power, toughness, loyalty, rarity, layout, number, variations = reponse[0]
                         
                         basename = str(name)
                         
-                        # we choose the foreign name
+                        # we choose the foreign name to display
                         if foreign_name == "name_chinesetrad":
                                 foreign__name = name_chinesetrad
                         elif foreign_name == "name_chinesesimp":
@@ -112,12 +118,12 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         basetext = str(text)
                         basecolors = str(colors)
                         
+                        # Flip, split and double-faced cards have more than 1 line in the database
                         if layout == "flip" or layout == "split" or layout == "double-faced":
                                 # we need more data to find the complete text & foreign name
                                 request = """SELECT * FROM cards WHERE layout = 'flip' OR layout = 'split' OR layout = 'double-faced'"""
                                 c.execute(request)
                                 split_flip_df_data = c.fetchall()
-                                functions.db.disconnect_db(conn)
                                 
                                 names_tmp = names.split("|")
                                 
@@ -170,7 +176,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                                 separator = " <> "
                                         elif layout == "split":
                                                 separator = " // "
-                                        # we try to get the complete name for english and french
+                                        # we try to get the complete name for english and foreign name
                                         final_name = ""
                                         if layout == "split":
                                                 for nn in names_tmp:
@@ -204,9 +210,13 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                                                                                 final_nameforeign = final_nameforeign + separator + card_split_flip[7]
                                                         foreign__name = final_nameforeign
                         
+                        # we disconnect the database
+                        functions.db.disconnect_db(conn)
+                        
                         name_without_variants = str(name)
                         foreign__name_without_variants = str(foreign__name)                        
                         if nb_variante != "":
+                                # we add the number of the variant to the name
                                 name = name + " (" + nb_variante + ")"
                                 foreign__name = foreign__name + " (" + nb_variante + ")"
                         
@@ -225,7 +235,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         # the card picture
                         card_pic = Gtk.Image()
                         
-                        # the double-faced button
+                        # the top left button - can be a double-faced button, or a flip button, or an empty one
                         df_button = Gtk.Button()
                         df_button.set_relief(Gtk.ReliefStyle.NONE)
                         df_pic = Gtk.Image()
@@ -256,7 +266,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         first_widget = df_button
                         nb_columns += 1
                         
-                        # the non-english name
+                        # the non-english name. If this card do not have a foreign name, the label is empty.
                         label_name_foreign = Gtk.Label()
                         label_name_foreign.set_size_request(200, -1)
                         if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys() and basenameforeign != "":
@@ -276,7 +286,6 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         nb_columns += 1
                         
                         # cmc / manacost button
-                        #if (cmc == "" or cmc == "0") and manacost != "{X}" and manacost != "{X}{X}" and manacost != "{X}{X}{X}":
                         if manacost == "":
                                 cmc_button = Gtk.MenuButton()
                                 empty_pic = Gtk.Image()
@@ -286,7 +295,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         else:
                                 cmc_button = Gtk.MenuButton("")
                                 if cmc == "1000000":
-                                        cmc_button.get_child().set_markup("<small>100\n00\n00</small>")
+                                        cmc_button.get_child().set_markup("<small>...</small>") # workaround for 'Gleemax'
                                 elif len(cmc) > 1:
                                         cmc_button.get_child().set_markup("<small>" + cmc + "</small>")
                                 else:
@@ -328,10 +337,9 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         label_edition.set_size_request(230, -1)
                         grid.attach_next_to(label_edition, label_name, Gtk.PositionType.BOTTOM, nb_columns, 1)
                         
-                        # the card picture
+                        # we prepare the card picture (will be loaded latter)
                         overlay_card_pic = Gtk.Overlay()
                         eventbox_card_pic = Gtk.EventBox()
-                        #eventbox_card_pic.connect("button-press-event", rotate_card_pic, card_pic)              
                         
                         if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
                                 name_for_add_popover = foreign__name.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -345,6 +353,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         
                         path = os.path.join(defs.CACHEMCPIC, "cardback.png")
 
+                        # we try to load the image of the card. If we get a GLib error, then the picture is corrupted, and we delete it
                         try:
                                 pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
                         except GLib.GError:
@@ -398,6 +407,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         
                         # the text widget
                         manacol = ""
+                        # if the card is a basic land or a snow one, we replace the text box with a mana picture
                         if basename == "Plains" or basename == "Snow-Covered Plains":
                                 manacol = "w"
                         elif basename == "Swamp" or basename == "Snow-Covered Swamp":
@@ -430,7 +440,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                                 textbuffer.set_text(text + flavor)
                                         else:
                                                 textbuffer.set_text(text + "\n\n" + flavor)
-                                        # we replace {?} by pictures
+                                        # we replace {?} by pictures (see PIC_IN_TEXT in defs.py)
                                         nb_to_replace = 0
                                         for char in text:
                                                 if char == "{":
@@ -512,16 +522,18 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         
                         box_card_viewer.show_all()
                         
+                        # we download / load the picture of the card now, according to the configuration
                         pic_ok = 0
                         size = functions.various.card_pic_size()
                         if functions.various.check_card_pic(edition_code, name):
-                                path = os.path.join(defs.CACHEMCPIC, functions.various.valid_filename_os(edition_code), functions.various.valid_filename_os(name) + ".full.jpg")
+                                path = os.path.join(defs.CACHEMCPIC, functions.various.valid_filename_os(edition_code), functions.various.valid_filename_os(name) + ".full.jpg") # for historical reason, we save files with a jpg extension, even if recent files are png.
                                 try:
                                         pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
                                         pic_ok = 1
                                 except GLib.GError:
                                         os.remove(path)
                         
+                        # we apply rounded corners to the picture
                         radius = 13
                         if imageurl != "":
                                 radius = 7
@@ -534,6 +546,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                         download_pic = functions.config.read_config("download_pic_collection_decks")
                                 
                                 if download_pic == "1":
+                                        # we download the picture in another thread
                                         spinner = Gtk.Spinner()
                                         overlay_card_pic.add_overlay(spinner)
                                         spinner.show()
@@ -544,13 +557,32 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         else:
                                 load_card_picture(path, pixbuf, card_pic, 1, layout, radius)
 
+        else:
+                print("Something is wrong. We shouldn't get an empty cardid.")
+
 def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_origin, simple_search, name_for_add_popover_ss, edition_longname_ss, id_ss, split_flip_df_data):
+        """This function creates the popover which allows the user to add cards to his / her collection.
+        
+        @eventbox -> the Gtk.EventBox where the add button is displayed
+        @signal -> the signal received by @eventbox
+        @eventbox_pic_card -> the Gtk.EventBox where the card picture is displayed
+        @overlay -> the Gtk.Overlay above the card picture
+        @object_origin -> an AdvancedSearch, Collection or Decks object (indicates the origin of the card viewer request)
+        @simple_search -> an int (indicates if the card viewer is used with a simple search or another type of search)
+        @name_for_add_popover_ss -> a str. If @simple_search is 1, this string contains the name of the displayed card, to show it in the popover. Not used if @simple_search is not 1.
+        @edition_longname_ss -> a str. Like @name_for_add_popover_ss, but for the edition of the card.
+        @id_ss -> a str. Like @name_for_add_popover_ss, but for the id of the card.
+        @split_flip_df_data -> a list which contains informations about the flip / split / double-faced cards in the database. This list is empty if the displayed card are not flip / split / double-faced.
+        
+        """
+        
         def getKey(item):
+                """We use this to correctly sort some characters."""
                 return(functions.various.remove_accented_char(item[1].lower().replace("œ", "oe").replace("æ", "ae")))
         
         cards_selected_list = []
         
-        # we get the current selection
+        # we get the current selection - in the mainselect treeview
         selection = object_origin.mainselect
         try:
                 count = selection.count_selected_rows()
@@ -735,6 +767,15 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         popover.show_all()
 
 def button_add_clicked(button_add, popover, spinbutton, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview, cards_selected_list, overlay_labels):
+        """This is called when the user click on the add to the collection button. It add the selected cards to the collection.
+        
+        @button_add -> the 'add to the collection' GtkButton
+        @popover -> the 'add to the collection' GtkPopover
+        @spinbutton -> the GtkSpinButton where the user indicated the number of each card to add.
+        @comboboxtext_condition -> the GtkComboBox where the user indicated the condition of each card to add.
+        
+        """
+        
         defs.COLL_LOCK = True
         button_add.set_sensitive(False)
         button_add.set_label(defs.STRINGS["add_button_wait"])

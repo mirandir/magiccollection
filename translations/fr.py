@@ -81,6 +81,7 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["new_update_db"] = "Une mise à jour de la base de données des cartes est disponible.%%%\nVoulez-vous la télécharger maintenant ?"
         translate["downloading_db"] = "Téléchargement de la base de données…"
         translate["downloading_symbols"] = "Téléchargement des icônes des éditions…"
+        translate["checking_db_update"] = "Vérification des mises à jour de la base de données…"
         # advanced search
         translate["searching"] = "Recherche en cours…"
         translate["please_wait"] = "Cette opération va prendre un peu de temps…"

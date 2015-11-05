@@ -20,8 +20,6 @@
 
 # Some functions for dealing with the collection
 
-import gi
-gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, GdkPixbuf, Pango
 import os
 import sqlite3

@@ -18,15 +18,15 @@
 # You should have received a copy of the GNU General Public License
 # along with Magic Collection.  If not, see <http://www.gnu.org/licenses/>.
 
-# Main script for Magic Collection
+# Launch script for Magic Collection
 
 import sys
 import os
-# imports mc
+import gi
+gi.require_version('Gtk', '3.0')
+
 import objects.mc
-
 import functions.various
-
 import defs
 
 os.chdir(defs.HOME)
