@@ -63,7 +63,7 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["no_result"] = "Aucun résultat."
         translate["aboutdialog_db"] = "BDD"
         translate["choose_card"] = "Choisir"
-        translate["result"] = "%%% cartes trouvées :"
+        translate["results"] = "%%% résultats :"
         translate["coll_busy"] = "Une opération est en cours sur la collection, impossible de quitter pour l'instant."
         # non english helpers for simple search - without accents or uppercase letters (must be empty for the english translation file)
         translate["forest"] = "foret"
@@ -91,6 +91,8 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["operator_or"] = "ou"
         translate["card"] = "carte"
         translate["cards"] = "cartes"
+        translate["card_result"] = "résultat"
+        translate["cards_result"] = "résultats"
         translate["list_editions"] = "Liste des éditions"
         translate["add_edition"] = "Ajouter l'édition"
         translate["name_ad"] = "Nom"

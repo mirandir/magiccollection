@@ -326,7 +326,7 @@ class AdvancedSearch:
                         reponses_coll = c.fetchall()
                         functions.collection.disconnect_db(conn)
                         
-                        modif_nb_cards = 1
+                        nb_lines_added = 0
                         
                         for nb, card in enumerate(cards.values()):
                                 # if this card is in the collection, we bolding it
@@ -344,7 +344,6 @@ class AdvancedSearch:
                                 if card["layout"] == "flip" or card["layout"] == "double-faced" or card["layout"] == "split":
                                         names = card["names"].split("|")
                                         if card["real_name"] != names[0]:
-                                                modif_nb_cards = modif_nb_cards - 1
                                                 if type_s == "edition":
                                                         add = False
                                 
@@ -352,16 +351,22 @@ class AdvancedSearch:
                                         add = False
                                 
                                 if add:
+                                        nb_lines_added += 1
                                         GLib.idle_add(insert_data, store_results, cards_added, card, bold, italic)
                                         functions.various.force_update_gui(0)
                         
                         GLib.idle_add(_end, store_results, wait_button)
                         
-                        nb_cards = nb + modif_nb_cards
-                        if nb_cards > 1:
-                                GLib.idle_add(self.label_nb_cards.set_text, str(nb_cards) + " " + defs.STRINGS["cards"])
+                        if type_s == "edition":
+                                if nb_lines_added > 1:
+                                        GLib.idle_add(self.label_nb_cards.set_text, str(nb_lines_added) + " " + defs.STRINGS["cards"])
+                                else:
+                                        GLib.idle_add(self.label_nb_cards.set_text, str(nb_lines_added) + " " + defs.STRINGS["card"])
                         else:
-                                GLib.idle_add(self.label_nb_cards.set_text, str(nb_cards) + " " + defs.STRINGS["card"])
+                                if nb_lines_added > 1:
+                                        GLib.idle_add(self.label_nb_cards.set_text, str(nb_lines_added) + " " + defs.STRINGS["cards_result"])
+                                else:
+                                        GLib.idle_add(self.label_nb_cards.set_text, str(nb_lines_added) + " " + defs.STRINGS["card_result"])
                         
                         GLib.idle_add(scrolledwindow.show_all)
                 else:

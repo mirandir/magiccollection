@@ -673,10 +673,10 @@ def create_window_search_name(request_response, current_object_view):
                 if add:
                         store_results.insert_with_valuesv(-1, range(14), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic])
                         cards_added.append(card["name"] + "-" + card["edition_ln"])
-                        if card["layout"] == "flip" or card["layout"] == "double-faced":
+                        """if card["layout"] == "flip" or card["layout"] == "double-faced":
                                 names = card["names"].split("|")
                                 if card["real_name"] != names[0]:
-                                        nb = nb - 1
+                                        nb = nb - 1"""
                         nb += 1
         
         store_results.set_sort_column_id(7, Gtk.SortType.ASCENDING)
@@ -686,7 +686,7 @@ def create_window_search_name(request_response, current_object_view):
         else:
                 store_results.set_sort_column_id(1, Gtk.SortType.ASCENDING)
         
-        label_nb_cards = Gtk.Label(defs.STRINGS["result"].replace("%%%", str(nb)))
+        label_nb_cards = Gtk.Label(defs.STRINGS["results"].replace("%%%", str(nb)))
         mainbox.pack_start(label_nb_cards, False, False, 0)
         
         mainbox.pack_start(scrolledwindow, True, True, 0)

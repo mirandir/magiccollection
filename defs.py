@@ -127,7 +127,8 @@ VARCONFIGDEFAULT = {
 "price_cur": "0",
 "dark_theme": "0",
 "as_columns": as_columns,
-"coll_columns": coll_columns
+"coll_columns": coll_columns,
+"no_reprints": "0"
 }
 
 # column names available for advanced search
