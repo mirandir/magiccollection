@@ -142,7 +142,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                                                         list_cmc.append(card_split_flip[18])
                                                                         if card_split_flip[22] not in final_artist:
                                                                                 final_artist = final_artist + card_split_flip[22] + ", "
-                                                                        final_text = final_text + card_split_flip[23] + "\n---\n"
+                                                                        final_text = final_text + card_split_flip[1] + "\n" + card_split_flip[23] + "\n---\n"
                                                                         for char in card_split_flip[16]:
                                                                                 if char not in final_colors:
                                                                                         final_colors = final_colors + char
@@ -549,6 +549,11 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         
                         box_card_viewer.show_all()
                         
+                        flip_pic = False
+                        if layout == "flip":
+                                if basename != names_tmp[0]:
+                                        flip_pic = True
+                        
                         # we download / load the picture of the card now, according to the configuration
                         pic_ok = 0
                         size = functions.various.card_pic_size()
@@ -578,11 +583,11 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                         overlay_card_pic.add_overlay(spinner)
                                         spinner.show()
                                         spinner.start()
-                                        thread = threading.Thread(target = dd_card_pic, args = (object_origin, edition_code, name, multiverseid, imageurl, layout, card_pic, spinner, radius))
+                                        thread = threading.Thread(target = dd_card_pic, args = (object_origin, edition_code, name, multiverseid, imageurl, layout, card_pic, spinner, radius, flip_pic))
                                         thread.daemon = True
                                         thread.start()
                         else:
-                                load_card_picture(path, pixbuf, card_pic, 1, layout, radius)
+                                load_card_picture(path, pixbuf, card_pic, 1, layout, radius, flip_pic)
 
         else:
                 print("Something is wrong. We shouldn't get an empty cardid.")
@@ -855,7 +860,7 @@ def mouse_no_more_on_pic(eventbox, event, add_pic):
         add_pic.destroy()
         eventbox.destroy()
 
-def load_card_picture(path, pixbuf, card_pic, gg_pic, layout, radius):
+def load_card_picture(path, pixbuf, card_pic, gg_pic, layout, radius, flip_pic):
         size = functions.various.card_pic_size()
         pixbuf_width = pixbuf.get_width()
         pixbuf_height = pixbuf.get_height()
@@ -880,8 +885,10 @@ def load_card_picture(path, pixbuf, card_pic, gg_pic, layout, radius):
         card_pic.set_size_request(size, size)
         if gg_pic == 1 and layout == "split" and ("Who  What  When  Where  Why" not in path):
                 rotate_card_pic(None, None, card_pic)
+        if gg_pic == 1 and layout == "flip" and flip_pic:
+                vertical_flip_pic(None, card_pic)
 
-def waiting_for_downloader(card_pic, layout, edition_code, name, spinner, internet, radius):
+def waiting_for_downloader(card_pic, layout, edition_code, name, spinner, internet, radius, flip_pic):
         gg_pic = 0
         if functions.various.check_card_pic(edition_code, name):
                 path = os.path.join(defs.CACHEMCPIC, functions.various.valid_filename_os(edition_code), functions.various.valid_filename_os(name) + ".full.jpg")
@@ -895,13 +902,13 @@ def waiting_for_downloader(card_pic, layout, edition_code, name, spinner, intern
         except GLib.GError:
                 os.remove(path)
         else:
-                load_card_picture(path, pixbuf, card_pic, gg_pic, layout, radius)
+                load_card_picture(path, pixbuf, card_pic, gg_pic, layout, radius, flip_pic)
         spinner.stop()
         spinner.destroy()
         if internet == 0:
                 functions.various.message_dialog(defs.STRINGS["download_card_no_internet"], 1)
 
-def dd_card_pic(object_origin, edition_code, name, multiverseid, imageurl, layout, card_pic, spinner, radius):
+def dd_card_pic(object_origin, edition_code, name, multiverseid, imageurl, layout, card_pic, spinner, radius, flip_pic):
         # we can try to download the picture
         internet = 1
         if functions.various.check_internet():
@@ -917,7 +924,7 @@ def dd_card_pic(object_origin, edition_code, name, multiverseid, imageurl, layou
         else:
                 internet = 0
                 
-        GLib.idle_add(waiting_for_downloader, card_pic, layout, edition_code, name, spinner, internet, radius)
+        GLib.idle_add(waiting_for_downloader, card_pic, layout, edition_code, name, spinner, internet, radius, flip_pic)
                         
         #box_card_viewer.show_all()
 
