@@ -123,6 +123,7 @@ VARCONFIGDEFAULT = {
 "ext_sort_as": "0",
 "ext_fr_name": ext_fr_name,
 "fr_language": fr_language,
+"show_en_name_in_card_viewer": "0",
 "cards_price": "0",
 "price_cur": "0",
 "dark_theme": "0",

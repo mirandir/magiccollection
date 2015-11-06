@@ -248,9 +248,8 @@ class MagicCollection(Gtk.Application):
                         if widget.__class__.__name__ == "MenuBar":
                                 widget.hide()
                 
-                #FIXME: will be deleted in final version
-                print(defs.OS)
-                print(defs.STRINGS["language_name"])
+                '''print(defs.OS)
+                print(defs.STRINGS["language_name"])'''
                 
                 # checking and loading database
                 thread = threading.Thread(target = functions.db.check_db)

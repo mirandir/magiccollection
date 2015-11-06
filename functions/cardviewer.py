@@ -266,6 +266,11 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         first_widget = df_button
                         nb_columns += 1
                         
+                        # We now prepare 2 labels : one with the foreign name, and the other with the english name of the card.
+                        # If LANGUAGE == en, we only show the english one. Else we read the configuration :
+                        # If "show_en_name_in_card_viewer" is 0, we only show the foreign name. Else, we show the 2 widgets. If the card has only an english name, we show it.
+                        
+                        show_en_name_in_card_viewer = functions.config.read_config("show_en_name_in_card_viewer")
                         # the non-english name. If this card do not have a foreign name, the label is empty.
                         label_name_foreign = Gtk.Label()
                         label_name_foreign.set_size_request(200, -1)
@@ -282,7 +287,36 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                 label_name_foreign.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
                                 label_name_foreign.set_justify(Gtk.Justification.CENTER)
                         
-                        grid.attach_next_to(label_name_foreign, df_button, Gtk.PositionType.RIGHT, 1, 1)
+                        # the english name
+                        label_name = Gtk.Label()
+                        label_name.set_markup("<b>" + name.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") + "</b>")
+                        if len(name) > 29:
+                                label_name.set_has_tooltip(True)
+                                label_name.set_tooltip_text(name)
+                        label_name.set_selectable(True)
+                        label_name.set_max_width_chars(25)
+                        label_name.set_line_wrap(True)
+                        label_name.set_lines(1)
+                        label_name.set_ellipsize(Pango.EllipsizeMode.END)
+                        label_name.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
+                        label_name.set_size_request(200, -1)
+                        
+                        if defs.LANGUAGE == "en":
+                                label_name_1 = label_name
+                                label_name_2 = label_name
+                        else:
+                                if basenameforeign != "":
+                                        label_name_1 = label_name_foreign
+                                else:
+                                        label_name_1 = label_name
+                                if show_en_name_in_card_viewer == "1":
+                                        label_name_2 = label_name
+                                elif basenameforeign != "":
+                                        label_name_2 = label_name_foreign
+                                else:
+                                        label_name_2 = label_name
+                        
+                        grid.attach_next_to(label_name_1, df_button, Gtk.PositionType.RIGHT, 1, 1)
                         nb_columns += 1
                         
                         # cmc / manacost button
@@ -305,23 +339,12 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                         cmc_button.set_popover(manacost_popover)
                                         cmc_button.set_sensitive(True)
                         cmc_button.set_relief(Gtk.ReliefStyle.NONE)
-                        grid.attach_next_to(cmc_button, label_name_foreign, Gtk.PositionType.RIGHT, 1, 1)
+                        grid.attach_next_to(cmc_button, label_name_1, Gtk.PositionType.RIGHT, 1, 1)
                         nb_columns += 1
                         
-                        # the english name
-                        label_name = Gtk.Label()
-                        label_name.set_markup("<b>" + name.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") + "</b>")
-                        if len(name) > 29:
-                                label_name.set_has_tooltip(True)
-                                label_name.set_tooltip_text(name)
-                        label_name.set_selectable(True)
-                        label_name.set_max_width_chars(25)
-                        label_name.set_line_wrap(True)
-                        label_name.set_lines(1)
-                        label_name.set_ellipsize(Pango.EllipsizeMode.END)
-                        label_name.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
-                        label_name.set_size_request(200, -1)
-                        grid.attach_next_to(label_name, first_widget, Gtk.PositionType.BOTTOM, nb_columns, 1)
+                        # we show the label_name_2
+                        if label_name_1 != label_name_2:
+                                grid.attach_next_to(label_name_2, first_widget, Gtk.PositionType.BOTTOM, nb_columns, 1)
                         
                         # the edition
                         label_edition = Gtk.Label(edition_longname)
@@ -335,7 +358,11 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         label_edition.set_ellipsize(Pango.EllipsizeMode.END)
                         label_edition.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
                         label_edition.set_size_request(230, -1)
-                        grid.attach_next_to(label_edition, label_name, Gtk.PositionType.BOTTOM, nb_columns, 1)
+                        
+                        if label_name_1 != label_name_2:
+                                grid.attach_next_to(label_edition, label_name_2, Gtk.PositionType.BOTTOM, nb_columns, 1)
+                        else:
+                                grid.attach_next_to(label_edition, first_widget, Gtk.PositionType.BOTTOM, nb_columns, 1)
                         
                         # we prepare the card picture (will be loaded latter)
                         overlay_card_pic = Gtk.Overlay()
