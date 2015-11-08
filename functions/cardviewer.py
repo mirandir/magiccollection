@@ -255,7 +255,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                 else:
                                         df_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="weather-clear-symbolic"), Gtk.IconSize.LARGE_TOOLBAR)
                                 df_button.connect("clicked", object_origin.load_card_from_outside, str(id_otherface), [], simple_search)
-                        elif layout == "flip":
+                        elif layout == "flip" or basename == "Curse of the Fire Penguin":
                                 df_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="object-flip-vertical-symbolic"), Gtk.IconSize.SMALL_TOOLBAR)
                                 df_button.connect("clicked", vertical_flip_pic, card_pic)
                         else:
