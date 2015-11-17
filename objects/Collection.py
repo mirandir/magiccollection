@@ -106,7 +106,7 @@ class Collection:
                 reponse_all = c.fetchall()
                 functions.db.disconnect_db(conn)
                 
-                for enum, card_to_add in enumerate(cards_list):
+                for card_to_add in cards_list:
                         cardid, condition, lang, foil, loaned_to, comment, nb = card_to_add
                         card_found = 0
                         for reponse in reponse_all:
