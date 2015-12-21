@@ -57,7 +57,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         lchoice = random.choice(["b", "g", "r", "u", "w"])
                 defs.LIST_LANDS_SELECTED.append(lchoice)
                 image = Gtk.Image()
-                pixbuf = Gtk.IconTheme.get_default().load_icon(lchoice + "-symbolic", 100, Gtk.IconLookupFlags.FORCE_SVG)
+                pixbuf = Gtk.IconTheme.get_default().load_icon(lchoice + "-symbolic", 150, Gtk.IconLookupFlags.FORCE_SVG)
                 image.set_from_pixbuf(pixbuf)
                 image.show()
                 size = functions.various.card_pic_size()
