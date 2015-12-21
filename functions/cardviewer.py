@@ -57,10 +57,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         lchoice = random.choice(["b", "g", "r", "u", "w"])
                 defs.LIST_LANDS_SELECTED.append(lchoice)
                 image = Gtk.Image()
-                if functions.config.read_config("dark_theme") == "0":
-                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "grey", lchoice + "_grey.png"))
-                else:
-                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "grey", lchoice + "_grey_white.png"))
+                pixbuf = Gtk.IconTheme.get_default().load_icon(lchoice + "-symbolic", 100, Gtk.IconLookupFlags.FORCE_SVG)
                 image.set_from_pixbuf(pixbuf)
                 image.show()
                 size = functions.various.card_pic_size()
@@ -500,10 +497,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                         widget.add(textview)
                         else:
                                 widget = Gtk.Image()
-                                if functions.config.read_config("dark_theme") == "0":
-                                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "grey", manacol + "_grey.png"))
-                                else:
-                                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "grey", manacol + "_grey_white.png"))
+                                pixbuf = Gtk.IconTheme.get_default().load_icon(manacol + "-symbolic", 100, Gtk.IconLookupFlags.FORCE_SVG)
                                 widget.set_from_pixbuf(pixbuf)
                                 widget.set_vexpand(True)
                         grid.attach_next_to(widget, colors_pic, Gtk.PositionType.BOTTOM, nb_columns, 1)

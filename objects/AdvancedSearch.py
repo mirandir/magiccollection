@@ -502,32 +502,16 @@ class AdvancedSearch:
         def on_button_radio_op(self, button, name, entry, popover):
                 if button.get_active():
                         if name == "1":
-                                if functions.config.read_config("dark_theme") == "0":
-                                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "math", "equal.svg"))
-                                else:
-                                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "math", "equal_white.svg"))
-                                entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.PRIMARY, pixbuf)
+                                entry.set_icon_from_gicon(Gtk.EntryIconPosition.PRIMARY, Gio.ThemedIcon(name="equal-symbolic"))
                                 entry.set_icon_tooltip_text(Gtk.EntryIconPosition.PRIMARY, defs.STRINGS["entry_eq_ad"])
                         elif name == "2":
-                                if functions.config.read_config("dark_theme") == "0":
-                                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "math", "inf_or_eq.svg"))
-                                else:
-                                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "math", "inf_or_eq_white.svg"))
-                                entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.PRIMARY, pixbuf)
+                                entry.set_icon_from_gicon(Gtk.EntryIconPosition.PRIMARY, Gio.ThemedIcon(name="inf_or_eq-symbolic"))
                                 entry.set_icon_tooltip_text(Gtk.EntryIconPosition.PRIMARY, defs.STRINGS["entry_inf_eq_ad"])
                         elif name == "3":
-                                if functions.config.read_config("dark_theme") == "0":
-                                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "math", "sup_or_eq.svg"))
-                                else:
-                                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "math", "sup_or_eq_white.svg"))
-                                entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.PRIMARY, pixbuf)
+                                entry.set_icon_from_gicon(Gtk.EntryIconPosition.PRIMARY, Gio.ThemedIcon(name="sup_or_eq-symbolic"))
                                 entry.set_icon_tooltip_text(Gtk.EntryIconPosition.PRIMARY, defs.STRINGS["entry_sup_eq_ad"])
                         elif name == "4":
-                                if functions.config.read_config("dark_theme") == "0":
-                                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "math", "different.svg"))
-                                else:
-                                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "math", "different_white.svg"))
-                                entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.PRIMARY, pixbuf)
+                                entry.set_icon_from_gicon(Gtk.EntryIconPosition.PRIMARY, Gio.ThemedIcon(name="different-symbolic"))
                                 entry.set_icon_tooltip_text(Gtk.EntryIconPosition.PRIMARY, defs.STRINGS["entry_diff"])
         
         def comboboxtext_changed(self, comboboxtext, entry):
@@ -537,11 +521,7 @@ class AdvancedSearch:
                                 search = infosearch[0]
                                 break
                 if search == "cmc" or search == "power" or search == "toughness" or search == "loyalty":
-                        if functions.config.read_config("dark_theme") == "0":
-                                pixbuf = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "math", "equal.svg"))
-                        else:
-                                pixbuf = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "math", "equal_white.svg"))
-                        entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.PRIMARY, pixbuf)
+                        entry.set_icon_from_gicon(Gtk.EntryIconPosition.PRIMARY, Gio.ThemedIcon(name="equal-symbolic"))
                         entry.set_icon_tooltip_text(Gtk.EntryIconPosition.PRIMARY, defs.STRINGS["entry_eq_ad"])
                 else:
                         entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.PRIMARY, None)

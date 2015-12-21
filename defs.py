@@ -97,6 +97,10 @@ CACHEMC = os.path.join(CACHE, "magiccollection")
 CACHEMCPIC = os.path.join(CACHEMC, "downloadedPics")
 CACHEMCPR = os.path.join(CACHEMC, "prices")
 
+# we add our folders to paths where GTK is looking for icons
+Gtk.IconTheme.append_search_path(Gtk.IconTheme.get_default(), os.path.join(PATH_MC, "images", "math"))
+Gtk.IconTheme.append_search_path(Gtk.IconTheme.get_default(), os.path.join(PATH_MC, "images", "symbolic-mana"))
+
 # MC website
 SITEMC = "http://mirandir.pagesperso-orange.fr/"
 
