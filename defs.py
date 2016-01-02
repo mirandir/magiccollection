@@ -101,6 +101,10 @@ CACHEMCPR = os.path.join(CACHEMC, "prices")
 Gtk.IconTheme.append_search_path(Gtk.IconTheme.get_default(), os.path.join(PATH_MC, "images", "math"))
 Gtk.IconTheme.append_search_path(Gtk.IconTheme.get_default(), os.path.join(PATH_MC, "images", "symbolic-mana"))
 
+# we add a custom size for gicons
+Gtk.icon_size_register('150_mana_symbol', 150, 150)
+Gtk.icon_size_register('100_mana_symbol', 100, 100)
+
 # MC website
 SITEMC = "http://mirandir.pagesperso-orange.fr/"
 
