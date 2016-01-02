@@ -180,7 +180,7 @@ PIC_IN_TEXT = {
 "{2/U}": ["2u.png", 15],
 "{2/W}": ["2w.png", 15],
 "{∞}": ["infinite.png", 15],
-#"{C}": ["c.png", 18],
+"{C}": ["c.png", 18],
 "{CHAOS}": ["chaos.png", 18],
 "{hr}": ["hr.png", 15],
 "{hw}": ["hw.png", 15],

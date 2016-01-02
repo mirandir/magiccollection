@@ -442,6 +442,8 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                 manacol = "g"
                         elif basename == "Island" or basename == "Snow-Covered Island":
                                 manacol = "u"
+                        elif basename == "Wastes":
+                                manacol = "c"
                         
                         if manacol == "":
                                 if text == "" and flavor == "":
