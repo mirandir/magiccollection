@@ -112,9 +112,9 @@ def read_coll(box, coll_object):
                         bold = 400
                         italic = Pango.Style.NORMAL
                         if deck != "":
-                                bold = 700
-                        if comment != "":
                                 italic = Pango.Style.ITALIC
+                        if comment != "":
+                                bold = 700
                         try:
                                 nb_card = dict_rowcards_in_coll[id_card][0]
                         except KeyError:
@@ -123,9 +123,9 @@ def read_coll(box, coll_object):
                                 current_bold = dict_rowcards_in_coll[id_card][1]
                                 current_italic = dict_rowcards_in_coll[id_card][2]
                                 if current_bold != bold:
-                                        current_bold = 1
+                                        current_bold = 700
                                 if current_italic != italic:
-                                        current_italic = 1
+                                        current_italic = Pango.Style.ITALIC
                                 dict_rowcards_in_coll[id_card] = [nb_card + 1, current_bold, current_italic]
                 
                 # SQLite limits the number of arguments to 1000                

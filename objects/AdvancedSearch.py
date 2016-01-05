@@ -334,7 +334,7 @@ class AdvancedSearch:
                                         cards_added_reprints = {}
                                         
                                         for card in dict(cards).values():
-                                                # if nb_variant is not 0, this card is a reprint, we can delete it safety
+                                                # if nb_variant is not empty, this card is a reprint, we can delete it safety
                                                 if card["nb_variant"] != "":
                                                         del(cards[card["id_"]])
                                                 else:
