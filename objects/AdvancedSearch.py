@@ -332,33 +332,36 @@ class AdvancedSearch:
                         if no_reprints == "1":
                                 if type_s != "edition":
                                         cards_added_reprints = {}
-                                        #cards2 = dict(cards)
                                         
                                         for card in dict(cards).values():
-                                                unique_name = card["name"] + "-" + card["type_"] + "-" + card["text"] + "-" + card["power"] + "-" + card["toughness"] + "-" + card["colors"]
-                                                try:
-                                                        cards_added_reprints[unique_name]
-                                                except KeyError:
-                                                        # first print of this card
-                                                        cards_added_reprints[unique_name] = card["id_"]
+                                                # if nb_variant is not 0, this card is a reprint, we can delete it safety
+                                                if card["nb_variant"] != "":
+                                                        del(cards[card["id_"]])
                                                 else:
-                                                        # it's not the first print of this card
+                                                        unique_name = card["name"] + "-" + card["type_"] + "-" + card["text"] + "-" + card["power"] + "-" + card["toughness"] + "-" + card["colors"]
                                                         try:
-                                                                current_release_date = int(card["release_date"])
-                                                        except ValueError:
-                                                                current_release_date = 0
-                                                        try:
-                                                                print_in_cards_added_reprints_release_date = int(cards[cards_added_reprints[unique_name]]["release_date"])
-                                                        except ValueError:
-                                                                print_in_cards_added_reprints_release_date = 0
-                                                        
-                                                        if current_release_date > print_in_cards_added_reprints_release_date:
-                                                                # current print is more recent
-                                                                del(cards[cards_added_reprints[unique_name]])
+                                                                cards_added_reprints[unique_name]
+                                                        except KeyError:
+                                                                # first print of this card
                                                                 cards_added_reprints[unique_name] = card["id_"]
                                                         else:
-                                                                # current print is older
-                                                                del(cards[card["id_"]])
+                                                                # it's not the first print of this card
+                                                                try:
+                                                                        current_release_date = int(card["release_date"])
+                                                                except ValueError:
+                                                                        current_release_date = 0
+                                                                try:
+                                                                        print_in_cards_added_reprints_release_date = int(cards[cards_added_reprints[unique_name]]["release_date"])
+                                                                except ValueError:
+                                                                        print_in_cards_added_reprints_release_date = 0
+                                                                
+                                                                if current_release_date > print_in_cards_added_reprints_release_date:
+                                                                        # current print is more recent
+                                                                        del(cards[cards_added_reprints[unique_name]])
+                                                                        cards_added_reprints[unique_name] = card["id_"]
+                                                                else:
+                                                                        # current print is older
+                                                                        del(cards[card["id_"]])
                         
                         nb_lines_added = 0
                         
