@@ -223,6 +223,9 @@ def edition_code_to_longname(code):
         else:
                 return(defs.DICT_EDITIONS[code][1])
 
+def edition_release_date(code):
+        return(defs.DICT_EDITIONS[code][2])
+
 def open_link_in_browser(widget, url, popover):
         if popover != None:
                 popover.hide()
@@ -281,7 +284,7 @@ def gen_dict_editions():
         use_french_name = functions.config.read_config("ext_fr_name")
                 
         conn, c = functions.db.connect_db()
-        c.execute("""SELECT code, name, name_french FROM editions""")
+        c.execute("""SELECT code, name, name_french, releasedate FROM editions""")
         reponses = c.fetchall()
         functions.db.disconnect_db(conn)
         for info_edition in reponses:
@@ -289,7 +292,7 @@ def gen_dict_editions():
                 if use_french_name == "1":
                         if info_edition[2] != "":
                                 nom_fr_ou_en = info_edition[2]
-                defs.DICT_EDITIONS[info_edition[0]] = [nom_fr_ou_en, info_edition[1]]
+                defs.DICT_EDITIONS[info_edition[0]] = [nom_fr_ou_en, info_edition[1], info_edition[3]]
 
 def prepare_cards_data_for_treeview(cards):
         # we check if we must retrieve foreign names for flip / split cards
@@ -429,6 +432,7 @@ def prepare_cards_data_for_treeview(cards):
                 dict_card["name"] = name
                 dict_card["edition_ln"] = edition_ln
                 dict_card["edition_code"] = edition_code
+                dict_card["release_date"] = edition_release_date(edition_code).replace("-", "")
                 dict_card["nameforeign"] = nameforeign
                 dict_card["colors"] = colors
                 dict_card["pix_colors"] = pix_colors

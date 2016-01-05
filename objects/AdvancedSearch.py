@@ -318,7 +318,6 @@ class AdvancedSearch:
                         store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, str, str, str, str, str, str, int, Pango.Style)
                         GLib.idle_add(_start, self, store_results, scrolledwindow)
                         cards_added = []
-                        cards_added_reprints = []
                         
                         cards = functions.various.prepare_cards_data_for_treeview(reponses)
                         
@@ -329,6 +328,37 @@ class AdvancedSearch:
                         functions.collection.disconnect_db(conn)
                         
                         no_reprints = functions.config.read_config("no_reprints")
+                        # if the user doesn't want reprints, we delete every reprint but the most recent
+                        if no_reprints == "1":
+                                if type_s != "edition":
+                                        cards_added_reprints = {}
+                                        #cards2 = dict(cards)
+                                        
+                                        for card in dict(cards).values():
+                                                unique_name = card["name"] + "-" + card["type_"] + "-" + card["text"] + "-" + card["power"] + "-" + card["toughness"] + "-" + card["colors"]
+                                                try:
+                                                        cards_added_reprints[unique_name]
+                                                except KeyError:
+                                                        # first print of this card
+                                                        cards_added_reprints[unique_name] = card["id_"]
+                                                else:
+                                                        # it's not the first print of this card
+                                                        try:
+                                                                current_release_date = int(card["release_date"])
+                                                        except ValueError:
+                                                                current_release_date = 0
+                                                        try:
+                                                                print_in_cards_added_reprints_release_date = int(cards[cards_added_reprints[unique_name]]["release_date"])
+                                                        except ValueError:
+                                                                print_in_cards_added_reprints_release_date = 0
+                                                        
+                                                        if current_release_date > print_in_cards_added_reprints_release_date:
+                                                                # current print is more recent
+                                                                del(cards[cards_added_reprints[unique_name]])
+                                                                cards_added_reprints[unique_name] = card["id_"]
+                                                        else:
+                                                                # current print is older
+                                                                del(cards[card["id_"]])
                         
                         nb_lines_added = 0
                         
@@ -354,17 +384,9 @@ class AdvancedSearch:
                                 if card["name"] + "-" + card["edition_ln"] in cards_added:
                                         add = False
                                 
-                                if no_reprints == "1":
-                                        if type_s != "edition":
-                                                if card["nb_variant"] != "" or card["name"] + "-" + card["type_"] + "-" + card["text"] + "-" + card["power"] + "-" + card["toughness"] + "-" + card["colors"] in cards_added_reprints:
-                                                        add = False
-                                
                                 if add:
                                         nb_lines_added += 1
                                         GLib.idle_add(insert_data, store_results, cards_added, card, bold, italic)
-                                        if no_reprints == "1":
-                                                cards_added_reprints.append(card["name"] + "-" + card["type_"] + "-" + card["text"] + "-" + card["power"] + "-" + card["toughness"] + "-" + card["colors"])
-                                        functions.various.force_update_gui(0)
                         
                         GLib.idle_add(_end, store_results, wait_button)
                         
