@@ -41,13 +41,13 @@ def check_internet():
         '''Checks if we have access to the internet.'''
         try:
                 urllib.request.urlopen("http://perdu.com", timeout=2)
-                return True
+                return(True)
         except (urllib.error.HTTPError, urllib.request.URLError, timeout):
                 try:
                         urllib.request.urlopen("http://www.google.com", timeout=2)
-                        return True
+                        return(True)
                 except (urllib.error.HTTPError, urllib.request.URLError, timeout):
-                        return False
+                        return(False)
 
 def download_symbols():
         '''Downloads the symbols' editions'''
@@ -242,6 +242,9 @@ def check_card_pic(code, name):
 def py_int(text):
         if text.isnumeric():
                 return(int(text))
+
+def py_remove_hyphen(text):
+        return(text.replace("-", ""))
 
 def py_lower(text):
         return(text.lower())
@@ -658,6 +661,38 @@ def create_window_search_name(request_response, current_object_view):
         cards = prepare_cards_data_for_treeview(request_response)
         
         no_reprints = functions.config.read_config("no_reprints")
+        # if the user doesn't want reprints, we delete every reprint but the most recent
+        if no_reprints == "1":
+                cards_added_reprints = {}
+                for card in dict(cards).values():
+                        # if nb_variant is not empty, this card is a reprint, we can delete it safety
+                        if card["nb_variant"] != "":
+                                del(cards[card["id_"]])
+                        else:
+                                unique_name = card["name"] + "-" + card["type_"] + "-" + card["text"] + "-" + card["power"] + "-" + card["toughness"] + "-" + card["colors"]
+                                try:
+                                        cards_added_reprints[unique_name]
+                                except KeyError:
+                                        # first print of this card
+                                        cards_added_reprints[unique_name] = card["id_"]
+                                else:
+                                        # it's not the first print of this card
+                                        try:
+                                                current_release_date = int(card["release_date"])
+                                        except ValueError:
+                                                current_release_date = 0
+                                        try:
+                                                print_in_cards_added_reprints_release_date = int(cards[cards_added_reprints[unique_name]]["release_date"])
+                                        except ValueError:
+                                                print_in_cards_added_reprints_release_date = 0
+                                        
+                                        if current_release_date > print_in_cards_added_reprints_release_date:
+                                                # current print is more recent
+                                                del(cards[cards_added_reprints[unique_name]])
+                                                cards_added_reprints[unique_name] = card["id_"]
+                                        else:
+                                                # current print is older
+                                                del(cards[card["id_"]])
         
         # we get a list of ids of cards in the collection
         conn, c = functions.collection.connect_db()
@@ -679,15 +714,9 @@ def create_window_search_name(request_response, current_object_view):
                 if card["name"] + "-" + card["edition_ln"] in cards_added:
                         add = False
                 
-                if no_reprints == "1":
-                        if card["nb_variant"] != "" or card["name"] + "-" + card["type_"] + "-" + card["text"] + "-" + card["power"] + "-" + card["toughness"] + "-" + card["colors"] in cards_added_reprints:
-                                add = False
-                
                 if add:
                         store_results.insert_with_valuesv(-1, range(14), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic])
                         cards_added.append(card["name"] + "-" + card["edition_ln"])
-                        if no_reprints == "1":
-                                cards_added_reprints.append(card["name"] + "-" + card["type_"] + "-" + card["text"] + "-" + card["power"] + "-" + card["toughness"] + "-" + card["colors"])
                         nb += 1
         
         store_results.set_sort_column_id(7, Gtk.SortType.ASCENDING)
@@ -765,3 +794,31 @@ def gen_details_widgets():
         grid_details.attach_next_to(scrolledwindow, label_add_comment, Gtk.PositionType.BOTTOM, 4, 1)
         
         return(grid_details, label_add_condition, comboboxtext_condition, label_add_lang, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, label_add_comment, scrolledwindow, textview)
+
+def lock_db(lock_coll, lock_cards):
+        '''This function locks the database of the collection and/or the database of cards.
+        'lock_coll' and 'lock_cards' can be: True (we lock the db), False (we unlock the db), None (we do nothing).'''
+        if lock_cards == True:
+                defs.AS_LOCK = True
+        elif lock_cards == False:
+                defs.AS_LOCK = False
+        
+        if lock_coll == True:
+                defs.COLL_LOCK = True
+        elif lock_coll == False:
+                defs.COLL_LOCK = False
+                if defs.BUTTON_COLL_LOCK != None:
+                        GLib.idle_add(defs.BUTTON_COLL_LOCK.set_label, defs.STRINGS["add_button_validate"])
+                        GLib.idle_add(defs.BUTTON_COLL_LOCK.set_sensitive, True)
+        
+        if defs.AS_LOCK == True or defs.COLL_LOCK == True:
+                try:
+                        GLib.idle_add(defs.MAINWINDOW.collection.button_search.set_label, defs.STRINGS["coll_button_search_wait"])
+                except AttributeError:
+                        pass
+        
+        if defs.AS_LOCK == False and defs.COLL_LOCK == False:
+                try:
+                        GLib.idle_add(defs.MAINWINDOW.collection.button_search.set_label, defs.STRINGS["search_coll"])
+                except AttributeError:
+                        pass

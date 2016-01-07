@@ -156,7 +156,15 @@ SEARCH_ITEMS = {
 9:["loyalty", STRINGS["loyalty_ad"]],
 10:["text", STRINGS["text_ad"]],
 11:["artist", STRINGS["artist_ad"]],
-12:["flavor", STRINGS["flavor_ad"]]
+12:["flavor", STRINGS["flavor_ad"]],
+13:["condition", STRINGS["condition_coll"]],
+14:["lang", STRINGS["lang_coll"]],
+15:["foil", STRINGS["foil_coll"]],
+16:["loaned", STRINGS["loaned_coll"]],
+17:["comment", STRINGS["comment_coll"]],
+18:["date", STRINGS["date_coll"]],
+19:["in_deck", STRINGS["in_deck"]],
+20:["quantity_card", STRINGS["quantity_card_coll"]]
 }
 
 CONDITIONS = {

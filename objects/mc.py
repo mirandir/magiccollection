@@ -161,7 +161,7 @@ class MC_Window(Gtk.ApplicationWindow):
                                 main_stack.set_visible_child_name("advancedsearch")
                                 self.advancedsearch.entry1.emit("activate")
                         else:
-                                request = functions.db.prepare_request([[search_entry, defs.STRINGS["name_ad"]]], None)
+                                request = functions.db.prepare_request([[search_entry, defs.STRINGS["name_ad"]]], "db")[0]
                                 if request != None:
                                         spinner = Gtk.Spinner()
                                         spinner.show()

@@ -41,6 +41,8 @@ class Collection:
                 self.mainstore = None
                 self.mainselect = None
                 
+                self.searchstore = None
+                
                 self.mainbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=1)
                 self.mainbox.set_margin_top(5)
                 self.mainbox.set_margin_bottom(5)
@@ -51,10 +53,13 @@ class Collection:
                 
                 self.card_viewer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
                 separator = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+                self.overlay_right_content = Gtk.Overlay()
                 self.right_content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+                
+                self.overlay_right_content.add(self.right_content)
                 self.mainbox.pack_start(self.card_viewer, False, False, 0)
                 self.mainbox.pack_start(separator, False, False, 0)
-                self.mainbox.pack_start(self.right_content, True, True, 0)
+                self.mainbox.pack_start(self.overlay_right_content, True, True, 0)
                 
                 if os.path.isfile(os.path.join(defs.HOMEMC, "collection.sqlite")) == False:
                         # we create the collection db
@@ -81,15 +86,14 @@ class Collection:
                         except AttributeError:
                                 pass
                         
-                        po = 0
-                        for nb_row in rows_to_select:
+                        for po, nb_row in enumerate(rows_to_select):
                                 if po == 0:
                                         self.tree_coll.set_cursor(nb_row)
-                                self.select.select_path(nb_row) # FIXME: this freezes GTK when selecting rows, why ??
-                                po += 1
+                                self.select.select_path(nb_row) # FIXME: this freezes GTK after selecting rows, why ??
                 
                 try:
-                        GLib.idle_add(self.select.unselect_all)
+                        if self.tree_coll.get_model() == self.mainstore:
+                                GLib.idle_add(self.select.unselect_all)
                 except AttributeError:
                         pass
                 
@@ -144,7 +148,8 @@ class Collection:
                                                 cards_data_for_update_store_as.append([card["name"], card["edition_ln"]])
                                 else:
                                         try:
-                                                GLib.idle_add(self.label_nb_card_coll.set_text, defs.STRINGS["nb_card_coll_s"].replace("%%%", "--"))
+                                                if self.tree_coll.get_model() == self.mainstore:
+                                                        GLib.idle_add(self.label_nb_card_coll.set_text, defs.STRINGS["nb_card_coll_s"].replace("%%%", "--"))
                                         except:
                                                 pass
                                         for row in self.mainstore:
@@ -172,28 +177,26 @@ class Collection:
                 if cards_data_for_update_store_as != []:
                         GLib.idle_add(defs.MAINWINDOW.advancedsearch.update_current_store_bold, cards_data_for_update_store_as)
                 
-                # we count the number of cards in the collection
-                conn_coll.commit()
-                c_coll.execute("""SELECT COUNT(*) FROM collection""")
-                count_nb = c_coll.fetchone()[0]
-                if count_nb == 1:
-                        GLib.idle_add(self.label_nb_card_coll.set_text, defs.STRINGS["nb_card_coll"].replace("%%%", str(count_nb)))
-                else:
-                        GLib.idle_add(self.label_nb_card_coll.set_text, defs.STRINGS["nb_card_coll_s"].replace("%%%", str(count_nb)))
-                
-                # we select the rows of added cards, and set the cursor on the first
-                rows_to_select = []
-                for nb_row, row in enumerate(self.mainstore):
-                        for new_card in cards_list:
-                                if new_card[0] == row[0]:
-                                        rows_to_select.append(nb_row)
-                GLib.idle_add(select_rows, rows_to_select)
+                if self.tree_coll.get_model() == self.mainstore:
+                        # we count the number of cards in the collection
+                        conn_coll.commit()
+                        c_coll.execute("""SELECT COUNT(*) FROM collection""")
+                        count_nb = c_coll.fetchone()[0]
+                        if count_nb == 1:
+                                GLib.idle_add(self.label_nb_card_coll.set_text, defs.STRINGS["nb_card_coll"].replace("%%%", str(count_nb)))
+                        else:
+                                GLib.idle_add(self.label_nb_card_coll.set_text, defs.STRINGS["nb_card_coll_s"].replace("%%%", str(count_nb)))
+                        
+                        # we select the rows of added cards, and set the cursor on the first
+                        rows_to_select = []
+                        for nb_row, row in enumerate(self.mainstore):
+                                for new_card in cards_list:
+                                        if new_card[0] == row[0]:
+                                                rows_to_select.append(nb_row)
+                        GLib.idle_add(select_rows, rows_to_select)
                 
                 functions.collection.disconnect_db(conn_coll)
-                defs.COLL_LOCK = False
-                if defs.BUTTON_COLL_LOCK != None:
-                        GLib.idle_add(defs.BUTTON_COLL_LOCK.set_label, defs.STRINGS["add_button_validate"])
-                        GLib.idle_add(defs.BUTTON_COLL_LOCK.set_sensitive, True)
+                functions.various.lock_db(False, None)
                 
                 if spinner_labels != None:
                         GLib.idle_add(spinner_labels.destroy)

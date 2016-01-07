@@ -134,7 +134,8 @@ class AdvancedSearch:
                 comboboxtext4 = Gtk.ComboBoxText()
                 for comboboxtext in [comboboxtext1, comboboxtext2, comboboxtext3, comboboxtext4]:
                         for i in range(len(defs.SEARCH_ITEMS)):
-                                comboboxtext.append(defs.SEARCH_ITEMS[i][0], defs.SEARCH_ITEMS[i][1])
+                                if i < 13:
+                                        comboboxtext.append(defs.SEARCH_ITEMS[i][0], defs.SEARCH_ITEMS[i][1])
                 
                 entry1 = Gtk.Entry()
                 self.entry1 = entry1
@@ -407,18 +408,14 @@ class AdvancedSearch:
                         GLib.idle_add(scrolledwindow.show_all)
                 else:
                         GLib.idle_add(_no_result, self, wait_button)
-                defs.AS_LOCK = False
+                functions.various.lock_db(None, False)
         
         def prepare_request(self, widget, search_widgets_list, overlay_right_content_bot):
                 '''Prepares the request to the database'''
                 if defs.AS_LOCK == False:
-                        try:
-                                g_op = self.g_operator.get_text()
-                        except:
-                                g_op = None
-                        request = functions.db.prepare_request(search_widgets_list, g_op)
+                        request = functions.db.prepare_request(search_widgets_list, "db")[0]
                         if request != None:
-                                defs.AS_LOCK = True
+                                functions.various.lock_db(None, True)
                                 GLib.idle_add(self.icon_edition.hide)
                                 GLib.idle_add(self.empty_box_results)
                                 
@@ -458,7 +455,7 @@ class AdvancedSearch:
                 if defs.AS_LOCK == False:
                         model, treeiter = selection.get_selected()
                         if treeiter != None:
-                                defs.AS_LOCK = True
+                                functions.various.lock_db(None, True)
                                 ed_name = model[treeiter][0].replace('"', '""')
                                 conn, c = functions.db.connect_db()
                                 c.execute("""SELECT code FROM editions WHERE name = \"""" + ed_name + """\" OR name_french = \"""" + ed_name + """\"""")
@@ -545,11 +542,16 @@ class AdvancedSearch:
                         if infosearch[1] == comboboxtext.get_active_text():
                                 search = infosearch[0]
                                 break
-                if search == "cmc" or search == "power" or search == "toughness" or search == "loyalty":
+                if search == "cmc" or search == "power" or search == "toughness" or search == "loyalty" or search == "date" or search == "quantity_card" or search == "date":
                         entry.set_icon_from_gicon(Gtk.EntryIconPosition.PRIMARY, Gio.ThemedIcon(name="equal-symbolic"))
                         entry.set_icon_tooltip_text(Gtk.EntryIconPosition.PRIMARY, defs.STRINGS["entry_eq_ad"])
                 else:
                         entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.PRIMARY, None)
+                
+                if search == "date":
+                        entry.set_placeholder_text(defs.STRINGS["placeholder_date"])
+                else:
+                        entry.set_placeholder_text("")
                 
         def gen_list_editions(self):
                 self.store_editions.clear()

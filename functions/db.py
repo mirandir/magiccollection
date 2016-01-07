@@ -40,6 +40,7 @@ def connect_db():
                 conn.create_function('py_lara', 1, functions.various.py_lara)
                 conn.create_function('py_int', 1, functions.various.py_int)
                 conn.create_function('py_lower', 1, functions.various.py_lower)
+                conn.create_function('py_remove_hyphen', 1, functions.various.py_remove_hyphen)
                 c = conn.cursor()
                 return(conn, c)
         else:
@@ -50,13 +51,18 @@ def disconnect_db(conn):
         conn.commit()
         conn.close()
 
-def prepare_request(search_widgets_list, g_op):
-        '''Prepares the request to the database'''
+def prepare_request(search_widgets_list, type_request):
+        '''Prepares the request to the database. 'type_request' is "coll" or "db".'''
         py_lara = functions.various.py_lara
         
-        request = "SELECT * FROM cards WHERE"
+        if type_request == "db":
+                request = "SELECT * FROM cards WHERE"
+        elif type_request == "coll":
+                request = "SELECT * FROM cards, db_coll.collection AS coll WHERE cards.id = coll.id_card AND"
+        
         where_requests = []
-        go = 0
+        go = 1
+        quantity_card_req = None
         
         for elm in search_widgets_list:
                 entry = elm[0]
@@ -68,7 +74,6 @@ def prepare_request(search_widgets_list, g_op):
                 # needed for SQLite
                 text = entry.get_text().replace('"', '')
                 if text != "" and text != "!" and text != ":" + defs.STRINGS["operator_or"] + ":" and text != ":" + defs.STRINGS["operator_and"] + ":":
-                        go = 1
                         search_type = ""
                         for infosearch in defs.SEARCH_ITEMS.values():
                                 if infosearch[1] == comboboxtext:
@@ -118,14 +123,14 @@ def prepare_request(search_widgets_list, g_op):
                                                 for ed_code in list_codes:
                                                         if nb_args == 0:
                                                                 if negate == 0:
-                                                                        tmp_request = """(edition = '""" + ed_code + """')"""
+                                                                        tmp_request = """(cards.edition = '""" + ed_code + """')"""
                                                                 else:
-                                                                        tmp_request = """(edition != '""" + ed_code + """')"""
+                                                                        tmp_request = """(cards.edition != '""" + ed_code + """')"""
                                                         else:
                                                                 if negate == 0:
-                                                                        tmp_request = tmp_request + """ OR (edition = '""" + ed_code + """')"""
+                                                                        tmp_request = tmp_request + """ OR (cards.edition = '""" + ed_code + """')"""
                                                                 else:
-                                                                        tmp_request = tmp_request + """ AND (edition != '""" + ed_code + """')"""
+                                                                        tmp_request = tmp_request + """ AND (cards.edition != '""" + ed_code + """')"""
                                                         nb_args += 1
                                                 
                                                 if tmp_enum_req == "":
@@ -133,7 +138,7 @@ def prepare_request(search_widgets_list, g_op):
                                                 else:
                                                         tmp_enum_req = tmp_enum_req + " " + operator + " (" + tmp_request + ")"
                                         else:
-                                                tmp_request = """edition = '""" + text + """'"""
+                                                tmp_request = """cards.edition = '""" + text + """'"""
                                                 if tmp_enum_req == "":
                                                         tmp_enum_req = "(" + tmp_request + ")"
                                                 else:
@@ -155,9 +160,9 @@ def prepare_request(search_widgets_list, g_op):
                                                 text_to_find = "special"
                                         
                                         if negate == 0:
-                                                tmp_request = """py_lower(rarity) = \"""" + text_to_find + """\""""
+                                                tmp_request = """py_lower(cards.rarity) = \"""" + text_to_find + """\""""
                                         else:
-                                                tmp_request = """py_lower(rarity) != \"""" + text_to_find + """\""""
+                                                tmp_request = """py_lower(cards.rarity) != \"""" + text_to_find + """\""""
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         else:
@@ -167,14 +172,14 @@ def prepare_request(search_widgets_list, g_op):
                                         text_to_find = text.strip().lower()
                                         if text_to_find == "":
                                                 if negate == 0:
-                                                        tmp_request = """flavor = \"\""""
+                                                        tmp_request = """cards.flavor = \"\""""
                                                 else:
-                                                        tmp_request = """flavor != \"\""""
+                                                        tmp_request = """cards.flavor != \"\""""
                                         else:
                                                 if negate == 0:
-                                                        tmp_request = """py_lower(flavor) LIKE \"%""" + text_to_find + """%\""""
+                                                        tmp_request = """py_lower(cards.flavor) LIKE \"%""" + text_to_find + """%\""""
                                                 else:
-                                                        tmp_request = """py_lower(flavor) NOT LIKE \"%""" + text_to_find + """%\""""
+                                                        tmp_request = """py_lower(cards.flavor) NOT LIKE \"%""" + text_to_find + """%\""""
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         else:
@@ -183,9 +188,9 @@ def prepare_request(search_widgets_list, g_op):
                                 elif search_type == "artist":
                                         text_to_find = text.strip().lower()
                                         if negate == 0:
-                                                tmp_request = """py_lower(artist) LIKE \"%""" + text_to_find + """%\""""
+                                                tmp_request = """py_lower(cards.artist) LIKE \"%""" + text_to_find + """%\""""
                                         else:
-                                                tmp_request = """py_lower(artist) NOT LIKE \"%""" + text_to_find + """%\""""
+                                                tmp_request = """py_lower(cards.artist) NOT LIKE \"%""" + text_to_find + """%\""""
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         else:
@@ -195,14 +200,14 @@ def prepare_request(search_widgets_list, g_op):
                                         text_to_find = text.strip().lower()
                                         if text_to_find == "":
                                                 if negate == 0:
-                                                        tmp_request = """text = \"\""""
+                                                        tmp_request = """cards.text = \"\""""
                                                 else:
-                                                        tmp_request = """text != \"\""""
+                                                        tmp_request = """cards.text != \"\""""
                                         else:
                                                 if negate == 0:
-                                                        tmp_request = """py_lower(text) LIKE \"%""" + text_to_find + """%\""""
+                                                        tmp_request = """py_lower(cards.text) LIKE \"%""" + text_to_find + """%\""""
                                                 else:
-                                                        tmp_request = """py_lower(text) NOT LIKE \"%""" + text_to_find + """%\""""
+                                                        tmp_request = """py_lower(cards.text) NOT LIKE \"%""" + text_to_find + """%\""""
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         else:
@@ -220,7 +225,7 @@ def prepare_request(search_widgets_list, g_op):
                                                         math_operator = ">="
                                                 elif tooltip_text == defs.STRINGS["entry_diff"]:
                                                         math_operator = "!="
-                                                tmp_request = """py_int(loyalty) """ + math_operator + """ """ + text_to_find
+                                                tmp_request = """py_int(cards.loyalty) """ + math_operator + """ """ + text_to_find
                                                 if tmp_enum_req == "":
                                                         tmp_enum_req = "(" + tmp_request + ")"
                                                 else:
@@ -241,7 +246,7 @@ def prepare_request(search_widgets_list, g_op):
                                                         math_operator = ">="
                                                 elif tooltip_text == defs.STRINGS["entry_diff"]:
                                                         math_operator = "!="
-                                                tmp_request = """py_int(toughness) """ + math_operator + """ """ + text_to_find
+                                                tmp_request = """py_int(cards.toughness) """ + math_operator + """ """ + text_to_find
                                                 if tmp_enum_req == "":
                                                         tmp_enum_req = "(" + tmp_request + ")"
                                                 else:
@@ -262,7 +267,7 @@ def prepare_request(search_widgets_list, g_op):
                                                         math_operator = ">="
                                                 elif tooltip_text == defs.STRINGS["entry_diff"]:
                                                         math_operator = "!="
-                                                tmp_request = """py_int(power) """ + math_operator + """ """ + text_to_find
+                                                tmp_request = """py_int(cards.power) """ + math_operator + """ """ + text_to_find
                                                 if tmp_enum_req == "":
                                                         tmp_enum_req = "(" + tmp_request + ")"
                                                 else:
@@ -283,7 +288,7 @@ def prepare_request(search_widgets_list, g_op):
                                                         math_operator = ">="
                                                 elif tooltip_text == defs.STRINGS["entry_diff"]:
                                                         math_operator = "!="
-                                                tmp_request = """py_int(cmc) """ + math_operator + """ """ + text_to_find
+                                                tmp_request = """py_int(cards.cmc) """ + math_operator + """ """ + text_to_find
                                                 if tmp_enum_req == "":
                                                         tmp_enum_req = "(" + tmp_request + ")"
                                                 else:
@@ -322,9 +327,9 @@ def prepare_request(search_widgets_list, g_op):
                                                 for cost in dict_manacost.values():
                                                         finalcost = finalcost + cost
                                         if negate == 0:
-                                                tmp_request = """manacost = \"""" + finalcost + """\""""
+                                                tmp_request = """cards.manacost = \"""" + finalcost + """\""""
                                         else:
-                                                tmp_request = """manacost != \"""" + finalcost + """\""""
+                                                tmp_request = """cards.manacost != \"""" + finalcost + """\""""
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         else:
@@ -346,22 +351,22 @@ def prepare_request(search_widgets_list, g_op):
                                                 text_to_find = ""
                                         if text_to_find == "":
                                                 if negate == 0:
-                                                        tmp_request = "colors = ''"
+                                                        tmp_request = "cards.colors = ''"
                                                 else:
-                                                        tmp_request = "colors != ''"
+                                                        tmp_request = "cards.colors != ''"
                                         else:
                                                 nb_args = 0
                                                 for color in text_to_find.upper():
                                                         if nb_args == 0:
                                                                 if negate == 0:
-                                                                        tmp_request = """(colors LIKE \"%""" + color + """%\")"""
+                                                                        tmp_request = """(cards.colors LIKE \"%""" + color + """%\")"""
                                                                 else:
-                                                                        tmp_request = """(colors NOT LIKE \"%""" + color + """%\")"""
+                                                                        tmp_request = """(cards.colors NOT LIKE \"%""" + color + """%\")"""
                                                         else:
                                                                 if negate == 0:
-                                                                        tmp_request = tmp_request + """ AND (colors LIKE \"%""" + color + """%\")"""
+                                                                        tmp_request = tmp_request + """ AND (cards.colors LIKE \"%""" + color + """%\")"""
                                                                 else:
-                                                                        tmp_request = tmp_request + """ AND (colors NOT LIKE \"%""" + color + """%\")"""
+                                                                        tmp_request = tmp_request + """ AND (cards.colors NOT LIKE \"%""" + color + """%\")"""
                                                         nb_args += 1
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
@@ -393,9 +398,9 @@ def prepare_request(search_widgets_list, g_op):
                                                 elif text_to_find == defs.STRINGS["counter"] or text_to_find == defs.STRINGS["counters"]:
                                                         text_to_find = "counter"
                                         if negate == 0:
-                                                tmp_request = """type LIKE \"%""" + text_to_find + """%\""""
+                                                tmp_request = """cards.type LIKE \"%""" + text_to_find + """%\""""
                                         else:
-                                                tmp_request = """type NOT LIKE \"%""" + text_to_find + """%\""""
+                                                tmp_request = """cards.type NOT LIKE \"%""" + text_to_find + """%\""""
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         else:
@@ -404,21 +409,21 @@ def prepare_request(search_widgets_list, g_op):
                                 elif search_type == "name":
                                         if text == "//":
                                                 if negate == 0:
-                                                        tmp_request = "layout = 'split'"
+                                                        tmp_request = "cards.layout = 'split'"
                                                 else:
-                                                        tmp_request = "layout != 'split'"
+                                                        tmp_request = "cards.layout != 'split'"
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         elif text == "<>":
                                                 if negate == 0:
-                                                        tmp_request = "layout = 'flip'"
+                                                        tmp_request = "cards.layout = 'flip'"
                                                 else:
-                                                        tmp_request = "layout != 'flip'"
+                                                        tmp_request = "cards.layout != 'flip'"
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         elif text == "||":
                                                 if negate == 0:
-                                                        tmp_request = "layout = 'double-faced'"
+                                                        tmp_request = "cards.layout = 'double-faced'"
                                                 else:
-                                                        tmp_request = "layout != 'double-faced'"
+                                                        tmp_request = "cards.layout != 'double-faced'"
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         else:
                                                 nb_args = 0
@@ -454,34 +459,196 @@ def prepare_request(search_widgets_list, g_op):
                                                 for word in list_text_to_find:
                                                         if nb_args == 0:
                                                                 if negate == 0:
-                                                                        tmp_request = """(py_lara(name || name_chinesetrad || name_chinesesimp || name_french || name_german || name_italian || name_japanese || name_korean || name_portuguesebrazil || name_portuguese || name_russian || name_spanish) LIKE \"%""" + word + """%\")"""
+                                                                        tmp_request = """(py_lara(cards.name || cards.name_chinesetrad || cards.name_chinesesimp || cards.name_french || cards.name_german || cards.name_italian || cards.name_japanese || cards.name_korean || cards.name_portuguesebrazil || cards.name_portuguese || cards.name_russian || cards.name_spanish) LIKE \"%""" + word + """%\")"""
                                                                 else:
-                                                                        tmp_request = """(py_lara(name || name_chinesetrad || name_chinesesimp || name_french || name_german || name_italian || name_japanese || name_korean || name_portuguesebrazil || name_portuguese || name_russian || name_spanish) NOT LIKE \"%""" + word + """%\")"""
+                                                                        tmp_request = """(py_lara(cards.name || cards.name_chinesetrad || cards.name_chinesesimp || cards.name_french || cards.name_german || cards.name_italian || cards.name_japanese || cards.name_korean || cards.name_portuguesebrazil || cards.name_portuguese || cards.name_russian || cards.name_spanish) NOT LIKE \"%""" + word + """%\")"""
                                                         else:
                                                                 if negate == 0:
-                                                                        tmp_request = tmp_request + """ AND (py_lara(name || name_chinesetrad || name_chinesesimp || name_french || name_german || name_italian || name_japanese || name_korean || name_portuguesebrazil || name_portuguese || name_russian || name_spanish) LIKE \"%""" + word + """%\")"""
+                                                                        tmp_request = tmp_request + """ AND (py_lara(cards.name || cards.name_chinesetrad || cards.name_chinesesimp || cards.name_french || cards.name_german || cards.name_italian || cards.name_japanese || cards.name_korean || cards.name_portuguesebrazil || cards.name_portuguese || cards.name_russian || cards.name_spanish) LIKE \"%""" + word + """%\")"""
                                                                 else:
-                                                                        tmp_request = tmp_request + """ AND (py_lara(name || name_chinesetrad || name_chinesesimp || name_french || name_german || name_italian || name_japanese || name_korean || name_portuguesebrazil || name_portuguese || name_russian || name_spanish) NOT LIKE \"%""" + word + """%\")"""
+                                                                        tmp_request = tmp_request + """ AND (py_lara(cards.name || cards.name_chinesetrad || cards.name_chinesesimp || cards.name_french || cards.name_german || cards.name_italian || cards.name_japanese || cards.name_korean || cards.name_portuguesebrazil || cards.name_portuguese || cards.name_russian || cards.name_spanish) NOT LIKE \"%""" + word + """%\")"""
                                                         nb_args += 1
                                                 if tmp_enum_req == "":
                                                         tmp_enum_req = "(" + tmp_request + ")"
                                                 else:
                                                         tmp_enum_req = tmp_enum_req + " " + operator + " (" + tmp_request + ")"
-                        where_requests.append(tmp_enum_req)
+                                # next search_types are for the collection
+                                elif search_type == "condition":
+                                        text_to_find = py_lara(text)
+                                        if text_to_find == "":
+                                                if negate == 0:
+                                                        tmp_request = """coll.condition = \"\""""
+                                                else:
+                                                        tmp_request = """coll.condition != \"\""""
+                                        else:
+                                                if text_to_find == py_lara(defs.STRINGS["condition_mint"]):
+                                                        text_to_find = "mint"
+                                                elif text_to_find == py_lara(defs.STRINGS["condition_near_mint"]):
+                                                        text_to_find = "near_mint"
+                                                elif text_to_find == py_lara(defs.STRINGS["condition_excellent"]):
+                                                        text_to_find = "excellent"
+                                                elif text_to_find == py_lara(defs.STRINGS["condition_played"]):
+                                                        text_to_find = "played"
+                                                elif text_to_find == py_lara(defs.STRINGS["condition_poor"]):
+                                                        text_to_find = "poor"
+                                                
+                                                if negate == 0:
+                                                        tmp_request = """coll.condition = \"""" + text_to_find + """\""""
+                                                else:
+                                                        tmp_request = """coll.condition != \"""" + text_to_find + """\""""
+                                        
+                                        if tmp_enum_req == "":
+                                                tmp_enum_req = "(" + tmp_request + ")"
+                                        else:
+                                                tmp_enum_req = tmp_enum_req + " " + operator + " (" + tmp_request + ")"
+                                
+                                elif search_type == "lang":
+                                        text_to_find = py_lara(text)
+                                        if text_to_find == "":
+                                                if negate == 0:
+                                                        tmp_request = """coll.lang = \"\""""
+                                                else:
+                                                        tmp_request = """coll.lang != \"\""""
+                                        else:
+                                                if negate == 0:
+                                                        tmp_request = """py_lara(coll.lang) LIKE \"%""" + text_to_find + """%\""""
+                                                else:
+                                                        tmp_request = """py_lara(coll.lang) NOT LIKE \"%""" + text_to_find + """%\""""
+                                        if tmp_enum_req == "":
+                                                tmp_enum_req = "(" + tmp_request + ")"
+                                        else:
+                                                tmp_enum_req = tmp_enum_req + " " + operator + " (" + tmp_request + ")"
+                                
+                                elif search_type == "foil":
+                                        text_to_find = py_lara(text)
+                                        if text_to_find in ["0", "1", defs.STRINGS["foil_yes"], defs.STRINGS["foil_no"]]:
+                                                if text_to_find == defs.STRINGS["foil_no"] or text_to_find =="0":
+                                                        text_to_find = ""
+                                                if text_to_find == defs.STRINGS["foil_yes"]:
+                                                        text_to_find = "1"
+                                                if negate == 0:
+                                                        tmp_request = """coll.foil = \"""" + text_to_find + """\""""
+                                                else:
+                                                        tmp_request = """coll.foil != \"""" + text_to_find + """\""""
+                                                if tmp_enum_req == "":
+                                                        tmp_enum_req = "(" + tmp_request + ")"
+                                                else:
+                                                        tmp_enum_req = tmp_enum_req + " " + operator + " (" + tmp_request + ")"
+                                        else:
+                                                functions.various.message_dialog(defs.STRINGS["foil_only_yesno"], 0)
+                                                go = 0
+                                
+                                elif search_type == "loaned":
+                                        text_to_find = py_lara(text)
+                                        if text_to_find == "":
+                                                if negate == 0:
+                                                        tmp_request = """coll.loaned_to = \"\""""
+                                                else:
+                                                        tmp_request = """coll.loaned_to != \"\""""
+                                        else:
+                                                if negate == 0:
+                                                        tmp_request = """py_lara(coll.loaned_to) LIKE \"%""" + text_to_find + """%\""""
+                                                else:
+                                                        tmp_request = """py_lara(coll.loaned_to) NOT LIKE \"%""" + text_to_find + """%\""""
+                                        if tmp_enum_req == "":
+                                                tmp_enum_req = "(" + tmp_request + ")"
+                                        else:
+                                                tmp_enum_req = tmp_enum_req + " " + operator + " (" + tmp_request + ")"
+                                
+                                elif search_type == "comment":
+                                        text_to_find = py_lara(text)
+                                        if text_to_find == "":
+                                                if negate == 0:
+                                                        tmp_request = """coll.comment = \"\""""
+                                                else:
+                                                        tmp_request = """coll.comment != \"\""""
+                                        else:
+                                                if negate == 0:
+                                                        tmp_request = """py_lara(coll.comment) LIKE \"%""" + text_to_find + """%\""""
+                                                else:
+                                                        tmp_request = """py_lara(coll.comment) NOT LIKE \"%""" + text_to_find + """%\""""
+                                        if tmp_enum_req == "":
+                                                tmp_enum_req = "(" + tmp_request + ")"
+                                        else:
+                                                tmp_enum_req = tmp_enum_req + " " + operator + " (" + tmp_request + ")"
+                                
+                                elif search_type == "date":
+                                        text = text.strip()
+                                        text_to_find = text.replace("-", "")
+                                        if len(text) == 10 and text[4] == "-" and text[7] == "-" and text_to_find.isnumeric() == True:
+                                                tooltip_text = entry.get_icon_tooltip_text(Gtk.EntryIconPosition.PRIMARY)
+                                                if tooltip_text == defs.STRINGS["entry_eq_ad"]:
+                                                        math_operator = "="
+                                                elif tooltip_text == defs.STRINGS["entry_inf_eq_ad"]:
+                                                        math_operator = "<="
+                                                elif tooltip_text == defs.STRINGS["entry_sup_eq_ad"]:
+                                                        math_operator = ">="
+                                                elif tooltip_text == defs.STRINGS["entry_diff"]:
+                                                        math_operator = "!="
+                                                tmp_request = """py_int(py_remove_hyphen(coll.date)) """ + math_operator + """ """ + text_to_find
+                                                if tmp_enum_req == "":
+                                                        tmp_enum_req = "(" + tmp_request + ")"
+                                                else:
+                                                        tmp_enum_req = tmp_enum_req + " " + operator + " (" + tmp_request + ")"
+                                        else:
+                                                functions.various.message_dialog(defs.STRINGS["date_format"], 0)
+                                                go = 0
+                                
+                                elif search_type == "in_deck":
+                                        text_to_find = py_lara(text)
+                                        if text_to_find == "":
+                                                if negate == 0:
+                                                        tmp_request = """coll.deck = \"\""""
+                                                else:
+                                                        tmp_request = """coll.deck != \"\""""
+                                        else:
+                                                if negate == 0:
+                                                        tmp_request = """py_lara(coll.deck) LIKE \"%""" + text_to_find + """%\""""
+                                                else:
+                                                        tmp_request = """py_lara(coll.deck) NOT LIKE \"%""" + text_to_find + """%\""""
+                                        if tmp_enum_req == "":
+                                                tmp_enum_req = "(" + tmp_request + ")"
+                                        else:
+                                                tmp_enum_req = tmp_enum_req + " " + operator + " (" + tmp_request + ")"
+                                
+                                elif search_type == "quantity_card":
+                                        text_to_find = py_lara(text).strip()
+                                        if text_to_find.isnumeric():
+                                                tooltip_text = entry.get_icon_tooltip_text(Gtk.EntryIconPosition.PRIMARY)
+                                                if tooltip_text == defs.STRINGS["entry_eq_ad"]:
+                                                        math_operator = "="
+                                                elif tooltip_text == defs.STRINGS["entry_inf_eq_ad"]:
+                                                        math_operator = "<="
+                                                elif tooltip_text == defs.STRINGS["entry_sup_eq_ad"]:
+                                                        math_operator = ">="
+                                                elif tooltip_text == defs.STRINGS["entry_diff"]:
+                                                        math_operator = "!="
+                                                quantity_card_req = """HAVING COUNT(coll.id_card) """ + math_operator + """ """ + text_to_find
+                                        else:
+                                                functions.various.message_dialog(defs.STRINGS["quantity_card_coll_only_number"], 0)
+                                                go = 0
+                                
+                        if tmp_enum_req != "":
+                                where_requests.append(tmp_enum_req)
         
-        if go == 1 and len(where_requests) > 0:              
-                i = 0
-                for tmp_request in where_requests:
-                        if i == 0:
-                                request = request + " (" + tmp_request + ")"
+        if go == 1:              
+                if ((len(where_requests) > 0) or (len(where_requests) == 0 and quantity_card_req != None)):
+                        if len(where_requests) > 0:
+                                i = 0
+                                for tmp_request in where_requests:
+                                        if i == 0:
+                                                request = request + " (" + tmp_request + ")"
+                                        else:
+                                                request = request + " AND (" + tmp_request + ")"
+                                        i += 1
                         else:
-                                request = request + " AND (" + tmp_request + ")"
-                        i += 1
-                
-                #print(request)
-                return(request)
+                                request = request[:-4]
+                        #print(request)
+                        return([request, quantity_card_req])
+                else:
+                        return([None, None])
         else:
-                return(None)
+                return([None, None])
 
 def check_db():
         '''Function which checks if the db is here, up to date, and updates it if not'''

@@ -802,7 +802,7 @@ def button_add_clicked(button_add, popover, spinbutton, comboboxtext_condition, 
         
         """
         
-        defs.COLL_LOCK = True
+        functions.various.lock_db(True, None)
         button_add.set_sensitive(False)
         button_add.set_label(defs.STRINGS["add_button_wait"])
         nb = spinbutton.get_value_as_int()
