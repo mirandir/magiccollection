@@ -76,7 +76,7 @@ class AdvancedSearch:
                 right_content_top.pack_start(right_content_top_left, True, True, 0)
                 right_content_top.pack_start(right_content_top_right, False, False, 0)
                 
-                # we list each edition in a treeview
+                # we list each edition in this treeview
                 scrolledwindow = Gtk.ScrolledWindow()
                 scrolledwindow.set_min_content_width(300)
                 scrolledwindow.set_min_content_height(150)
@@ -96,7 +96,6 @@ class AdvancedSearch:
                         nb_column = 0
                         sort = Gtk.SortType.ASCENDING
                 column_name_editions = Gtk.TreeViewColumn(defs.STRINGS["list_editions"], renderer_editions, text=0)
-                #column_name_editions.set_expand(False)
                 column_name_editions.set_sort_column_id(nb_column)
                 store_editions.set_sort_column_id(nb_column, sort)
                 tree_editions.append_column(column_name_editions)
@@ -109,7 +108,13 @@ class AdvancedSearch:
                 edition_nb_cards_symbol.pack_start(self.label_nb_cards, False, False, 0)
                 edition_nb_cards_symbol.pack_start(self.icon_edition, False, False, 0)
                 
-                select.connect("changed", self.edition_selected, "blip", "blop", tree_editions)
+                self.button_show_details = Gtk.MenuButton()
+                image_button_show_details = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="text-editor-symbolic"), Gtk.IconSize.BUTTON)
+                image_button_show_details.show()
+                self.button_show_details.add(image_button_show_details)
+                self.button_show_details.set_sensitive(False)
+                
+                select.connect("changed", self.edition_selected, "blip", "blop", tree_editions, self.button_show_details)
                 scrolledwindow.add(tree_editions)
                 self.store_editions = store_editions
                 self.gen_list_editions()
@@ -161,7 +166,7 @@ class AdvancedSearch:
                         entry.set_icon_sensitive(Gtk.EntryIconPosition.SECONDARY, False)
                         entry.set_size_request(230, -1)
                         entry.connect("icon-press", self.entry_operator_choice)
-                        entry.connect("activate", self.prepare_request, [[entry1, comboboxtext1], [entry2, comboboxtext2], [entry3, comboboxtext3], [entry4, comboboxtext4]], overlay_right_content_bot)
+                        entry.connect("activate", self.prepare_request, [[entry1, comboboxtext1], [entry2, comboboxtext2], [entry3, comboboxtext3], [entry4, comboboxtext4]], overlay_right_content_bot, select)
                         entry.connect("changed", self.update_button_search_and_reset, entry1, entry2, entry3, entry4)
                 
                 grid.attach(comboboxtext1, 1, 1, 1, 1)
@@ -181,6 +186,8 @@ class AdvancedSearch:
                 right_content_mid_right = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
                 right_content_mid.pack_start(right_content_mid_right, False, False, 0)
                 
+                right_content_mid_right.pack_start(self.button_show_details, False, False, 0)
+                
                 self.button_reset_search.set_sensitive(False)
                 button_reset_search_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-clear-all-symbolic"), Gtk.IconSize.BUTTON)
                 self.button_reset_search.add(button_reset_search_pic)
@@ -188,7 +195,7 @@ class AdvancedSearch:
                 right_content_mid_right.pack_start(self.button_reset_search, False, False, 0)
                 
                 self.button_search.set_sensitive(False)
-                self.button_search.connect("clicked", self.prepare_request, [[entry1, comboboxtext1], [entry2, comboboxtext2], [entry3, comboboxtext3], [entry4, comboboxtext4]], overlay_right_content_bot)
+                self.button_search.connect("clicked", self.prepare_request, [[entry1, comboboxtext1], [entry2, comboboxtext2], [entry3, comboboxtext3], [entry4, comboboxtext4]], overlay_right_content_bot, select)
                 right_content_mid_right.pack_start(self.button_search, False, False, 0)
                 
                 self.sens_widgets = [entry1, entry2, entry3, entry4, scrolledwindow, self.button_search]
@@ -269,7 +276,7 @@ class AdvancedSearch:
                         # some work with columns
                         columns_to_display = functions.config.read_config("as_columns").split(";")
                         
-                        AS_object.as_columns_list = functions.various.gen_treeview_columns(columns_to_display, tree_results)
+                        AS_object.as_columns_list = functions.various.gen_treeview_columns(columns_to_display, tree_results)[0]
                         
                         select = tree_results.get_selection()
                         select.set_mode(Gtk.SelectionMode.MULTIPLE)
@@ -277,6 +284,8 @@ class AdvancedSearch:
                         AS_object.mainselect = select
                         scrolledwindow.add(tree_results)
                         AS_object.mainstore = store_results
+                        
+                        tree_results.connect("row-activated", self.show_details, select, self.button_show_details)
                         
                         AS_object.box_results.pack_start(scrolledwindow, True, True, 0)
                 
@@ -379,11 +388,16 @@ class AdvancedSearch:
                                 
                                 add = True
                                 
-                                if card["layout"] == "flip" or card["layout"] == "double-faced" or card["layout"] == "split":
+                                if card["layout"] == "flip" or card["layout"] == "double-faced":
                                         names = card["names"].split("|")
                                         if card["real_name"] != names[0]:
                                                 if type_s == "edition":
                                                         add = False
+                                
+                                if card["layout"] == "split":
+                                        names = card["names"].split("|")
+                                        if card["real_name"] != names[0]:
+                                                add = False
                                 
                                 if card["name"] + "-" + card["edition_ln"] in cards_added:
                                         add = False
@@ -410,11 +424,12 @@ class AdvancedSearch:
                         GLib.idle_add(_no_result, self, wait_button)
                 functions.various.lock_db(None, False)
         
-        def prepare_request(self, widget, search_widgets_list, overlay_right_content_bot):
+        def prepare_request(self, widget, search_widgets_list, overlay_right_content_bot, select):
                 '''Prepares the request to the database'''
                 if defs.AS_LOCK == False:
                         request = functions.db.prepare_request(search_widgets_list, "db")[0]
                         if request != None:
+                                select.unselect_all()
                                 functions.various.lock_db(None, True)
                                 GLib.idle_add(self.icon_edition.hide)
                                 GLib.idle_add(self.empty_box_results)
@@ -451,10 +466,11 @@ class AdvancedSearch:
                 time.sleep(4)
                 GLib.idle_add(label_wait.show, priority=GLib.PRIORITY_HIGH_IDLE)
         
-        def edition_selected(self, selection, integer, TreeViewColumn, tree_editions):
+        def edition_selected(self, selection, integer, TreeViewColumn, tree_editions, button_show_details):
                 if defs.AS_LOCK == False:
                         model, treeiter = selection.get_selected()
                         if treeiter != None:
+                                button_show_details.set_sensitive(False)
                                 functions.various.lock_db(None, True)
                                 ed_name = model[treeiter][0].replace('"', '""')
                                 conn, c = functions.db.connect_db()
@@ -569,16 +585,32 @@ class AdvancedSearch:
                 
                 functions.db.disconnect_db(conn)
         
+        def show_details(self, treeview, treepath, column, selection, button_show_details):
+                if button_show_details.get_sensitive():
+                        button_show_details.emit("clicked")
+        
         def send_id_to_loader(self, selection, integer, TreeViewColumn, simple_search):
                 model, pathlist = selection.get_selected_rows()
                 if pathlist != []:
                         tree_iter = model.get_iter(pathlist[0])
                         id_ = model.get_value(tree_iter, 0)
                         self.load_card(id_, simple_search)
+                        
+                        nb_row_in_coll = 0
+                        for row in pathlist:
+                                if model[row][12] == 700:
+                                        nb_row_in_coll += 1
+                        if len(pathlist) == nb_row_in_coll:
+                                self.button_show_details.set_sensitive(True)
+                                self.button_show_details.set_popover(functions.collection.gen_details_popover(self.button_show_details, selection))
+                        else:
+                                self.button_show_details.set_sensitive(False)
         
         def load_card(self, cardid, simple_search):
                 '''Load a card in the card viewer'''
-                GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
+                #GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
+                functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)
         
         def load_card_from_outside(self, widget, cardid, list_widgets_to_destroy, simple_search):
-                GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
+                #GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
+                functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)

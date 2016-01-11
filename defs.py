@@ -100,6 +100,7 @@ CACHEMCPR = os.path.join(CACHEMC, "prices")
 # we add our folders to paths where GTK is looking for icons
 Gtk.IconTheme.append_search_path(Gtk.IconTheme.get_default(), os.path.join(PATH_MC, "images", "math"))
 Gtk.IconTheme.append_search_path(Gtk.IconTheme.get_default(), os.path.join(PATH_MC, "images", "symbolic-mana"))
+Gtk.IconTheme.append_search_path(Gtk.IconTheme.get_default(), os.path.join(PATH_MC, "images", "icons"))
 
 # we add a custom size for gicons
 Gtk.icon_size_register('150_mana_symbol', 150, 150)
@@ -236,6 +237,8 @@ MEM_SEARCHS = {}
 COLL_LOCK = False
 BUTTON_COLL_LOCK = None
 AS_LOCK = False
+CURRENT_SAVEDETAILS_THREAD = None
+SAVEDETAILS_TIMER = None
 
 DB_VERSION = None
 VERSION = "0.9"

@@ -112,6 +112,7 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["entry_sup_eq_ad"] = "Supérieur ou égal"
         translate["entry_diff"] = "Différent"
         translate["nb_cards_in_db"] = "Il y a %%% cartes dans la base de données, à peu de chose près."
+        translate["column_internal_id"] = "id interne"
         translate["column_english_name"] = "Nom anglais"
         translate["column_edition"] = "Édition"
         translate["column_name_name_french"] = "Nom français"

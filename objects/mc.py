@@ -154,7 +154,7 @@ class MC_Window(Gtk.ApplicationWindow):
                                 current_object_view = self.advancedsearch
                         elif current_view == "decks":
                                 current_object_view = self.decks
-                        if search_text == "forest" or search_text == defs.STRINGS["forest"] or search_text == "island" or search_text == defs.STRINGS["island"] or search_text == "mountain" or search_text == defs.STRINGS["mountain"] or search_text == "swamp" or search_text == defs.STRINGS["swamp"] or search_text == "plains" or search_text == defs.STRINGS["plains"]:
+                        if (search_text == "forest" or search_text == defs.STRINGS["forest"] or search_text == "island" or search_text == defs.STRINGS["island"] or search_text == "mountain" or search_text == defs.STRINGS["mountain"] or search_text == "swamp" or search_text == defs.STRINGS["swamp"] or search_text == "plains" or search_text == defs.STRINGS["plains"]) and functions.config.read_config("no_reprints") == "0":
                                 search_entry.set_text("")
                                 self.advancedsearch.comboboxtext1.set_active(0)
                                 self.advancedsearch.entry1.set_text(search_text)

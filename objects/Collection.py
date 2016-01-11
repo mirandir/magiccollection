@@ -110,6 +110,10 @@ class Collection:
                 reponse_all = c.fetchall()
                 functions.db.disconnect_db(conn)
                 
+                # we must be sure to lock the access for the db of the collection
+                if defs.COLL_LOCK == False:
+                        functions.various.lock_db(True, None)
+                
                 for card_to_add in cards_list:
                         cardid, condition, lang, foil, loaned_to, comment, nb = card_to_add
                         card_found = 0
@@ -158,8 +162,8 @@ class Collection:
                                                         # another card like us is in the collection => curent nb + nb
                                                         self.mainstore[i][15] = str(int(self.mainstore[i][15]) + int(nb))
                                                         if comment != "":
-                                                                # we need to italic the row
-                                                                self.mainstore[i][13] = Pango.Style.ITALIC
+                                                                # we need to bold the row
+                                                                self.mainstore[i][12] = 700
                                                         card_added = 1
                                                 i += 1
                                         
@@ -168,9 +172,9 @@ class Collection:
                                                 cards = functions.various.prepare_cards_data_for_treeview([reponse])
                                                 for card in cards.values():
                                                         italic = Pango.Style.NORMAL
-                                                        if comment != "":
-                                                                italic = Pango.Style.ITALIC
                                                         bold = 400
+                                                        if comment != "":
+                                                                bold = 700
                                                         self.mainstore.insert_with_valuesv(-1, range(17), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic, card["nb_variant"], nb])
                                                         cards_data_for_update_store_as.append([card["name"], card["edition_ln"]])
                 
@@ -201,16 +205,36 @@ class Collection:
                 if spinner_labels != None:
                         GLib.idle_add(spinner_labels.destroy)
         
-        def send_id_to_loader_with_selectinfo(self, selection, integer, TreeViewColumn, simple_search, selectinfo_button):
+        def update_details(self, cards_to_update):
+                '''We update the details of the cards in 'cards_to_update'.'''
+                conn_coll, c_coll = functions.collection.connect_db()
+                functions.various.lock_db(True, None)
+                
+                #print(cards_to_update)
+                for id_coll, new_data in cards_to_update.items():
+                        condition, lang, foil, loaned, comment = new_data
+                        c_coll.execute("""UPDATE collection SET condition = ?, lang = ?, foil = ?, loaned_to = ?, comment = ? WHERE id_coll = ?""", (condition, lang, foil, loaned, comment, id_coll,))
+                
+                functions.collection.disconnect_db(conn_coll)
+                functions.various.lock_db(False, None)
+                return(True)
+        
+        def show_details(self, treeview, treepath, column, selection, button_show_details):
+                button_show_details.emit("clicked")
+        
+        def send_id_to_loader_with_selectinfo(self, selection, integer, TreeViewColumn, simple_search, selectinfo_button, button_show_details):
                 self.send_id_to_loader(selection, integer, TreeViewColumn, simple_search)
                 model, pathlist = selection.get_selected_rows()
                 label_selectinfo = selectinfo_button.get_child()
                 if pathlist == []:
                         label_selectinfo.set_text(defs.STRINGS["info_select_none_coll"])
                         selectinfo_button.set_sensitive(False)
+                        button_show_details.set_sensitive(False)
                 elif len(pathlist) == 1:
                         label_selectinfo.set_text(defs.STRINGS["info_select_coll"])
                         selectinfo_button.set_sensitive(True)
+                        button_show_details.set_sensitive(True)
+                        button_show_details.set_popover(functions.collection.gen_details_popover(button_show_details, selection))
                 else:
                         label_selectinfo.set_text(defs.STRINGS["info_selects_coll"].replace("%%%", str(len(pathlist))))
                         #FIXME: generating and closing the popover when many many rows are selected is slow and can freeze MC (??!!), so we limit to 500
@@ -218,6 +242,9 @@ class Collection:
                                 selectinfo_button.set_sensitive(True)
                         else:
                                 selectinfo_button.set_sensitive(False)
+                        
+                        button_show_details.set_sensitive(True)
+                        button_show_details.set_popover(functions.collection.gen_details_popover(button_show_details, selection))
                 
         def selectinfo_click(self, selectinfo_button, selection, popover):                
                 def checkbutton_toggled(checkbutton, path, selection):
@@ -301,7 +328,9 @@ class Collection:
         
         def load_card(self, cardid, simple_search):
                 '''Load a card in the card viewer'''
-                GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
+                #GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
+                functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)
         
         def load_card_from_outside(self, widget_orig, cardid, list_widgets_to_destroy, simple_search):
-                GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
+                #GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
+                functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)

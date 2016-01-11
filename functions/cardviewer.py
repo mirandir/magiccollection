@@ -110,6 +110,8 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         else:
                                 foreign__name = name_german # why not ?
                         
+                        if foreign__name == "":
+                                foreign__name = name
                         basenameforeign = str(foreign__name)
                         basetext = str(text)
                         basecolors = str(colors)
@@ -205,7 +207,6 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                                                                         if card_split_flip[7] != foreign__name:
                                                                                                 final_nameforeign = final_nameforeign + separator + card_split_flip[7]
                                                         foreign__name = final_nameforeign
-                        
                         # we disconnect the database
                         functions.db.disconnect_db(conn)
                         
@@ -811,13 +812,13 @@ def button_add_clicked(button_add, popover, spinbutton, comboboxtext_condition, 
                 if cond[1] == comboboxtext_condition.get_active_text():
                         condition = cond[0]
                         break
-        lang = entry_lang.get_text().replace('"', '""')
+        lang = entry_lang.get_text()
         foil = ""
         if checkbutton_foil.get_active():
                 foil = "1"
         loaned = ""
         if checkbutton_loaned.get_active():
-                loaned = entry_loaned.get_text().replace('"', '""')
+                loaned = entry_loaned.get_text()
         textbuffer = textview.get_buffer()
         start = textbuffer.get_start_iter()
         end = textbuffer.get_end_iter()

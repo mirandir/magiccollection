@@ -495,109 +495,140 @@ def vertical_flip_pic(gtkimage):
 def gen_treeview_columns(columns_to_display, treeview):
         '''Generate the columns for a treeview which displays cards data'''               
         dict_columns_list = {}
+        dict_renderers_list = {}
+        w = 12
+        s = 13
         
-        # we calculate the size for each column
-        nb_columns = len(columns_to_display)
+        if "id_coll" in columns_to_display:
+                w = 11
+                s = 12
+                renderer_text_id = Gtk.CellRendererText()
+                renderer_text_id.set_fixed_size(20, 25)
+                column_id = Gtk.TreeViewColumn(defs.STRINGS["column_internal_id"], renderer_text_id, text=0, weight=w, style=s)
+                dict_columns_list["id_coll"] = column_id
+                dict_renderers_list["id_coll"] = renderer_text_id
+                #column_id.set_expand(True)
         
-        renderer_text_name = Gtk.CellRendererText()
-        renderer_text_name.set_fixed_size(145, 25)
-        column_name = Gtk.TreeViewColumn(defs.STRINGS["column_english_name"], renderer_text_name, text=1, weight=12, style=13)
-        dict_columns_list["name"] = column_name
-        column_name.set_sort_column_id(1)
-        column_name.set_expand(True)
+        if "name" in columns_to_display:
+                renderer_text_name = Gtk.CellRendererText()
+                renderer_text_name.set_fixed_size(145, 25)
+                column_name = Gtk.TreeViewColumn(defs.STRINGS["column_english_name"], renderer_text_name, text=1, weight=w, style=s)
+                dict_columns_list["name"] = column_name
+                dict_renderers_list["name"] = renderer_text_name
+                column_name.set_sort_column_id(1)
+                column_name.set_expand(True)
         
-        renderer_text_edition = Gtk.CellRendererText()
-        renderer_text_edition.set_fixed_size(80, 25)
-        column_edition = Gtk.TreeViewColumn(defs.STRINGS["column_edition"], renderer_text_edition, text=2, weight=12, style=13)
-        dict_columns_list["edition"] = column_edition
-        column_edition.set_sort_column_id(2)
-        column_edition.set_expand(True)
+        if "edition" in columns_to_display:
+                renderer_text_edition = Gtk.CellRendererText()
+                renderer_text_edition.set_fixed_size(80, 25)
+                column_edition = Gtk.TreeViewColumn(defs.STRINGS["column_edition"], renderer_text_edition, text=2, weight=w, style=s)
+                dict_columns_list["edition"] = column_edition
+                dict_renderers_list["edition"] = renderer_text_edition
+                column_edition.set_sort_column_id(2)
+                column_edition.set_expand(True)
         
-        # we check if we must retrieve foreign names for flip / split cards
-        # FIXME : chinese variants !
-        foreign_name = defs.LOC_NAME_FOREIGN[functions.config.read_config("fr_language")]
-        # we choose the name of column_name_foreign 
-        if foreign_name == "name_chinesetrad":
-                foreign__name_label = defs.STRINGS["column_name_name_chinesetrad"]
-        elif foreign_name == "name_chinesesimp":
-                foreign__name_label = defs.STRINGS["column_name_name_chinesesimp"]
-        elif foreign_name == "name_french":
-                foreign__name_label = defs.STRINGS["column_name_name_french"]
-        elif foreign_name == "name_german":
-                foreign__name_label = defs.STRINGS["column_name_name_german"]
-        elif foreign_name == "name_italian":
-                foreign__name_label = defs.STRINGS["column_name_name_italian"]
-        elif foreign_name == "name_japanese":
-                foreign__name_label = defs.STRINGS["column_name_name_japanese"]
-        elif foreign_name == "name_korean":
-                foreign__name_label = defs.STRINGS["column_name_name_korean"]
-        elif foreign_name == "name_portuguesebrazil":
-                foreign__name_label = defs.STRINGS["column_name_name_portuguesebrazil"]
-        elif foreign_name == "name_portuguese":
-                foreign__name_label = defs.STRINGS["column_name_name_portuguese"]
-        elif foreign_name == "name_russian":
-                foreign__name_label = defs.STRINGS["column_name_name_russian"]
-        elif foreign_name == "name_spanish":
-                foreign__name_label = defs.STRINGS["column_name_name_spanish"]
-        else:
-                foreign__name_label = defs.STRINGS["column_name_name_german"] # why not ?
+        if "name_foreign" in columns_to_display:
+                # FIXME : chinese variants !
+                foreign_name = defs.LOC_NAME_FOREIGN[functions.config.read_config("fr_language")]
+                # we choose the name of column_name_foreign 
+                if foreign_name == "name_chinesetrad":
+                        foreign__name_label = defs.STRINGS["column_name_name_chinesetrad"]
+                elif foreign_name == "name_chinesesimp":
+                        foreign__name_label = defs.STRINGS["column_name_name_chinesesimp"]
+                elif foreign_name == "name_french":
+                        foreign__name_label = defs.STRINGS["column_name_name_french"]
+                elif foreign_name == "name_german":
+                        foreign__name_label = defs.STRINGS["column_name_name_german"]
+                elif foreign_name == "name_italian":
+                        foreign__name_label = defs.STRINGS["column_name_name_italian"]
+                elif foreign_name == "name_japanese":
+                        foreign__name_label = defs.STRINGS["column_name_name_japanese"]
+                elif foreign_name == "name_korean":
+                        foreign__name_label = defs.STRINGS["column_name_name_korean"]
+                elif foreign_name == "name_portuguesebrazil":
+                        foreign__name_label = defs.STRINGS["column_name_name_portuguesebrazil"]
+                elif foreign_name == "name_portuguese":
+                        foreign__name_label = defs.STRINGS["column_name_name_portuguese"]
+                elif foreign_name == "name_russian":
+                        foreign__name_label = defs.STRINGS["column_name_name_russian"]
+                elif foreign_name == "name_spanish":
+                        foreign__name_label = defs.STRINGS["column_name_name_spanish"]
+                else:
+                        foreign__name_label = defs.STRINGS["column_name_name_german"] # why not ?
+                
+                renderer_text_name_foreign = Gtk.CellRendererText()
+                renderer_text_name_foreign.set_fixed_size(195, 25)
+                column_name_foreign = Gtk.TreeViewColumn(foreign__name_label, renderer_text_name_foreign, text=3, weight=w, style=s)
+                dict_columns_list["name_foreign"] = column_name_foreign
+                dict_renderers_list["name_foreign"] = renderer_text_name_foreign
+                column_name_foreign.set_sort_column_id(3)
+                column_name_foreign.set_expand(True)
         
-        renderer_text_name_foreign = Gtk.CellRendererText()
-        renderer_text_name_foreign.set_fixed_size(195, 25)
-        column_name_foreign = Gtk.TreeViewColumn(foreign__name_label, renderer_text_name_foreign, text=3, weight=12, style=13)
-        dict_columns_list["name_foreign"] = column_name_foreign
-        column_name_foreign.set_sort_column_id(3)
-        column_name_foreign.set_expand(True)
+        if "colors" in columns_to_display:
+                renderer_pixbuf_colors = Gtk.CellRendererPixbuf()
+                renderer_pixbuf_colors.set_fixed_size(10, 25)
+                column_colors = Gtk.TreeViewColumn(defs.STRINGS["column_colors"], renderer_pixbuf_colors, pixbuf=5)
+                dict_columns_list["colors"] = column_colors
+                dict_renderers_list["colors"] = renderer_pixbuf_colors
+                column_colors.set_sort_column_id(4)
         
-        renderer_pixbuf_colors = Gtk.CellRendererPixbuf()
-        renderer_pixbuf_colors.set_fixed_size(10, 25)
-        column_colors = Gtk.TreeViewColumn(defs.STRINGS["column_colors"], renderer_pixbuf_colors, pixbuf=5)
-        dict_columns_list["colors"] = column_colors
-        column_colors.set_sort_column_id(4)
+        if "cmc" in columns_to_display:
+                renderer_text_cmc = Gtk.CellRendererText()
+                renderer_text_cmc.set_fixed_size(20, 25)
+                column_cmc = Gtk.TreeViewColumn(defs.STRINGS["column_cmc"], renderer_text_cmc, text=6, weight=w, style=s)
+                dict_columns_list["cmc"] = column_cmc
+                dict_renderers_list["cmc"] = renderer_text_cmc
+                column_cmc.set_sort_column_id(6)
         
-        renderer_text_cmc = Gtk.CellRendererText()
-        renderer_text_cmc.set_fixed_size(20, 25)
-        column_cmc = Gtk.TreeViewColumn(defs.STRINGS["column_cmc"], renderer_text_cmc, text=6, weight=12, style=13)
-        dict_columns_list["cmc"] = column_cmc
-        column_cmc.set_sort_column_id(6)
+        if "type" in columns_to_display:
+                renderer_text_type = Gtk.CellRendererText()
+                renderer_text_type.set_fixed_size(100, 25)
+                column_type = Gtk.TreeViewColumn(defs.STRINGS["column_type"], renderer_text_type, text=7, weight=w, style=s)
+                dict_columns_list["type"] = column_type
+                dict_renderers_list["type"] = renderer_text_type
+                column_type.set_sort_column_id(7)
+                column_type.set_expand(True)
         
-        renderer_text_type = Gtk.CellRendererText()
-        renderer_text_type.set_fixed_size(100, 25)
-        column_type = Gtk.TreeViewColumn(defs.STRINGS["column_type"], renderer_text_type, text=7, weight=12, style=13)
-        dict_columns_list["type"] = column_type
-        column_type.set_sort_column_id(7)
-        column_type.set_expand(True)
+        if "artist" in columns_to_display:
+                renderer_text_artist = Gtk.CellRendererText()
+                renderer_text_artist.set_fixed_size(50, 25)
+                column_artist = Gtk.TreeViewColumn(defs.STRINGS["column_artist"], renderer_text_artist, text=8, weight=w, style=s)
+                dict_columns_list["artist"] = column_artist
+                dict_renderers_list["artist"] = renderer_text_artist
+                column_artist.set_sort_column_id(8)
+                column_artist.set_expand(True)
         
-        renderer_text_artist = Gtk.CellRendererText()
-        renderer_text_artist.set_fixed_size(50, 25)
-        column_artist = Gtk.TreeViewColumn(defs.STRINGS["column_artist"], renderer_text_artist, text=8, weight=12, style=13)
-        dict_columns_list["artist"] = column_artist
-        column_artist.set_sort_column_id(8)
-        column_artist.set_expand(True)
+        if "power" in columns_to_display:
+                renderer_text_power = Gtk.CellRendererText()
+                renderer_text_power.set_fixed_size(10, 25)
+                column_power = Gtk.TreeViewColumn(defs.STRINGS["column_power"], renderer_text_power, text=9, weight=w, style=s)
+                dict_columns_list["power"] = column_power
+                dict_renderers_list["power"] = renderer_text_power
+                column_power.set_sort_column_id(9)
         
-        renderer_text_power = Gtk.CellRendererText()
-        renderer_text_power.set_fixed_size(10, 25)
-        column_power = Gtk.TreeViewColumn(defs.STRINGS["column_power"], renderer_text_power, text=9, weight=12, style=13)
-        dict_columns_list["power"] = column_power
-        column_power.set_sort_column_id(9)
+        if "toughness" in columns_to_display:
+                renderer_text_toughness = Gtk.CellRendererText()
+                renderer_text_toughness.set_fixed_size(10, 25)
+                column_toughness = Gtk.TreeViewColumn(defs.STRINGS["column_toughness"], renderer_text_toughness, text=10, weight=w, style=s)
+                dict_columns_list["toughness"] = column_toughness
+                dict_renderers_list["toughness"] = renderer_text_toughness
+                column_toughness.set_sort_column_id(10)
         
-        renderer_text_toughness = Gtk.CellRendererText()
-        renderer_text_toughness.set_fixed_size(10, 25)
-        column_toughness = Gtk.TreeViewColumn(defs.STRINGS["column_toughness"], renderer_text_toughness, text=10, weight=12, style=13)
-        dict_columns_list["toughness"] = column_toughness
-        column_toughness.set_sort_column_id(10)
+        if "rarity" in columns_to_display:
+                renderer_text_rarity = Gtk.CellRendererText()
+                renderer_text_rarity.set_fixed_size(30, 25)
+                column_rarity = Gtk.TreeViewColumn(defs.STRINGS["column_rarity"], renderer_text_rarity, text=11, weight=w, style=s)
+                dict_columns_list["rarity"] = column_rarity
+                dict_renderers_list["rarity"] = renderer_text_rarity
+                column_rarity.set_sort_column_id(11)
         
-        renderer_text_rarity = Gtk.CellRendererText()
-        renderer_text_rarity.set_fixed_size(30, 25)
-        column_rarity = Gtk.TreeViewColumn(defs.STRINGS["column_rarity"], renderer_text_rarity, text=11, weight=12, style=13)
-        dict_columns_list["rarity"] = column_rarity
-        column_rarity.set_sort_column_id(11)
-        
-        renderer_text_nb = Gtk.CellRendererText()
-        renderer_text_nb.set_fixed_size(10, 25)
-        column_nb = Gtk.TreeViewColumn(defs.STRINGS["column_nb"], renderer_text_nb, text=15, weight=12, style=13)
-        dict_columns_list["nb"] = column_nb
-        column_nb.set_sort_column_id(15)
+        if "nb" in columns_to_display:
+                renderer_text_nb = Gtk.CellRendererText()
+                renderer_text_nb.set_fixed_size(10, 25)
+                column_nb = Gtk.TreeViewColumn(defs.STRINGS["column_nb"], renderer_text_nb, text=15, weight=w, style=s)
+                dict_columns_list["nb"] = column_nb
+                dict_renderers_list["nb"] = renderer_text_nb
+                column_nb.set_sort_column_id(15)
         
         for column in columns_to_display:
                 treeview.append_column(dict_columns_list[column])
@@ -605,7 +636,7 @@ def gen_treeview_columns(columns_to_display, treeview):
         for name, column in dict_columns_list.items():
                 column.set_resizable(True)
         
-        return(dict_columns_list)
+        return([dict_columns_list, dict_renderers_list])
 
 def create_window_search_name(request_response, current_object_view):
         
@@ -646,7 +677,7 @@ def create_window_search_name(request_response, current_object_view):
         # some work with columns
         columns_to_display = defs.as_columns.split(";")
         
-        as_columns_list = gen_treeview_columns(columns_to_display, tree_results)
+        as_columns_list = gen_treeview_columns(columns_to_display, tree_results)[0]
         
         select = tree_results.get_selection()
         scrolledwindow.add(tree_results)

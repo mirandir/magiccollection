@@ -23,6 +23,8 @@
 from gi.repository import Gtk, Gio, GdkPixbuf, Pango, GLib
 import os
 import sqlite3
+import threading
+import time
 
 # imports def.py
 import defs
@@ -55,12 +57,12 @@ def read_coll(box, coll_object):
                 # the buttons
                 coll_object.button_search_coll = Gtk.ToggleButton()
                 coll_object.button_search_coll.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-find-symbolic"), Gtk.IconSize.BUTTON))
-                coll_object.button_show_details = Gtk.Button()
+                coll_object.button_show_details = Gtk.MenuButton()
                 coll_object.button_show_details.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="text-editor-symbolic"), Gtk.IconSize.BUTTON))
                 coll_object.button_change_quantity = Gtk.Button()
-                coll_object.button_change_quantity.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="text-editor-symbolic"), Gtk.IconSize.BUTTON))
+                coll_object.button_change_quantity.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="zoom-in-symbolic"), Gtk.IconSize.BUTTON))
                 coll_object.button_add_deck = Gtk.Button()
-                coll_object.button_add_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="document-new-symbolic"), Gtk.IconSize.BUTTON))
+                coll_object.button_add_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="cards-symbolic"), Gtk.IconSize.BUTTON))
                 coll_object.button_estimate = Gtk.Button()
                 coll_object.button_estimate.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="accessories-calculator-symbolic"), Gtk.IconSize.BUTTON))
                 coll_object.button_delete = Gtk.Button()
@@ -162,16 +164,17 @@ def read_coll(box, coll_object):
                 tree_coll.set_enable_search(False)
                 # some work with columns
                 columns_to_display = functions.config.read_config("coll_columns").split(";")
-                coll_columns_list = functions.various.gen_treeview_columns(columns_to_display, tree_coll)
+                coll_columns_list = functions.various.gen_treeview_columns(columns_to_display, tree_coll)[0]
                 
                 select = tree_coll.get_selection()
                 coll_object.select = select
                 select.set_mode(Gtk.SelectionMode.MULTIPLE)
-                select.connect("changed", coll_object.send_id_to_loader_with_selectinfo, "blip", "blop", 0, selectinfo_button)
+                select.connect("changed", coll_object.send_id_to_loader_with_selectinfo, "blip", "blop", 0, selectinfo_button, coll_object.button_show_details)
                 selectinfo_button.connect("clicked", coll_object.selectinfo_click, select, popover_selectinfo)
                 coll_object.mainselect = select
                 scrolledwindow.add(tree_coll)
                 
+                tree_coll.connect("row-activated", coll_object.show_details, select, coll_object.button_show_details)
                 tree_coll.show_all()
                 scrolledwindow.show_all()
                 
@@ -192,6 +195,308 @@ def read_coll(box, coll_object):
                         coll_object.mainstore.set_sort_column_id(3, Gtk.SortType.ASCENDING)
                 else:
                         coll_object.mainstore.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+
+def prepare_update_details(selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store):
+        def real_prepare_update_details(selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store):
+                model, pathlist = selection.get_selected_rows()
+                # we get details
+                condition = ""
+                for cond in defs.CONDITIONS.values():
+                        if cond[1] == comboboxtext_condition.get_active_text():
+                                condition = cond[0]
+                                break
+                lang = entry_lang.get_text()
+                foil = ""
+                if checkbutton_foil.get_active():
+                        foil = "1"
+                loaned = ""
+                if checkbutton_loaned.get_active():
+                        loaned = entry_loaned.get_text()
+                textbuffer = textview_comment.get_buffer()
+                start = textbuffer.get_start_iter()
+                end = textbuffer.get_end_iter()
+                comment = textbuffer.get_text(start, end, False)
+                
+                cards_to_update = {}
+                for row in pathlist:
+                        #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+                        id_coll = model[row][0]
+                        try:
+                                cards_to_update[id_coll]
+                        except KeyError:
+                                cards_to_update[id_coll] = [condition, lang, foil, loaned, comment]
+                        else:
+                                raise KeyError("Problem : id " + str(id_coll) + " has more than 1 occurrence in the Treeview !")
+                
+                new_id_db_to_bold = []
+                new_id_db_to_unbold = []
+                if defs.MAINWINDOW.collection.update_details(cards_to_update):
+                        # we update the treeview according to the new informations
+                        for row in pathlist:
+                                for id_coll, new_data in cards_to_update.items():
+                                        if model[row][0] == id_coll:
+                                                condition, lang, foil, loaned, comment = new_data
+                                                model[row][5] = condition
+                                                model[row][6] = lang
+                                                model[row][7] = foil
+                                                model[row][8] = loaned
+                                                model[row][9] = comment
+                                                if comment != "":
+                                                        model[row][11] = 700
+                                                        new_id_db_to_bold.append(str(model[row][13]))
+                                                else:
+                                                        model[row][11] = 400
+                                                        # any need of unbolding the row in the collection ?
+                                                        nb_with_comment = 0
+                                                        for card in details_store:
+                                                                tmp_id_db = card[13]
+                                                                if tmp_id_db == model[row][13]:
+                                                                        if card[11] == 700:
+                                                                                nb_with_comment += 1
+                                                        if nb_with_comment == 0:
+                                                                new_id_db_to_unbold.append(str(model[row][13]))
+                # if new_id_db_to_bold or new_id_db_to_unbold are not empty, we need to update the treeview of the collection and in the search
+                if new_id_db_to_bold != [] or new_id_db_to_unbold != []:
+                        for i, row in enumerate(defs.MAINWINDOW.collection.mainstore):
+                                if row[0] in new_id_db_to_bold:
+                                        defs.MAINWINDOW.collection.mainstore[i][12] = 700
+                                if row[0] in new_id_db_to_unbold:
+                                        defs.MAINWINDOW.collection.mainstore[i][12] = 400
+                        if defs.MAINWINDOW.collection.tree_coll.get_model() == defs.MAINWINDOW.collection.searchstore:
+                                for i, row in enumerate(defs.MAINWINDOW.collection.searchstore):
+                                        if row[0] in new_id_db_to_bold:
+                                                defs.MAINWINDOW.collection.searchstore[i][12] = 700
+                                        if row[0] in new_id_db_to_unbold:
+                                                defs.MAINWINDOW.collection.searchstore[i][12] = 400
+        
+        if defs.CURRENT_SAVEDETAILS_THREAD == None:
+                # we are the first thread, we need to note this
+                defs.CURRENT_SAVEDETAILS_THREAD = 1
+        else:
+                defs.CURRENT_SAVEDETAILS_THREAD += 1
+        my_number = int(defs.CURRENT_SAVEDETAILS_THREAD)
+        defs.SAVEDETAILS_TIMER = 250 # 250 ms
+        
+        # now, we wait until the end of the timer (or until another thread take our turn)
+        go = 1
+        while defs.SAVEDETAILS_TIMER > 0:
+                if my_number != defs.CURRENT_SAVEDETAILS_THREAD:
+                        # too bad, we have to stop now
+                        go = 0
+                        break
+                else:
+                        time.sleep(1 / 1000)
+                        defs.SAVEDETAILS_TIMER -= 1
+        
+        if go == 1:
+                defs.CURRENT_SAVEDETAILS_THREAD = None
+                GLib.idle_add(real_prepare_update_details, selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store)
+
+def gen_details_popover(button_show_details, selection):
+        '''Displays details for the current selection of cards.'''
+        
+        def select_changed(selection, integer, TreeViewColumn, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment):
+                model, pathlist = selection.get_selected_rows()
+                if len(pathlist) == 1:
+                        id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db = model[pathlist]
+                        
+                        for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment]:
+                                widget.set_sensitive(False)
+                        
+                        if condition == "mint":
+                                comboboxtext_condition.set_active(0)
+                        elif condition == "near_mint":
+                                comboboxtext_condition.set_active(1)
+                        elif condition == "excellent":
+                                comboboxtext_condition.set_active(2)
+                        elif condition == "played":
+                                comboboxtext_condition.set_active(3)
+                        elif condition == "poor":
+                                comboboxtext_condition.set_active(4)
+                        else:
+                                comboboxtext_condition.set_active(-1)
+                        
+                        if lang != "":
+                                entry_lang.set_text(lang)
+                        else:
+                                entry_lang.set_text("")
+                        
+                        if foil == "1":
+                                checkbutton_foil.set_active(True)
+                        else:
+                                checkbutton_foil.set_active(False)
+                        
+                        if loaned_to != "":
+                                entry_loaned.set_text(loaned_to)
+                                checkbutton_loaned.set_active(True)
+                        else:
+                                checkbutton_loaned.set_active(False)
+                                entry_loaned.set_text("")
+                        
+                        if comment != "":
+                                textview_comment.get_buffer().set_text(comment, -1)
+                        else:
+                                textview_comment.get_buffer().set_text("", -1)
+                                
+                        
+                        if defs.COLL_LOCK == False:
+                                for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, textview_comment]:
+                                        widget.set_sensitive(True)
+                                if checkbutton_loaned.get_active():
+                                        entry_loaned.set_sensitive(True)
+                
+                
+                
+                else:
+                        for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment]:
+                                widget.set_sensitive(False)
+                        comboboxtext_condition.set_active(-1)
+                        entry_lang.set_text("")
+                        checkbutton_foil.set_active(False)
+                        entry_loaned.set_text("")
+                        checkbutton_loaned.set_active(False)
+                        textview_comment.get_buffer().set_text("", -1)
+        
+        def widget_save_details(widget, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, selection, details_store):
+                if widget.get_sensitive():
+                        thread = threading.Thread(target = prepare_update_details, args = (selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store))
+                        thread.daemon = True
+                        thread.start()
+        
+        def entry_loaned_save_details(widget, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, selection, details_store):
+                if widget.get_sensitive() and checkbutton_loaned.get_active() == True:
+                        thread = threading.Thread(target = prepare_update_details, args = (selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store))
+                        thread.daemon = True
+                        thread.start()
+        
+        def checkbutton_loaned_save_details(widget, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, selection, details_store):
+                if widget.get_active() == False and widget.get_sensitive() and entry_loaned.get_text() != "":
+                        entry = Gtk.Entry()
+                        entry.set_text("")
+                        thread = threading.Thread(target = prepare_update_details, args = (selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry, textview_comment, details_store))
+                        thread.daemon = True
+                        thread.start()
+                if widget.get_active() == True and widget.get_sensitive() and entry_loaned.get_text() != "":
+                        thread = threading.Thread(target = prepare_update_details, args = (selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store))
+                        thread.daemon = True
+                        thread.start()
+        
+        def textview_comment_save_details(widget, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, selection, details_store):
+                if textview_comment.get_sensitive():
+                        thread = threading.Thread(target = prepare_update_details, args = (selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store))
+                        thread.daemon = True
+                        thread.start()
+        
+        def popover_show(popover, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment):
+                if defs.COLL_LOCK:
+                        for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment]:
+                                widget.set_sensitive(False)
+        
+        details_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        details_box.set_margin_top(5)
+        details_box.set_margin_bottom(5)
+        details_box.set_margin_left(5)
+        details_box.set_margin_right(5)
+        
+        model, pathlist = selection.get_selected_rows()
+        
+        # first, we get the list of all cards' ids
+        ids_list = ""
+        for row in pathlist:
+                ids_list = ids_list + "\"" + model[row][0] + "\", "
+        ids_list = ids_list[:-2]
+        # we get data in the collection for this list
+        conn, c = connect_db()
+        c.execute("""SELECT * FROM collection WHERE id_card IN (""" + ids_list + """)""")
+        reponses_coll = c.fetchall()
+        disconnect_db(conn)
+        
+        # we create a (cleaner) dict with reponses_coll
+        dict_responses_coll = {}
+        for card_coll in reponses_coll:
+                id_coll, id_card, date, condition, lang, foil, loaned_to, comment, deck = card_coll
+                try:
+                        dict_responses_coll[id_card]
+                except KeyError:
+                        dict_responses_coll[id_card] = [[id_coll, date, condition, lang, foil, loaned_to, comment, deck]]
+                else:
+                        dict_responses_coll[id_card].append([id_coll, date, condition, lang, foil, loaned_to, comment, deck])
+        
+        # we create widgets for displaying the cards
+        scrolledwindow = Gtk.ScrolledWindow()
+        scrolledwindow.set_min_content_width(250)
+        scrolledwindow.set_min_content_height(150)
+        scrolledwindow.set_hexpand(True)
+        scrolledwindow.set_vexpand(True)
+        scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
+        
+        # we need : id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+        details_store = Gtk.ListStore(str, str, str, str, str, str, str, str, str, str, str, int, Pango.Style, str)
+        details_tree = Gtk.TreeView(details_store)
+        details_tree.set_enable_search(False)
+        # columns
+        if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
+                columns_to_display = ["id_coll", "name_foreign", "edition"]
+                coll_columns_dict, renderer_dict = functions.various.gen_treeview_columns(columns_to_display, details_tree)
+                renderer_dict["name_foreign"].set_fixed_size(90, 25)
+        else:
+                columns_to_display = ["id_coll", "name", "edition"]
+                coll_columns_dict, renderer_dict = functions.various.gen_treeview_columns(columns_to_display, details_tree)
+                renderer_dict["name"].set_fixed_size(90, 25)
+        renderer_dict["id_coll"].set_fixed_size(10, 25)
+        renderer_dict["edition"].set_fixed_size(40, 25)
+        
+        grid_details, label_add_condition, comboboxtext_condition, label_add_lang, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, label_add_comment, scrolledwindow_comment, textview_comment = functions.various.gen_details_widgets()
+        for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment]:
+                widget.set_sensitive(False)
+        
+        select = details_tree.get_selection()
+        select.set_mode(Gtk.SelectionMode.MULTIPLE)
+        select.connect("changed", select_changed, "blip", "blop", comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment)
+        scrolledwindow.add(details_tree)
+        
+        # we connect the widgets to widget_save_details
+        comboboxtext_condition.connect("changed", widget_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+        entry_lang.connect("changed", widget_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+        checkbutton_foil.connect("toggled", widget_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+        # we need a specific for this one
+        checkbutton_loaned.connect("toggled", checkbutton_loaned_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+        entry_loaned.connect("changed", entry_loaned_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+        textview_comment.get_buffer().connect("changed", textview_comment_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+        
+        for row in pathlist:
+                card_id = model[row][0]
+                card_name = model[row][1]
+                card_editionln = model[row][2]
+                card_nameforeign = model[row][3]
+                
+                # id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+                for card in dict_responses_coll[card_id]:
+                        id_coll, date, condition, lang, foil, loaned_to, comment, deck = card
+                        bold = 400
+                        if comment != "":
+                                bold = 700
+                        italic = Pango.Style.NORMAL
+                        if deck != "":
+                                italic = Pango.Style.ITALIC
+                        
+                        details_store.insert_with_valuesv(-1, range(15), [str(id_coll), card_name, card_editionln, card_nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, card_id])
+                
+        if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
+                details_store.set_sort_column_id(3, Gtk.SortType.ASCENDING)
+        else:
+                details_store.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+        
+        details_box.pack_start(scrolledwindow, True, True, 0)
+        
+        details_box.pack_start(grid_details, True, True, 0)
+        
+        details_box.show_all()
+        popover = Gtk.Popover.new(button_show_details)
+        popover.connect("show", popover_show, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment)
+        popover.add(details_box)
+        popover.props.width_request = 550
+        return(popover)
 
 def show_hide_searchbar(togglebutton, searchbar):
         '''Show / hide the searchbar'''
@@ -344,6 +649,7 @@ def gen_grid_search_coll(coll_object, searchbar):
         comboboxtext3 = Gtk.ComboBoxText()
         comboboxtext4 = Gtk.ComboBoxText()
         for comboboxtext in [comboboxtext1, comboboxtext2, comboboxtext3, comboboxtext4]:
+                comboboxtext.set_wrap_width(2)
                 for i in range(len(defs.SEARCH_ITEMS)):
                         comboboxtext.append(defs.SEARCH_ITEMS[i][0], defs.SEARCH_ITEMS[i][1])
         

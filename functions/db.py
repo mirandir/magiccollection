@@ -664,6 +664,10 @@ def check_db():
                         check_update_db()
 
 def check_db2():
+        def show_loading():
+                defs.MAINWINDOW.widget_overlay.get_child().set_markup("<b><big>" + defs.STRINGS["loading"] + "</big></b>")
+                functions.various.force_update_gui(0)
+        
         if os.path.isfile(os.path.join(defs.CACHEMC, "datedb_newtmp")):
                 os.remove(os.path.join(defs.CACHEMC, "datedb_newtmp"))
         
@@ -685,6 +689,7 @@ def check_db2():
         
         # when downloading the new database is over, we download symbols editions
         functions.various.download_symbols()
+        GLib.idle_add(show_loading)
         GLib.idle_add(defs.MAINWINDOW.app.load_mc)
 
 def download_db():
