@@ -229,5 +229,7 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["placeholder_date"] = "AAAA-MM-JJ"
         translate["date_format"] = "La recherche par Date d'ajout à la collection ne peut se faire qu'avec le format AAAA-MM-JJ (Année-Mois-Jour)."
         translate["quantity_card_coll_only_number"] = "La recherche par Nombre d'exemplaires dans la collection ne peut se faire qu'avec des valeurs numériques."
+        translate["change_quantity"] = "Modifier la quantité"
+        translate["change_quantity_validate"] = "Valider"
         #########################
         return(translate)

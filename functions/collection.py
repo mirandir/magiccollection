@@ -59,7 +59,7 @@ def read_coll(box, coll_object):
                 coll_object.button_search_coll.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-find-symbolic"), Gtk.IconSize.BUTTON))
                 coll_object.button_show_details = Gtk.MenuButton()
                 coll_object.button_show_details.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="text-editor-symbolic"), Gtk.IconSize.BUTTON))
-                coll_object.button_change_quantity = Gtk.Button()
+                coll_object.button_change_quantity = Gtk.MenuButton()
                 coll_object.button_change_quantity.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="zoom-in-symbolic"), Gtk.IconSize.BUTTON))
                 coll_object.button_add_deck = Gtk.Button()
                 coll_object.button_add_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_add-symbolic"), Gtk.IconSize.BUTTON))
@@ -171,7 +171,7 @@ def read_coll(box, coll_object):
                 select = tree_coll.get_selection()
                 coll_object.select = select
                 select.set_mode(Gtk.SelectionMode.MULTIPLE)
-                select.connect("changed", coll_object.send_id_to_loader_with_selectinfo, "blip", "blop", 0, selectinfo_button, coll_object.button_show_details)
+                select.connect("changed", coll_object.send_id_to_loader_with_selectinfo, "blip", "blop", 0, selectinfo_button, coll_object.button_show_details, coll_object.button_change_quantity)
                 selectinfo_button.connect("clicked", coll_object.selectinfo_click, select, popover_selectinfo)
                 coll_object.mainselect = select
                 scrolledwindow.add(tree_coll)
@@ -298,9 +298,91 @@ def prepare_update_details(selection, comboboxtext_condition, entry_lang, checkb
 def prepare_delete_card(cards_to_delete):
         GLib.idle_add(defs.MAINWINDOW.collection.del_collection, cards_to_delete)
 
+def prepare_delete_card_quantity(cards_to_delete, selection):
+        def update(selection):
+                model, pathlist = selection.get_selected_rows()
+                current_id = model[pathlist][0]
+                for row in pathlist:
+                        if model[row][0] == current_id:
+                                selection.unselect_all()
+                                selection.select_path(row)
+                                break
+        GLib.idle_add(defs.MAINWINDOW.collection.del_collection, cards_to_delete)
+        GLib.idle_add(update, selection)
+
+def gen_quantity_popover(button_change_quantity, selection, details_store):
+        '''Allows the user to change the quantity of the selected card.'''
+        def spinbutton_value_changed(spinbutton, button_ok, current_quantity):
+                value = spinbutton.get_value_as_int()
+                if value != current_quantity and defs.COLL_LOCK == False:
+                        button_ok.set_sensitive(True)
+                else:
+                        button_ok.set_sensitive(False)
+        
+        def button_ok_clicked(button_ok, spinbutton, id_db, ids_coll_list, current_quantity, popover, selection):
+                new_value = spinbutton.get_value_as_int()
+                if new_value > current_quantity:
+                        # we add cards
+                        nb_cards_to_add = new_value - current_quantity
+                        data_to_add = [[id_db, "", "", "", "", "", nb_cards_to_add]]
+                        thread = threading.Thread(target = defs.MAINWINDOW.collection.add_collection, args = [data_to_add, None])
+                        thread.daemon = True
+                        thread.start()
+                elif new_value < current_quantity:
+                        # we delete cards
+                        nb_cards_to_delete = current_quantity - new_value
+                        cards_to_delete = {}
+                        i = 0
+                        for id_coll in reversed(ids_coll_list):
+                                cards_to_delete[id_coll] = id_db
+                                i += 1
+                                if i == nb_cards_to_delete:
+                                        break
+                        thread = threading.Thread(target = prepare_delete_card_quantity, args = (cards_to_delete, selection))
+                        thread.daemon = True
+                        thread.start()
+                        
+                popover.hide()
+                button_ok.set_sensitive(False)
+        
+        def popover_show(popover, button_change_quantity, selection, details_store, quantity_box):
+                for widget in quantity_box.get_children():
+                        quantity_box.remove(widget)
+                
+                id_db = details_store[0][13]
+                ids_coll_list = []
+                for card in details_store:
+                        ids_coll_list.append(card[0])
+                current_quantity = len(details_store)
+                
+                label_change_quantity = Gtk.Label(defs.STRINGS["change_quantity"])
+                quantity_box.pack_start(label_change_quantity, True, True, 0)
+                
+                adjustment = Gtk.Adjustment(value=current_quantity, lower=1, upper=100, step_increment=1, page_increment=10, page_size=0)
+                spinbutton = Gtk.SpinButton(adjustment=adjustment)
+                quantity_box.pack_start(spinbutton, True, True, 0)
+                
+                button_ok = Gtk.Button(defs.STRINGS["change_quantity_validate"])
+                button_ok.set_sensitive(False)
+                quantity_box.pack_start(button_ok, True, True, 0)
+                
+                spinbutton.connect("value-changed", spinbutton_value_changed, button_ok, current_quantity)
+                button_ok.connect("clicked", button_ok_clicked, spinbutton, id_db, ids_coll_list, current_quantity, popover, selection)
+                
+                quantity_box.show_all()
+        
+        quantity_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        quantity_box.set_margin_top(5)
+        quantity_box.set_margin_bottom(5)
+        quantity_box.set_margin_left(5)
+        quantity_box.set_margin_right(5)
+        popover = Gtk.Popover.new(button_change_quantity)
+        popover.connect("show", popover_show, button_change_quantity, selection, details_store, quantity_box)
+        popover.add(quantity_box)
+        return(popover)
+
 def gen_details_popover(button_show_details, selection):
         '''Displays details for the current selection of cards.'''
-        
         def select_changed(selection, integer, TreeViewColumn, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment, button_add_deck, button_copy_details, button_delete_deck, button_remove):
                 model, pathlist = selection.get_selected_rows()
                 if len(pathlist) > 0:
@@ -582,9 +664,9 @@ def gen_details_popover(button_show_details, selection):
                 popover.connect("show", popover_show, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment)
                 popover.add(details_box)
                 popover.props.width_request = 550
-                return(popover)
+                return(popover, details_store)
         else:
-                return(None)
+                return(None, None)
 
 def show_hide_searchbar(togglebutton, searchbar):
         '''Show / hide the searchbar'''
