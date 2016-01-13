@@ -62,7 +62,7 @@ def read_coll(box, coll_object):
                 coll_object.button_change_quantity = Gtk.Button()
                 coll_object.button_change_quantity.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="zoom-in-symbolic"), Gtk.IconSize.BUTTON))
                 coll_object.button_add_deck = Gtk.Button()
-                coll_object.button_add_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="cards-symbolic"), Gtk.IconSize.BUTTON))
+                coll_object.button_add_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_add-symbolic"), Gtk.IconSize.BUTTON))
                 coll_object.button_estimate = Gtk.Button()
                 coll_object.button_estimate.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="accessories-calculator-symbolic"), Gtk.IconSize.BUTTON))
                 coll_object.button_delete = Gtk.Button()
@@ -158,7 +158,7 @@ def read_coll(box, coll_object):
                 scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
                 
                 # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", "nb_variant", "nb"
-                coll_object.mainstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, str, str, str, str, str, str, int, Pango.Style, str, str)
+                coll_object.mainstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int)
                 tree_coll = Gtk.TreeView(coll_object.mainstore)
                 coll_object.tree_coll = tree_coll
                 tree_coll.set_enable_search(False)
@@ -196,9 +196,9 @@ def read_coll(box, coll_object):
                 else:
                         coll_object.mainstore.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
-def prepare_update_details(selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store):
+def prepare_update_details(selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store, copy_details):
+        '''If copy_details is 1, we copy-paste all details of the current card on all cards in the store.'''
         def real_prepare_update_details(selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store):
-                model, pathlist = selection.get_selected_rows()
                 # we get details
                 condition = ""
                 for cond in defs.CONDITIONS.values():
@@ -217,6 +217,12 @@ def prepare_update_details(selection, comboboxtext_condition, entry_lang, checkb
                 end = textbuffer.get_end_iter()
                 comment = textbuffer.get_text(start, end, False)
                 
+                model, pathlist = selection.get_selected_rows()
+                if copy_details == 1:
+                        current_id = int(model[pathlist][0])
+                        selection.select_all()
+                        model, pathlist = selection.get_selected_rows()
+                
                 cards_to_update = {}
                 for row in pathlist:
                         #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
@@ -230,44 +236,39 @@ def prepare_update_details(selection, comboboxtext_condition, entry_lang, checkb
                 
                 new_id_db_to_bold = []
                 new_id_db_to_unbold = []
-                if defs.MAINWINDOW.collection.update_details(cards_to_update):
-                        # we update the treeview according to the new informations
+                # we update the treeview according to the new informations
+                for row in pathlist:
+                        for id_coll, new_data in cards_to_update.items():
+                                if model[row][0] == id_coll:
+                                        condition, lang, foil, loaned, comment = new_data
+                                        model[row][5] = condition
+                                        model[row][6] = lang
+                                        model[row][7] = foil
+                                        model[row][8] = loaned
+                                        model[row][9] = comment
+                                        if comment != "":
+                                                model[row][11] = 700
+                                                new_id_db_to_bold.append(str(model[row][13]))
+                                        else:
+                                                model[row][11] = 400
+                                                # any need of unbolding the row in the collection ?
+                                                nb_with_comment = 0
+                                                for card in details_store:
+                                                        tmp_id_db = card[13]
+                                                        if tmp_id_db == model[row][13]:
+                                                                if card[11] == 700:
+                                                                        nb_with_comment += 1
+                                                if nb_with_comment == 0:
+                                                        new_id_db_to_unbold.append(str(model[row][13]))
+                
+                defs.MAINWINDOW.collection.update_details(cards_to_update, new_id_db_to_bold, new_id_db_to_unbold)
+                
+                if copy_details == 1:
                         for row in pathlist:
-                                for id_coll, new_data in cards_to_update.items():
-                                        if model[row][0] == id_coll:
-                                                condition, lang, foil, loaned, comment = new_data
-                                                model[row][5] = condition
-                                                model[row][6] = lang
-                                                model[row][7] = foil
-                                                model[row][8] = loaned
-                                                model[row][9] = comment
-                                                if comment != "":
-                                                        model[row][11] = 700
-                                                        new_id_db_to_bold.append(str(model[row][13]))
-                                                else:
-                                                        model[row][11] = 400
-                                                        # any need of unbolding the row in the collection ?
-                                                        nb_with_comment = 0
-                                                        for card in details_store:
-                                                                tmp_id_db = card[13]
-                                                                if tmp_id_db == model[row][13]:
-                                                                        if card[11] == 700:
-                                                                                nb_with_comment += 1
-                                                        if nb_with_comment == 0:
-                                                                new_id_db_to_unbold.append(str(model[row][13]))
-                # if new_id_db_to_bold or new_id_db_to_unbold are not empty, we need to update the treeview of the collection and in the search
-                if new_id_db_to_bold != [] or new_id_db_to_unbold != []:
-                        for i, row in enumerate(defs.MAINWINDOW.collection.mainstore):
-                                if row[0] in new_id_db_to_bold:
-                                        defs.MAINWINDOW.collection.mainstore[i][12] = 700
-                                if row[0] in new_id_db_to_unbold:
-                                        defs.MAINWINDOW.collection.mainstore[i][12] = 400
-                        if defs.MAINWINDOW.collection.tree_coll.get_model() == defs.MAINWINDOW.collection.searchstore:
-                                for i, row in enumerate(defs.MAINWINDOW.collection.searchstore):
-                                        if row[0] in new_id_db_to_bold:
-                                                defs.MAINWINDOW.collection.searchstore[i][12] = 700
-                                        if row[0] in new_id_db_to_unbold:
-                                                defs.MAINWINDOW.collection.searchstore[i][12] = 400
+                                if int(model[row][0]) == current_id:
+                                        selection.unselect_all()
+                                        selection.select_path(row)
+                                        break
         
         if defs.CURRENT_SAVEDETAILS_THREAD == None:
                 # we are the first thread, we need to note this
@@ -292,63 +293,92 @@ def prepare_update_details(selection, comboboxtext_condition, entry_lang, checkb
                 defs.CURRENT_SAVEDETAILS_THREAD = None
                 GLib.idle_add(real_prepare_update_details, selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store)
 
+def prepare_delete_card(cards_to_delete):
+        GLib.idle_add(defs.MAINWINDOW.collection.del_collection, cards_to_delete)
+
 def gen_details_popover(button_show_details, selection):
         '''Displays details for the current selection of cards.'''
         
-        def select_changed(selection, integer, TreeViewColumn, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment):
+        def select_changed(selection, integer, TreeViewColumn, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment, button_add_deck, button_copy_details, button_delete_deck, button_remove):
                 model, pathlist = selection.get_selected_rows()
-                if len(pathlist) == 1:
-                        id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db = model[pathlist]
-                        
-                        for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment]:
+                if len(pathlist) > 0:
+                        for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, button_add_deck, button_copy_details, button_delete_deck, button_remove]:
                                 widget.set_sensitive(False)
                         
-                        if condition == "mint":
-                                comboboxtext_condition.set_active(0)
-                        elif condition == "near_mint":
-                                comboboxtext_condition.set_active(1)
-                        elif condition == "excellent":
-                                comboboxtext_condition.set_active(2)
-                        elif condition == "played":
-                                comboboxtext_condition.set_active(3)
-                        elif condition == "poor":
-                                comboboxtext_condition.set_active(4)
-                        else:
-                                comboboxtext_condition.set_active(-1)
-                        
-                        if lang != "":
-                                entry_lang.set_text(lang)
-                        else:
-                                entry_lang.set_text("")
-                        
-                        if foil == "1":
-                                checkbutton_foil.set_active(True)
-                        else:
-                                checkbutton_foil.set_active(False)
-                        
-                        if loaned_to != "":
-                                entry_loaned.set_text(loaned_to)
-                                checkbutton_loaned.set_active(True)
-                        else:
-                                checkbutton_loaned.set_active(False)
-                                entry_loaned.set_text("")
-                        
-                        if comment != "":
-                                textview_comment.get_buffer().set_text(comment, -1)
-                        else:
-                                textview_comment.get_buffer().set_text("", -1)
+                        if len(pathlist) == 1:
+                                button_copy_details.set_sensitive(True)
                                 
+                                id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db = model[pathlist]
+                                
+                                if condition == "mint":
+                                        comboboxtext_condition.set_active(0)
+                                elif condition == "near_mint":
+                                        comboboxtext_condition.set_active(1)
+                                elif condition == "excellent":
+                                        comboboxtext_condition.set_active(2)
+                                elif condition == "played":
+                                        comboboxtext_condition.set_active(3)
+                                elif condition == "poor":
+                                        comboboxtext_condition.set_active(4)
+                                else:
+                                        comboboxtext_condition.set_active(-1)
+                                
+                                if lang != "":
+                                        entry_lang.set_text(lang)
+                                else:
+                                        entry_lang.set_text("")
+                                
+                                if foil == "1":
+                                        checkbutton_foil.set_active(True)
+                                else:
+                                        checkbutton_foil.set_active(False)
+                                
+                                if loaned_to != "":
+                                        entry_loaned.set_text(loaned_to)
+                                        checkbutton_loaned.set_active(True)
+                                else:
+                                        checkbutton_loaned.set_active(False)
+                                        entry_loaned.set_text("")
+                                
+                                if comment != "":
+                                        textview_comment.get_buffer().set_text(comment, -1)
+                                else:
+                                        textview_comment.get_buffer().set_text("", -1)
+                        else:
+                                button_copy_details.set_sensitive(False)
+                                comboboxtext_condition.set_active(-1)
+                                entry_lang.set_text("")
+                                checkbutton_foil.set_active(False)
+                                entry_loaned.set_text("")
+                                checkbutton_loaned.set_active(False)
+                                textview_comment.get_buffer().set_text("", -1)
                         
                         if defs.COLL_LOCK == False:
+                                nb_cards_in_deck = 0
+                                for row in pathlist:
+                                        if model[row][10] != "":
+                                                nb_cards_in_deck += 1
+                                
+                                if nb_cards_in_deck == 0:
+                                        button_add_deck.set_sensitive(True)
+                                        button_remove.set_sensitive(True)
+                                else:
+                                        button_add_deck.set_sensitive(False)
+                                        button_remove.set_sensitive(False)
+                                if nb_cards_in_deck == len(pathlist):
+                                        button_delete_deck.set_sensitive(True)
+                                else:
+                                        button_delete_deck.set_sensitive(False)
+                                
                                 for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, textview_comment]:
                                         widget.set_sensitive(True)
                                 if checkbutton_loaned.get_active():
                                         entry_loaned.set_sensitive(True)
-                
-                
-                
+                        else:
+                                for widget in [entry_loaned, button_add_deck, button_copy_details, button_delete_deck, button_remove]:
+                                        widget.set_sensitive(False)
                 else:
-                        for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment]:
+                        for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, button_add_deck, button_copy_details, button_delete_deck, button_remove]:
                                 widget.set_sensitive(False)
                         comboboxtext_condition.set_active(-1)
                         entry_lang.set_text("")
@@ -357,15 +387,38 @@ def gen_details_popover(button_show_details, selection):
                         checkbutton_loaned.set_active(False)
                         textview_comment.get_buffer().set_text("", -1)
         
+        def copy_details(widget, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, selection, details_store):
+                if widget.get_sensitive():
+                        thread = threading.Thread(target = prepare_update_details, args = (selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store, 1))
+                        thread.daemon = True
+                        thread.start()
+        
+        def delete_card(button, selection, details_store):
+                model, pathlist = selection.get_selected_rows()
+                cards_to_delete = {}
+                rows_to_delete = []
+                for row in pathlist:
+                        #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+                        cards_to_delete[model[row][0]] = model[row][13]
+                        rows_to_delete.append(row)
+                
+                if len(cards_to_delete) > 0:
+                        for row in reversed(rows_to_delete):
+                                del(model[row])
+                        
+                        thread = threading.Thread(target = prepare_delete_card, args = ([cards_to_delete]))
+                        thread.daemon = True
+                        thread.start()
+        
         def widget_save_details(widget, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, selection, details_store):
                 if widget.get_sensitive():
-                        thread = threading.Thread(target = prepare_update_details, args = (selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store))
+                        thread = threading.Thread(target = prepare_update_details, args = (selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store, 0))
                         thread.daemon = True
                         thread.start()
         
         def entry_loaned_save_details(widget, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, selection, details_store):
                 if widget.get_sensitive() and checkbutton_loaned.get_active() == True:
-                        thread = threading.Thread(target = prepare_update_details, args = (selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store))
+                        thread = threading.Thread(target = prepare_update_details, args = (selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store, 0))
                         thread.daemon = True
                         thread.start()
         
@@ -373,17 +426,17 @@ def gen_details_popover(button_show_details, selection):
                 if widget.get_active() == False and widget.get_sensitive() and entry_loaned.get_text() != "":
                         entry = Gtk.Entry()
                         entry.set_text("")
-                        thread = threading.Thread(target = prepare_update_details, args = (selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry, textview_comment, details_store))
+                        thread = threading.Thread(target = prepare_update_details, args = (selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry, textview_comment, details_store, 0))
                         thread.daemon = True
                         thread.start()
                 if widget.get_active() == True and widget.get_sensitive() and entry_loaned.get_text() != "":
-                        thread = threading.Thread(target = prepare_update_details, args = (selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store))
+                        thread = threading.Thread(target = prepare_update_details, args = (selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store, 0))
                         thread.daemon = True
                         thread.start()
         
         def textview_comment_save_details(widget, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, selection, details_store):
                 if textview_comment.get_sensitive():
-                        thread = threading.Thread(target = prepare_update_details, args = (selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store))
+                        thread = threading.Thread(target = prepare_update_details, args = (selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store, 0))
                         thread.daemon = True
                         thread.start()
         
@@ -422,81 +475,114 @@ def gen_details_popover(button_show_details, selection):
                 else:
                         dict_responses_coll[id_card].append([id_coll, date, condition, lang, foil, loaned_to, comment, deck])
         
-        # we create widgets for displaying the cards
-        scrolledwindow = Gtk.ScrolledWindow()
-        scrolledwindow.set_min_content_width(250)
-        scrolledwindow.set_min_content_height(150)
-        scrolledwindow.set_hexpand(True)
-        scrolledwindow.set_vexpand(True)
-        scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
-        
-        # we need : id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
-        details_store = Gtk.ListStore(str, str, str, str, str, str, str, str, str, str, str, int, Pango.Style, str)
-        details_tree = Gtk.TreeView(details_store)
-        details_tree.set_enable_search(False)
-        # columns
-        if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
-                columns_to_display = ["id_coll", "name_foreign", "edition"]
-                coll_columns_dict, renderer_dict = functions.various.gen_treeview_columns(columns_to_display, details_tree)
-                renderer_dict["name_foreign"].set_fixed_size(90, 25)
-        else:
-                columns_to_display = ["id_coll", "name", "edition"]
-                coll_columns_dict, renderer_dict = functions.various.gen_treeview_columns(columns_to_display, details_tree)
-                renderer_dict["name"].set_fixed_size(90, 25)
-        renderer_dict["id_coll"].set_fixed_size(10, 25)
-        renderer_dict["edition"].set_fixed_size(40, 25)
-        
-        grid_details, label_add_condition, comboboxtext_condition, label_add_lang, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, label_add_comment, scrolledwindow_comment, textview_comment = functions.various.gen_details_widgets()
-        for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment]:
-                widget.set_sensitive(False)
-        
-        select = details_tree.get_selection()
-        select.set_mode(Gtk.SelectionMode.MULTIPLE)
-        select.connect("changed", select_changed, "blip", "blop", comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment)
-        scrolledwindow.add(details_tree)
-        
-        # we connect the widgets to widget_save_details
-        comboboxtext_condition.connect("changed", widget_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
-        entry_lang.connect("changed", widget_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
-        checkbutton_foil.connect("toggled", widget_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
-        # we need a specific for this one
-        checkbutton_loaned.connect("toggled", checkbutton_loaned_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
-        entry_loaned.connect("changed", entry_loaned_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
-        textview_comment.get_buffer().connect("changed", textview_comment_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
-        
-        for row in pathlist:
-                card_id = model[row][0]
-                card_name = model[row][1]
-                card_editionln = model[row][2]
-                card_nameforeign = model[row][3]
+        if len(dict_responses_coll) > 0:
+                # we create widgets for displaying the cards
+                scrolledwindow = Gtk.ScrolledWindow()
+                scrolledwindow.set_min_content_width(250)
+                scrolledwindow.set_min_content_height(150)
+                scrolledwindow.set_hexpand(True)
+                scrolledwindow.set_vexpand(True)
+                scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
                 
-                # id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
-                for card in dict_responses_coll[card_id]:
-                        id_coll, date, condition, lang, foil, loaned_to, comment, deck = card
-                        bold = 400
-                        if comment != "":
-                                bold = 700
-                        italic = Pango.Style.NORMAL
-                        if deck != "":
-                                italic = Pango.Style.ITALIC
+                # we need : id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+                details_store = Gtk.ListStore(str, str, str, str, str, str, str, str, str, str, str, int, Pango.Style, str)
+                details_tree = Gtk.TreeView(details_store)
+                details_tree.set_enable_search(False)
+                # columns
+                if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
+                        columns_to_display = ["id_coll", "name_foreign", "edition"]
+                        coll_columns_dict, renderer_dict = functions.various.gen_treeview_columns(columns_to_display, details_tree)
+                        renderer_dict["name_foreign"].set_fixed_size(90, 25)
+                else:
+                        columns_to_display = ["id_coll", "name", "edition"]
+                        coll_columns_dict, renderer_dict = functions.various.gen_treeview_columns(columns_to_display, details_tree)
+                        renderer_dict["name"].set_fixed_size(90, 25)
+                renderer_dict["id_coll"].set_fixed_size(10, 25)
+                renderer_dict["edition"].set_fixed_size(40, 25)
+                
+                grid_details, label_add_condition, comboboxtext_condition, label_add_lang, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, label_add_comment, scrolledwindow_comment, textview_comment = functions.various.gen_details_widgets()
+                for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment]:
+                        widget.set_sensitive(False)
+                
+                # we create the toolbar and his buttons
+                button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+                
+                button_add_deck = Gtk.Button()
+                button_add_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_add-symbolic"), Gtk.IconSize.BUTTON))
+                
+                button_copy_details = Gtk.Button()
+                button_copy_details.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-copy-symbolic"), Gtk.IconSize.BUTTON))
+                
+                button_delete_deck = Gtk.Button()
+                button_delete_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_delete-symbolic"), Gtk.IconSize.BUTTON))
+                
+                button_remove = Gtk.Button()
+                button_remove.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-delete-symbolic"), Gtk.IconSize.BUTTON))
+                
+                for button in [button_add_deck, button_copy_details, button_delete_deck, button_remove]:
+                        button.set_sensitive(False)
+                        button_box.pack_start(button, True, True, 0)
+                
+                select = details_tree.get_selection()
+                select.set_mode(Gtk.SelectionMode.MULTIPLE)
+                select.connect("changed", select_changed, "blip", "blop", comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment, button_add_deck, button_copy_details, button_delete_deck, button_remove)
+                scrolledwindow.add(details_tree)
+                
+                button_copy_details.connect("clicked", copy_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+                button_remove.connect("clicked", delete_card, select, details_store)
+                
+                # we connect the widgets to widget_save_details
+                comboboxtext_condition.connect("changed", widget_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+                entry_lang.connect("changed", widget_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+                checkbutton_foil.connect("toggled", widget_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+                # we need a specific one for some widgets
+                checkbutton_loaned.connect("toggled", checkbutton_loaned_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+                entry_loaned.connect("changed", entry_loaned_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+                textview_comment.get_buffer().connect("changed", textview_comment_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+                
+                for row in pathlist:
+                        card_id = model[row][0]
+                        card_name = model[row][1]
+                        card_editionln = model[row][2]
+                        card_nameforeign = model[row][3]
                         
-                        details_store.insert_with_valuesv(-1, range(15), [str(id_coll), card_name, card_editionln, card_nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, card_id])
+                        # id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+                        for card in dict_responses_coll[card_id]:
+                                id_coll, date, condition, lang, foil, loaned_to, comment, deck = card
+                                bold = 400
+                                if comment != "":
+                                        bold = 700
+                                italic = Pango.Style.NORMAL
+                                if deck != "":
+                                        italic = Pango.Style.ITALIC
+                                
+                                details_store.insert_with_valuesv(-1, range(15), [str(id_coll), card_name, card_editionln, card_nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, card_id])
+                        
+                if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
+                        details_store.set_sort_column_id(3, Gtk.SortType.ASCENDING)
+                else:
+                        details_store.set_sort_column_id(1, Gtk.SortType.ASCENDING)
                 
-        if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
-                details_store.set_sort_column_id(3, Gtk.SortType.ASCENDING)
+                box1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+                details_box.pack_start(box1, True, True, 0)
+                
+                box1.pack_start(scrolledwindow, True, True, 0)
+                
+                box1.pack_start(button_box, False, True, 0)
+                
+                box2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+                details_box.pack_start(box2, True, True, 0)
+                
+                box2.pack_start(grid_details, True, True, 0)
+                
+                details_box.show_all()
+                popover = Gtk.Popover.new(button_show_details)
+                popover.connect("show", popover_show, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment)
+                popover.add(details_box)
+                popover.props.width_request = 550
+                return(popover)
         else:
-                details_store.set_sort_column_id(1, Gtk.SortType.ASCENDING)
-        
-        details_box.pack_start(scrolledwindow, True, True, 0)
-        
-        details_box.pack_start(grid_details, True, True, 0)
-        
-        details_box.show_all()
-        popover = Gtk.Popover.new(button_show_details)
-        popover.connect("show", popover_show, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment)
-        popover.add(details_box)
-        popover.props.width_request = 550
-        return(popover)
+                return(None)
 
 def show_hide_searchbar(togglebutton, searchbar):
         '''Show / hide the searchbar'''
@@ -558,7 +644,7 @@ def gen_grid_search_coll(coll_object, searchbar):
                 c.execute(request)
                 reponses_db = c.fetchall()
                 functions.db.disconnect_db(conn)
-                coll_object.searchstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, str, str, str, str, str, str, int, Pango.Style, str, str)
+                coll_object.searchstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int)
                 
                 cards = functions.various.prepare_cards_data_for_treeview(reponses_db)
                 nb_results = len(reponses_db)

@@ -325,7 +325,7 @@ class AdvancedSearch:
                                        
                         scrolledwindow = Gtk.ScrolledWindow()
                         # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic"
-                        store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, str, str, str, str, str, str, int, Pango.Style)
+                        store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style)
                         GLib.idle_add(_start, self, store_results, scrolledwindow)
                         cards_added = []
                         

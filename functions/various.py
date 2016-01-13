@@ -409,7 +409,7 @@ def prepare_cards_data_for_treeview(cards):
                         pix_colors = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "color_indicators", colors.lower() + ".png"))
                 else:
                         pix_colors = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "nothing.png"))
-                cmc = card[17]
+                cmc = card[18]
                 type_ = card[21]
                 artist = card[22]
                 text = card[23]
@@ -439,7 +439,7 @@ def prepare_cards_data_for_treeview(cards):
                 dict_card["nameforeign"] = nameforeign
                 dict_card["colors"] = colors
                 dict_card["pix_colors"] = pix_colors
-                dict_card["cmc"] = str(cmc)
+                dict_card["cmc"] = int(cmc)
                 dict_card["type_"] = type_
                 dict_card["artist"] = artist
                 dict_card["power"] = str(power)
@@ -670,7 +670,7 @@ def create_window_search_name(request_response, current_object_view):
         scrolledwindow.set_vexpand(True)
         scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
         # "id", "name", "edition", "name_french", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic"
-        store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, str, str, str, str, str, str, int, Pango.Style)
+        store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style)
         tree_results = Gtk.TreeView(store_results)
         tree_results.set_enable_search(False)
         

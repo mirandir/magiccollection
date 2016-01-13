@@ -160,12 +160,22 @@ class Collection:
                                                 id_ = row[0]
                                                 if current_id_ == id_:
                                                         # another card like us is in the collection => curent nb + nb
-                                                        self.mainstore[i][15] = str(int(self.mainstore[i][15]) + int(nb))
+                                                        self.mainstore[i][15] = int(self.mainstore[i][15]) + int(nb)
                                                         if comment != "":
                                                                 # we need to bold the row
                                                                 self.mainstore[i][12] = 700
                                                         card_added = 1
                                                 i += 1
+                                        
+                                        if self.tree_coll.get_model() == self.searchstore:
+                                                for j, row in enumerate(self.searchstore):
+                                                        id_ = row[0]
+                                                        if current_id_ == id_:
+                                                                # another card like us is in the searchstore => curent nb + nb
+                                                                self.searchstore[j][15] = int(self.searchstore[j][15]) + int(nb)
+                                                                if comment != "":
+                                                                        # we need to bold the row
+                                                                        self.searchstore[j][12] = 700
                                         
                                         if card_added == 0:
                                                 # we need to add a new row
@@ -205,8 +215,100 @@ class Collection:
                 if spinner_labels != None:
                         GLib.idle_add(spinner_labels.destroy)
         
-        def update_details(self, cards_to_update):
-                '''We update the details of the cards in 'cards_to_update'.'''
+        def del_collection(self, cards_to_delete):
+                '''Delete the cards in 'cards_to_delete'.'''
+                conn_coll, c_coll = functions.collection.connect_db()
+                functions.various.lock_db(True, None)
+                
+                for id_coll in cards_to_delete.keys():
+                        c_coll.execute("""DELETE from collection WHERE id_coll = ?""", (id_coll,))
+                
+                conn_coll.commit()
+                
+                # we need to update the treeview of the collection and of the search
+                new_id_db_to_bold = []
+                new_id_db_to_unbold = []
+                # we need to find the ids_db of all current ids_coll
+                ids_list = ""
+                for id_ in cards_to_delete.values():
+                        ids_list = ids_list + "\"" + str(id_) + "\", "
+                ids_list = ids_list[:-2]
+                c_coll.execute("""SELECT id_card, comment FROM collection WHERE id_card IN (""" + ids_list + """)""")
+                reponses_coll = c_coll.fetchall()
+                
+                dict_responses_coll = {}
+                for card_coll in reponses_coll:
+                        id_card, comment = card_coll
+                        try:
+                                dict_responses_coll[id_card]
+                        except KeyError:
+                                if comment != "":
+                                        dict_responses_coll[id_card] = [1, True]
+                                else:
+                                        dict_responses_coll[id_card] = [1, False]
+                        else:
+                                if dict_responses_coll[id_card][1]:
+                                        dict_responses_coll[id_card] = [dict_responses_coll[id_card][0] + 1, True]
+                                else:
+                                        if comment != "":
+                                                dict_responses_coll[id_card] = [dict_responses_coll[id_card][0] + 1, True]
+                                        else:
+                                                dict_responses_coll[id_card] = [dict_responses_coll[id_card][0] + 1, False]
+                
+                for id_deleted in cards_to_delete.values():
+                        if id_deleted not in dict_responses_coll.keys():
+                                dict_responses_coll[id_deleted] = [0, False]
+                
+                rows_to_delete = []
+                rows_to_delete_search = []
+                for i, row in enumerate(self.mainstore):
+                        try:
+                                q, bold = dict_responses_coll[row[0]]
+                        except KeyError:
+                                pass
+                        else:
+                                if q == 0:
+                                        rows_to_delete.append(i)
+                                else:
+                                        if bold:
+                                                self.mainstore[i][12] = 700
+                                        else:
+                                                self.mainstore[i][12] = 400
+                                        self.mainstore[i][15] = q
+                        
+                if self.tree_coll.get_model() == self.searchstore:
+                        for i, row in enumerate(self.searchstore):
+                                try:
+                                        q, bold = dict_responses_coll[row[0]]
+                                except KeyError:
+                                        pass
+                                else:
+                                        if q == 0:
+                                                rows_to_delete_search.append(i)
+                                        else:
+                                                if bold:
+                                                        self.searchstore[i][12] = 700
+                                                else:
+                                                        self.searchstore[i][12] = 400
+                                                self.searchstore[i][15] = q
+                
+                for nb_row in reversed(rows_to_delete):
+                        del(self.mainstore[nb_row])
+                for nb_row in reversed(rows_to_delete_search):
+                        del(self.searchstore[nb_row])
+                
+                c_coll.execute("""SELECT COUNT(*) FROM collection""")
+                count_nb = c_coll.fetchone()[0]
+                if count_nb == 1:
+                        self.label_nb_card_coll.set_text(defs.STRINGS["nb_card_coll"].replace("%%%", str(count_nb)))
+                else:
+                        self.label_nb_card_coll.set_text(defs.STRINGS["nb_card_coll_s"].replace("%%%", str(count_nb)))
+                
+                functions.collection.disconnect_db(conn_coll)
+                functions.various.lock_db(False, None)
+        
+        def update_details(self, cards_to_update, new_id_db_to_bold, new_id_db_to_unbold):
+                '''We update the details of the cards in 'cards_to_update'. 'new_id_db_to_bold' and 'new_id_db_to_unbold' can be lists of ids or "auto".'''
                 conn_coll, c_coll = functions.collection.connect_db()
                 functions.various.lock_db(True, None)
                 
@@ -217,7 +319,55 @@ class Collection:
                 
                 functions.collection.disconnect_db(conn_coll)
                 functions.various.lock_db(False, None)
-                return(True)
+                
+                # we need to update the treeview of the collection and of the search
+                if new_id_db_to_bold == "auto" and new_id_db_to_unbold == "auto":
+                        new_id_db_to_bold = []
+                        new_id_db_to_unbold = []
+                        # we need to find the ids_db of all current ids_coll
+                        ids_list = ""
+                        for id_ in cards_to_update:
+                                ids_list = ids_list + "\"" + id_ + "\", "
+                        ids_list = ids_list[:-2]
+                        conn, c = functions.collection.connect_db()
+                        c.execute("""SELECT id_card, comment FROM collection WHERE id_coll IN (""" + ids_list + """)""")
+                        reponses_coll = c.fetchall()
+                        disconnect_db(conn)
+                        
+                        dict_responses_coll = {}
+                        for card_coll in reponses_coll:
+                                id_card, comment = card_coll
+                                try:
+                                        dict_responses_coll[id_card]
+                                except KeyError:
+                                        if comment != "":
+                                                dict_responses_coll[id_card] = True
+                                        else:
+                                                dict_responses_coll[id_card] = False
+                                else:
+                                        if dict_responses_coll[id_card]:
+                                                pass
+                                        else:
+                                                if comment != "":
+                                                        dict_responses_coll[id_card] = True
+                        for id_db, bold in dict_responses_coll.items():
+                                if bold:
+                                        new_id_db_to_bold.append(id_db)
+                                else:
+                                        new_id_db_to_unbold.append(id_db)
+                
+                if new_id_db_to_bold != [] or new_id_db_to_unbold != []:
+                        for i, row in enumerate(self.mainstore):
+                                if row[0] in new_id_db_to_bold:
+                                        self.mainstore[i][12] = 700
+                                if row[0] in new_id_db_to_unbold:
+                                        self.mainstore[i][12] = 400
+                        if self.tree_coll.get_model() == self.searchstore:
+                                for i, row in enumerate(self.searchstore):
+                                        if row[0] in new_id_db_to_bold:
+                                                self.searchstore[i][12] = 700
+                                        if row[0] in new_id_db_to_unbold:
+                                                self.searchstore[i][12] = 400
         
         def show_details(self, treeview, treepath, column, selection, button_show_details):
                 button_show_details.emit("clicked")
