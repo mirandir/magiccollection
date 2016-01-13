@@ -193,9 +193,9 @@ class MC_Window(Gtk.ApplicationWindow):
                         id_ = reponses[0][0]
                         current_object_view.load_card(id_, 1)
                 else:
-                        result_window, nb_result_disp = functions.various.create_window_search_name(reponses, current_object_view)
+                        result_window, nb_result_disp, store_results = functions.various.create_window_search_name(reponses, current_object_view)
                         if nb_result_disp == 1:
-                                id_ = reponses[0][0]
+                                id_ = store_results[0][0]
                                 current_object_view.load_card(id_, 1)
                         else:
                                 result_window.run()

@@ -811,7 +811,7 @@ def create_window_search_name(request_response, current_object_view):
         
         if defs.MAINWINDOW != None:
                 window.set_transient_for(defs.MAINWINDOW)
-        return(window, nb)
+        return(window, nb, store_results)
 
 def gen_details_widgets():
         def checkbutton_loaned_toggled(cb, entry_loaned):
