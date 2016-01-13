@@ -165,6 +165,8 @@ def read_coll(box, coll_object):
                 # some work with columns
                 columns_to_display = functions.config.read_config("coll_columns").split(";")
                 coll_columns_list = functions.various.gen_treeview_columns(columns_to_display, tree_coll)[0]
+                coll_object.mainstore.set_sort_func(9, functions.various.compare_str_and_int, None)
+                coll_object.mainstore.set_sort_func(10, functions.various.compare_str_and_int, None)
                 
                 select = tree_coll.get_selection()
                 coll_object.select = select

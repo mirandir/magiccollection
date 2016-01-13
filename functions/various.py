@@ -439,7 +439,7 @@ def prepare_cards_data_for_treeview(cards):
                 dict_card["nameforeign"] = nameforeign
                 dict_card["colors"] = colors
                 dict_card["pix_colors"] = pix_colors
-                dict_card["cmc"] = int(cmc)
+                dict_card["cmc"] = int(cmc.replace("0.5", "1"))
                 dict_card["type_"] = type_
                 dict_card["artist"] = artist
                 dict_card["power"] = str(power)
@@ -491,6 +491,39 @@ def vertical_flip_pic(gtkimage):
         pixbuf = gtkimage.get_pixbuf()
         pixbuf = pixbuf.rotate_simple(GdkPixbuf.PixbufRotation.UPSIDEDOWN)
         gtkimage.set_from_pixbuf(pixbuf)
+
+def compare_str_and_int(model, row1, row2, user_data):
+        '''This function compare a list of strings and int. int values are sorted first.'''
+        sort_column, _ = model.get_sort_column_id()
+        value1 = model.get_value(row1, sort_column)
+        value2 = model.get_value(row2, sort_column)
+        
+        if value1 == "" and value2 != "":
+                return(1)
+        
+        if value1 != "" and value2 == "":
+                return(-1)
+        
+        if value1.isnumeric() == True and value2.isnumeric() == True:
+                if int(value1) < int(value2):
+                        return(1)
+                elif int(value1) == int(value2):
+                        return(0)
+                else:
+                        return(-1)
+        
+        if value1.isnumeric() == False and value2.isnumeric() == False:
+                if value1 < value2:
+                        return(-1)
+                elif value1 == value2:
+                        return(0)
+                else:
+                        return(1)
+        
+        if value1.isnumeric() == True and value2.isnumeric() == False:
+                return(-1)
+        if value1.isnumeric() == False and value2.isnumeric() == True:
+                return(1)
 
 def gen_treeview_columns(columns_to_display, treeview):
         '''Generate the columns for a treeview which displays cards data'''               
@@ -602,6 +635,9 @@ def gen_treeview_columns(columns_to_display, treeview):
                 renderer_text_power = Gtk.CellRendererText()
                 renderer_text_power.set_fixed_size(10, 25)
                 column_power = Gtk.TreeViewColumn(defs.STRINGS["column_power"], renderer_text_power, text=9, weight=w, style=s)
+                pic_power = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="power-symbolic"), Gtk.IconSize.MENU)
+                pic_power.show()
+                column_power.set_widget(pic_power)
                 dict_columns_list["power"] = column_power
                 dict_renderers_list["power"] = renderer_text_power
                 column_power.set_sort_column_id(9)
@@ -610,6 +646,9 @@ def gen_treeview_columns(columns_to_display, treeview):
                 renderer_text_toughness = Gtk.CellRendererText()
                 renderer_text_toughness.set_fixed_size(10, 25)
                 column_toughness = Gtk.TreeViewColumn(defs.STRINGS["column_toughness"], renderer_text_toughness, text=10, weight=w, style=s)
+                pic_toughness = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="toughness-symbolic"), Gtk.IconSize.MENU)
+                pic_toughness.show()
+                column_toughness.set_widget(pic_toughness)
                 dict_columns_list["toughness"] = column_toughness
                 dict_renderers_list["toughness"] = renderer_text_toughness
                 column_toughness.set_sort_column_id(10)

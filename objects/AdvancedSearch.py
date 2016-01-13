@@ -284,6 +284,8 @@ class AdvancedSearch:
                         AS_object.mainselect = select
                         scrolledwindow.add(tree_results)
                         AS_object.mainstore = store_results
+                        AS_object.mainstore.set_sort_func(9, functions.various.compare_str_and_int, None)
+                        AS_object.mainstore.set_sort_func(10, functions.various.compare_str_and_int, None)
                         
                         tree_results.connect("row-activated", self.show_details, select, self.button_show_details)
                         
