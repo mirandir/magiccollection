@@ -302,14 +302,16 @@ def prepare_delete_card(cards_to_delete):
         GLib.idle_add(defs.MAINWINDOW.collection.del_collection, cards_to_delete)
 
 def delete_from_treeview(widget, event, selection):
-        key = Gdk.keyval_name(event.keyval)
-        if key == "Delete":
-                dialog = Gtk.MessageDialog(defs.MAINWINDOW, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, defs.STRINGS["delete_select_warning"])
-                response = dialog.run()
-                dialog.destroy()
-                # -8 yes, -9 no
-                if response == -8:
-                        prepare_delete_rows_from_selection(selection)
+        model, pathlist = selection.get_selected_rows()
+        if len(pathlist) > 0:
+                key = Gdk.keyval_name(event.keyval)
+                if key == "Delete":
+                        dialog = Gtk.MessageDialog(defs.MAINWINDOW, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, defs.STRINGS["delete_select_warning"])
+                        response = dialog.run()
+                        dialog.destroy()
+                        # -8 yes, -9 no
+                        if response == -8:
+                                prepare_delete_rows_from_selection(selection)
 
 def prepare_delete_rows_from_selection(selection):
         model, pathlist = selection.get_selected_rows()
@@ -469,8 +471,9 @@ def gen_quantity_popover(button_change_quantity, selection, details_store):
 
 def gen_details_popover(button_show_details, selection):
         '''Displays details for the current selection of cards.'''
-        def select_changed(selection, integer, TreeViewColumn, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment, button_add_deck, button_copy_details, button_delete_deck, button_remove):
+        def select_changed(selection, integer, TreeViewColumn, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment, button_add_deck, button_copy_details, button_delete_deck, button_remove, label_state):
                 model, pathlist = selection.get_selected_rows()
+                label_state.set_markup("")
                 if len(pathlist) > 0:
                         for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, button_add_deck, button_copy_details, button_delete_deck, button_remove]:
                                 widget.set_sensitive(False)
@@ -479,6 +482,14 @@ def gen_details_popover(button_show_details, selection):
                                 button_copy_details.set_sensitive(True)
                                 
                                 id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db = model[pathlist]
+                                
+                                y = date[:4]
+                                m = date[5:7]
+                                d = date[8:10]
+                                text_state = defs.STRINGS["state_card_coll_date"].replace("{d}", d).replace("{m}", m).replace("{y}", y)
+                                if deck != "":
+                                        text_state = text_state + "\n" + defs.STRINGS["state_card_coll_deck"].replace("{deck}", deck.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+                                label_state.set_markup(text_state)
                                 
                                 if condition == "mint":
                                         comboboxtext_condition.set_active(0)
@@ -674,6 +685,14 @@ def gen_details_popover(button_show_details, selection):
                 for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment]:
                         widget.set_sensitive(False)
                 
+                # we create the 'state' widget
+                scrolledwindow_state = Gtk.ScrolledWindow()
+                scrolledwindow_state.set_hexpand(True)
+                scrolledwindow_state.set_min_content_height(40)
+                scrolledwindow_state.set_shadow_type(Gtk.ShadowType.NONE)
+                label_state = Gtk.Label('')
+                scrolledwindow_state.add(label_state)
+                
                 # we create the toolbar and his buttons
                 button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
                 
@@ -695,7 +714,7 @@ def gen_details_popover(button_show_details, selection):
                 
                 select = details_tree.get_selection()
                 select.set_mode(Gtk.SelectionMode.MULTIPLE)
-                select.connect("changed", select_changed, "blip", "blop", comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment, button_add_deck, button_copy_details, button_delete_deck, button_remove)
+                select.connect("changed", select_changed, "blip", "blop", comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment, button_add_deck, button_copy_details, button_delete_deck, button_remove, label_state)
                 scrolledwindow.add(details_tree)
                 
                 button_copy_details.connect("clicked", copy_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
@@ -739,6 +758,8 @@ def gen_details_popover(button_show_details, selection):
                 box1.pack_start(scrolledwindow, True, True, 0)
                 
                 box1.pack_start(button_box, False, True, 0)
+                
+                details_box.pack_start(scrolledwindow_state, True, True, 0)
                 
                 box2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
                 details_box.pack_start(box2, True, True, 0)

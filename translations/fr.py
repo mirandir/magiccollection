@@ -235,5 +235,7 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["delete_select_warning"] = "Tous les exemplaires de ces cartes vont être SUPPRIMÉS. Êtes-vous sûr(e) de vouloir continuer ?"
         translate["delete_all"] = "Effacer la collection et les decks"
         translate["delete_all_warning"] = "Tous vos decks et toutes les cartes de votre collection vont être SUPPRIMÉS.\nÊtes-vous sûr(e) de vouloir continuer ?"
+        translate["state_card_coll_date"] = "Cette carte a été ajoutée à la collection le <b>{d}/{m}/{y}</b>."
+        translate["state_card_coll_deck"] = "Elle est utilisée dans le deck <b>{deck}</b>."
         #########################
         return(translate)
