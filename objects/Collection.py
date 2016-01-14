@@ -23,6 +23,7 @@
 from gi.repository import Gtk, Gio, GdkPixbuf, Pango, GLib
 import sys
 import os
+import time
 from datetime import date
 
 # imports def.py
@@ -145,8 +146,11 @@ class Collection:
                                 card_added = 0
                                 if self.mainstore == None:
                                         conn_coll.commit()
-                                        #GLib.idle_add(functions.collection.read_coll, self.right_content, self)
-                                        functions.collection.read_coll(self.right_content, self)
+                                        defs.READ_COLL_FINISH = False
+                                        GLib.idle_add(functions.collection.read_coll, self.right_content, self)
+                                        while defs.READ_COLL_FINISH != True:
+                                                time.sleep(1 / 1000)
+                                        defs.READ_COLL_FINISH = False
                                         cards = functions.various.prepare_cards_data_for_treeview([reponse])
                                         for card in cards.values():
                                                 cards_data_for_update_store_as.append([card["name"], card["edition_ln"]])
@@ -214,6 +218,22 @@ class Collection:
                 
                 if spinner_labels != None:
                         GLib.idle_add(spinner_labels.destroy)
+        
+        def del_all_collection_decks(self):
+                '''Delete all decks and all cards in the collection (caution).'''
+                # we are not monsters, we make a backup
+                today = date.today()
+                m = '%02d' % today.month
+                d = '%02d' % today.day
+                date_today = str(today.year) + str(m) + str(d)
+                
+                back_folder = os.path.join(defs.HOMEMC, "backup")
+                if (os.path.isdir(back_folder)) == False:
+                        os.mkdir(back_folder)
+                os.rename(os.path.join(defs.HOMEMC, "collection.sqlite"), os.path.join(back_folder, "collection_" + date_today + ".sql"))
+                
+                python = sys.executable
+                os.execl(python, python, os.path.join(defs.PATH_MC, "magic_collection.py"))
         
         def del_collection(self, cards_to_delete):
                 '''Delete the cards in 'cards_to_delete'.'''

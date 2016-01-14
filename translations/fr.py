@@ -231,5 +231,9 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["quantity_card_coll_only_number"] = "La recherche par Nombre d'exemplaires dans la collection ne peut se faire qu'avec des valeurs numériques."
         translate["change_quantity"] = "Modifier la quantité"
         translate["change_quantity_validate"] = "Valider"
+        translate["delete_select"] = "Supprimer la sélection"
+        translate["delete_select_warning"] = "Tous les exemplaires de ces cartes vont être SUPPRIMÉS. Êtes-vous sûr(e) de vouloir continuer ?"
+        translate["delete_all"] = "Effacer la collection et les decks"
+        translate["delete_all_warning"] = "Tous vos decks et toutes les cartes de votre collection vont être SUPPRIMÉS.\nÊtes-vous sûr(e) de vouloir continuer ?"
         #########################
         return(translate)

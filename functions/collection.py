@@ -20,7 +20,7 @@
 
 # Some functions for dealing with the collection
 
-from gi.repository import Gtk, Gio, GdkPixbuf, Pango, GLib
+from gi.repository import Gtk, Gio, GdkPixbuf, Pango, GLib, Gdk
 import os
 import sqlite3
 import threading
@@ -61,11 +61,11 @@ def read_coll(box, coll_object):
                 coll_object.button_show_details.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="text-editor-symbolic"), Gtk.IconSize.BUTTON))
                 coll_object.button_change_quantity = Gtk.MenuButton()
                 coll_object.button_change_quantity.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="zoom-in-symbolic"), Gtk.IconSize.BUTTON))
-                coll_object.button_add_deck = Gtk.Button()
+                coll_object.button_add_deck = Gtk.MenuButton()
                 coll_object.button_add_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_add-symbolic"), Gtk.IconSize.BUTTON))
-                coll_object.button_estimate = Gtk.Button()
+                coll_object.button_estimate = Gtk.MenuButton()
                 coll_object.button_estimate.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="accessories-calculator-symbolic"), Gtk.IconSize.BUTTON))
-                coll_object.button_delete = Gtk.Button()
+                coll_object.button_delete = Gtk.MenuButton()
                 coll_object.button_delete.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="user-trash-symbolic"), Gtk.IconSize.BUTTON))
                 
                 for button in [coll_object.button_search_coll, coll_object.button_show_details, coll_object.button_change_quantity, coll_object.button_add_deck, coll_object.button_estimate, coll_object.button_delete]:
@@ -73,7 +73,7 @@ def read_coll(box, coll_object):
                         toolbar_box.add(button)
                 coll_object.button_search_coll.set_sensitive(True)
                 coll_object.button_delete.set_sensitive(True)
-                coll_object.button_estimate.set_sensitive(True)
+                #coll_object.button_estimate.set_sensitive(True)
                 toolbar_box.show_all()
                 toolbar_box.set_child_secondary(coll_object.button_estimate, True)
                 toolbar_box.set_child_secondary(coll_object.button_delete, True)
@@ -176,7 +176,9 @@ def read_coll(box, coll_object):
                 coll_object.mainselect = select
                 scrolledwindow.add(tree_coll)
                 
+                coll_object.button_delete.set_popover(functions.collection.gen_delete_popover(coll_object.button_delete, select))
                 tree_coll.connect("row-activated", coll_object.show_details, select, coll_object.button_show_details)
+                tree_coll.connect("key-press-event", delete_from_treeview, select)
                 tree_coll.show_all()
                 scrolledwindow.show_all()
                 
@@ -197,6 +199,7 @@ def read_coll(box, coll_object):
                         coll_object.mainstore.set_sort_column_id(3, Gtk.SortType.ASCENDING)
                 else:
                         coll_object.mainstore.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+        defs.READ_COLL_FINISH = True
 
 def prepare_update_details(selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store, copy_details):
         '''If copy_details is 1, we copy-paste all details of the current card on all cards in the store.'''
@@ -298,6 +301,32 @@ def prepare_update_details(selection, comboboxtext_condition, entry_lang, checkb
 def prepare_delete_card(cards_to_delete):
         GLib.idle_add(defs.MAINWINDOW.collection.del_collection, cards_to_delete)
 
+def delete_from_treeview(widget, event, selection):
+        key = Gdk.keyval_name(event.keyval)
+        if key == "Delete":
+                dialog = Gtk.MessageDialog(defs.MAINWINDOW, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, defs.STRINGS["delete_select_warning"])
+                response = dialog.run()
+                dialog.destroy()
+                # -8 yes, -9 no
+                if response == -8:
+                        prepare_delete_rows_from_selection(selection)
+
+def prepare_delete_rows_from_selection(selection):
+        model, pathlist = selection.get_selected_rows()
+        ids_db_list = ""
+        for row in pathlist:
+                ids_db_list = ids_db_list + "\"" + model[row][0] + "\", "
+        ids_db_list = ids_db_list[:-2]
+        # we get data in the collection for this list
+        conn, c = connect_db()
+        c.execute("""SELECT id_coll, id_card FROM collection WHERE id_card IN (""" + ids_db_list + """)""")
+        reponses_coll = c.fetchall()
+        disconnect_db(conn)
+        cards_to_delete = {}
+        for card in reversed(reponses_coll):
+                cards_to_delete[card[0]] = card[1]
+        GLib.idle_add(defs.MAINWINDOW.collection.del_collection, cards_to_delete)
+
 def prepare_delete_card_quantity(cards_to_delete, selection):
         def update(selection):
                 model, pathlist = selection.get_selected_rows()
@@ -309,6 +338,63 @@ def prepare_delete_card_quantity(cards_to_delete, selection):
                                 break
         GLib.idle_add(defs.MAINWINDOW.collection.del_collection, cards_to_delete)
         GLib.idle_add(update, selection)
+
+def gen_delete_popover(button_delete, selection):
+        def popover_show(popover, selection, delete_box):
+                for widget in delete_box.get_children():
+                        delete_box.remove(widget)
+                
+                button_delete_select = Gtk.Button(defs.STRINGS["delete_select"])
+                button_delete_select.connect("clicked", button_delete_select_clicked, popover, selection)
+                button_delete_all = Gtk.Button(defs.STRINGS["delete_all"])
+                button_delete_all.connect("clicked", button_delete_all_clicked, popover)
+                
+                delete_box.pack_start(button_delete_all, True, True, 0)
+                delete_box.pack_start(button_delete_select, True, True, 0)
+                
+                delete_box.show_all()
+                
+                if defs.COLL_LOCK:
+                        button_delete_select.set_sensitive(False)
+                        button_delete_all.set_sensitive(False)
+                else:
+                        model, pathlist = selection.get_selected_rows()
+                        nb_rows_in_deck = 0
+                        for row in pathlist:
+                                if model[row][13] == Pango.Style.ITALIC:
+                                        nb_rows_in_deck += 1
+                                        break
+                        if len(pathlist) > 0 and nb_rows_in_deck == 0:
+                                button_delete_select.set_sensitive(True)
+                                button_delete_select.grab_focus()
+                        else:
+                                button_delete_select.set_sensitive(False)
+        
+        def button_delete_all_clicked(button, popover):
+                popover.hide()
+                dialog = Gtk.MessageDialog(defs.MAINWINDOW, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, defs.STRINGS["delete_all_warning"])
+                response = dialog.run()
+                dialog.destroy()
+                # -8 yes, -9 no
+                if response == -8:
+                        defs.MAINWINDOW.collection.del_all_collection_decks()
+        
+        def button_delete_select_clicked(button, popover, selection):
+                thread = threading.Thread(target = prepare_delete_rows_from_selection, args = [selection])
+                thread.daemon = True
+                thread.start()
+                popover.hide()
+        
+        delete_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        delete_box.set_margin_top(5)
+        delete_box.set_margin_bottom(5)
+        delete_box.set_margin_left(5)
+        delete_box.set_margin_right(5)
+        popover = Gtk.Popover.new(button_delete)
+        
+        popover.connect("show", popover_show, selection, delete_box)
+        popover.add(delete_box)
+        return(popover)
 
 def gen_quantity_popover(button_change_quantity, selection, details_store):
         '''Allows the user to change the quantity of the selected card.'''
@@ -440,7 +526,7 @@ def gen_details_popover(button_show_details, selection):
                         if defs.COLL_LOCK == False:
                                 nb_cards_in_deck = 0
                                 for row in pathlist:
-                                        if model[row][10] != "":
+                                        if model[row][10] == Pango.Style.ITALIC:
                                                 nb_cards_in_deck += 1
                                 
                                 if nb_cards_in_deck == 0:
