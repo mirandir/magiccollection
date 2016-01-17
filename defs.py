@@ -116,6 +116,7 @@ ext_fr_name = "0"
 fr_language = "de"
 as_columns = "name;type;edition;colors"
 coll_columns = "name;type;edition;colors;nb"
+decks_columns = "name;type;edition;colors;nb"
 # default values for specific language
 if LANGUAGE == "fr":
         ext_fr_name = "1"
@@ -123,6 +124,7 @@ if LANGUAGE in LOC_NAME_FOREIGN.keys():
         fr_language = LANGUAGE
         as_columns = "name_foreign;type;edition;colors"
         coll_columns = "name_foreign;type;edition;colors;nb"
+        decks_columns = "name_foreign;type;edition;colors;nb"
 
 VARCONFIGDEFAULT = {
 "download_pic_collection_decks": "1",
@@ -138,11 +140,14 @@ VARCONFIGDEFAULT = {
 "dark_theme": "0",
 "as_columns": as_columns,
 "coll_columns": coll_columns,
+"decks_columns": decks_columns,
 "no_reprints": "0"
 }
 
-# column names available for advanced search
+# column names available for the configuration window
 AS_COLUMNS_CHOICE = ["name", "edition", "name_foreign", "colors", "cmc", "type", "artist", "power", "toughness", "rarity"]
+COLL_COLUMNS_CHOICE = ["name", "edition", "name_foreign", "colors", "cmc", "type", "artist", "power", "toughness", "rarity", "nb"]
+DECKS_COLUMNS_CHOICE = ["name", "edition", "name_foreign", "colors", "cmc", "type", "artist", "power", "toughness", "rarity", "nb"]
 
 SEARCH_ITEMS = {
 0:["name", STRINGS["name_ad"]],
@@ -193,7 +198,7 @@ PIC_IN_TEXT = {
 "{2/U}": ["2u.png", 15],
 "{2/W}": ["2w.png", 15],
 "{∞}": ["infinite.png", 15],
-"{C}": ["c.png", 18],
+"{C}": ["c.png", 15],
 "{CHAOS}": ["chaos.png", 18],
 "{hr}": ["hr.png", 15],
 "{hw}": ["hw.png", 15],

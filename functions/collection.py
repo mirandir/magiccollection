@@ -115,7 +115,6 @@ def read_coll(box, coll_object):
                 box_top.show_all()
                 
                 dict_rowcards_in_coll = {}
-                where_request = []
                 for card_coll in reponses_coll:
                         id_coll, id_card, comment, deck = card_coll
                         
@@ -171,7 +170,7 @@ def read_coll(box, coll_object):
                 select = tree_coll.get_selection()
                 coll_object.select = select
                 select.set_mode(Gtk.SelectionMode.MULTIPLE)
-                select.connect("changed", coll_object.send_id_to_loader_with_selectinfo, "blip", "blop", 0, selectinfo_button, coll_object.button_show_details, coll_object.button_change_quantity)
+                select.connect("changed", coll_object.send_id_to_loader_with_selectinfo, "blip", "blop", 0, selectinfo_button, coll_object.button_show_details, coll_object.button_change_quantity, coll_object.button_add_deck)
                 selectinfo_button.connect("clicked", coll_object.selectinfo_click, select, popover_selectinfo)
                 coll_object.mainselect = select
                 scrolledwindow.add(tree_coll)
@@ -341,6 +340,73 @@ def prepare_delete_card_quantity(cards_to_delete, selection):
         GLib.idle_add(defs.MAINWINDOW.collection.del_collection, cards_to_delete)
         GLib.idle_add(update, selection)
 
+def prepare_delete_from_deck_details(selection, details_store):
+        def update(details_store, ids_coll_dict, deck_name, selection):
+                for i, row in enumerate(details_store):
+                        if row[0] in ids_coll_dict.keys():
+                                details_store[i][10] = ""
+                                details_store[i][12] = Pango.Style.NORMAL
+                model, pathlist = selection.get_selected_rows()
+                if len(pathlist) == 1:
+                        current_id = model[pathlist][0]
+                        for row in pathlist:
+                                if model[row][0] == current_id:
+                                        selection.unselect_all()
+                                        selection.select_path(row)
+                                        break
+        model, pathlist = selection.get_selected_rows()
+        ids_coll_dict = {}
+        #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+        for row in pathlist:
+                ids_coll_dict[model[row][0]] = model[row][13]
+                deck_name = model[row][10]
+        GLib.idle_add(defs.MAINWINDOW.decks.delete_cards_from_deck, deck_name, ids_coll_dict)
+        GLib.idle_add(update, details_store, ids_coll_dict, deck_name, selection)
+
+def prepare_add_to_deck(popover, select_list_decks, ids_coll_dict, selection):
+        def update(selection):
+                model, pathlist = selection.get_selected_rows()
+                if len(pathlist) == 1:
+                        current_id = model[pathlist][0]
+                        for row in pathlist:
+                                if model[row][0] == current_id:
+                                        selection.unselect_all()
+                                        selection.select_path(row)
+                                        break
+        model_deck, pathlist_deck = select_list_decks.get_selected_rows()
+        deck_name = model_deck[pathlist_deck][1]
+        GLib.idle_add(defs.MAINWINDOW.decks.add_cards_to_deck, deck_name, ids_coll_dict)
+        GLib.idle_add(update, selection)
+
+def prepare_add_to_deck_details(popover, selection, select_list_decks, details_store):
+        def update(details_store, ids_coll_dict, deck_name, selection):
+                for i, row in enumerate(details_store):
+                        if row[0] in ids_coll_dict.keys():
+                                details_store[i][10] = deck_name
+                                details_store[i][12] = Pango.Style.ITALIC
+                model, pathlist = selection.get_selected_rows()
+                if len(pathlist) == 1:
+                        current_id = model[pathlist][0]
+                        for row in pathlist:
+                                if model[row][0] == current_id:
+                                        selection.unselect_all()
+                                        selection.select_path(row)
+                                        break
+        model, pathlist = selection.get_selected_rows()
+        ids_coll_dict = {}
+        #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+        for row in pathlist:
+                ids_coll_dict[model[row][0]] = model[row][13]
+        model_deck, pathlist_deck = select_list_decks.get_selected_rows()
+        deck_name = model_deck[pathlist_deck][1]
+        GLib.idle_add(defs.MAINWINDOW.decks.add_cards_to_deck, deck_name, ids_coll_dict)
+        GLib.idle_add(update, details_store, ids_coll_dict, deck_name, selection)
+
+def delete_from_deck_details(button, selection, details_store):
+        thread = threading.Thread(target = prepare_delete_from_deck_details, args = (selection, details_store))
+        thread.daemon = True
+        thread.start()
+
 def gen_delete_popover(button_delete, selection):
         def popover_show(popover, selection, delete_box):
                 for widget in delete_box.get_children():
@@ -469,6 +535,156 @@ def gen_quantity_popover(button_change_quantity, selection, details_store):
         popover.add(quantity_box)
         return(popover)
 
+def gen_add_deck_popover(button_add_deck, selection, details_store, adjustment, cards_avail):
+        '''Displays a popover which can add the current selection to a deck, if it's possible.'''
+        def select_changed(selection, ok_button):
+                model, treeiter = selection.get_selected()
+                if treeiter == None:
+                        ok_button.set_sensitive(False)
+                else:
+                        ok_button.set_sensitive(True)
+        
+        def popover_show(popover, selection, add_deck_box, details_store, adjustment, cards_avail):
+                for widget in add_deck_box.get_children():
+                        add_deck_box.remove(widget)
+                
+                scrolledwindow_decks = Gtk.ScrolledWindow()
+                scrolledwindow_decks.set_min_content_width(150)
+                scrolledwindow_decks.set_min_content_height(150)
+                scrolledwindow_decks.set_hexpand(True)
+                scrolledwindow_decks.set_shadow_type(Gtk.ShadowType.IN)
+                
+                # id_deck, name
+                store_list_decks = Gtk.ListStore(str, str)
+                
+                tree_decks = Gtk.TreeView(store_list_decks)
+                tree_decks.set_enable_search(False)
+                renderer_decks = Gtk.CellRendererText()
+                column_name_decks = Gtk.TreeViewColumn(defs.STRINGS["list_decks_nb"].replace("(%%%)", ""), renderer_decks, text=1)
+                
+                column_name_decks.set_sort_column_id(1)
+                store_list_decks.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+                tree_decks.append_column(column_name_decks)
+                
+                select_list_decks = tree_decks.get_selection()
+                ok_button = Gtk.Button(defs.STRINGS["create_new_deck_ok"])
+                select_list_decks.connect("changed", select_changed, ok_button)
+                
+                conn_coll, c_coll = connect_db()
+                c_coll.execute("""SELECT id_deck, name FROM decks""")
+                responses = c_coll.fetchall()
+                disconnect_db(conn_coll)
+                
+                for id_deck, name in responses:
+                        store_list_decks.append([str(id_deck), name])
+                
+                scrolledwindow_decks.add(tree_decks)
+                
+                spinbutton = Gtk.SpinButton(adjustment=adjustment)
+                
+                ok_button.set_sensitive(False)
+                ok_button.connect("clicked", add_deck, popover, select_list_decks, cards_avail, spinbutton, selection)
+                
+                add_deck_box.pack_start(scrolledwindow_decks, True, True, 0)
+                add_deck_box.pack_start(spinbutton, True, True, 0)
+                add_deck_box.pack_start(ok_button, True, True, 0)
+                add_deck_box.show_all()
+        
+        def add_deck(button, popover, select_list_decks, cards_avail, spinbutton, selection):
+                nb = spinbutton.get_value_as_int()
+                # ids_coll_dict[id_coll] = id_db
+                ids_coll_dict = {}
+                z = 0
+                for id_db, _cards_avail in cards_avail.items():
+                        for id_coll in reversed(_cards_avail):
+                                if z < nb:
+                                        ids_coll_dict[id_coll] = id_db
+                                        z += 1
+                
+                thread = threading.Thread(target = prepare_add_to_deck, args = (popover, select_list_decks, ids_coll_dict, selection))
+                thread.daemon = True
+                thread.start()
+                popover.hide()
+        
+        add_deck_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        add_deck_box.set_margin_top(5)
+        add_deck_box.set_margin_bottom(5)
+        add_deck_box.set_margin_left(5)
+        add_deck_box.set_margin_right(5)
+        popover = Gtk.Popover.new(button_add_deck)
+        popover.props.width_request = 250
+        popover.connect("show", popover_show, selection, add_deck_box, details_store, adjustment, cards_avail)
+        popover.add(add_deck_box)
+        return(popover)
+
+def gen_add_deck_details_popover(button_add_deck, selection, details_store):
+        '''Displays a popover which can add the current card to a deck (from the details popover).'''
+        def select_changed(selection, ok_button):
+                model, treeiter = selection.get_selected()
+                if treeiter == None:
+                        ok_button.set_sensitive(False)
+                else:
+                        ok_button.set_sensitive(True)
+        
+        def popover_show(popover, selection, add_deck_box, details_store):
+                for widget in add_deck_box.get_children():
+                        add_deck_box.remove(widget)
+                
+                scrolledwindow_decks = Gtk.ScrolledWindow()
+                scrolledwindow_decks.set_min_content_width(150)
+                scrolledwindow_decks.set_min_content_height(150)
+                scrolledwindow_decks.set_hexpand(True)
+                scrolledwindow_decks.set_shadow_type(Gtk.ShadowType.IN)
+                
+                # id_deck, name
+                store_list_decks = Gtk.ListStore(str, str)
+                
+                tree_decks = Gtk.TreeView(store_list_decks)
+                tree_decks.set_enable_search(False)
+                renderer_decks = Gtk.CellRendererText()
+                column_name_decks = Gtk.TreeViewColumn(defs.STRINGS["list_decks_nb"].replace("(%%%)", ""), renderer_decks, text=1)
+                
+                column_name_decks.set_sort_column_id(1)
+                store_list_decks.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+                tree_decks.append_column(column_name_decks)
+                
+                ok_button = Gtk.Button(defs.STRINGS["create_new_deck_ok"])
+                select_list_decks = tree_decks.get_selection()
+                select_list_decks.connect("changed", select_changed, ok_button)
+                
+                conn_coll, c_coll = connect_db()
+                c_coll.execute("""SELECT id_deck, name FROM decks""")
+                responses = c_coll.fetchall()
+                disconnect_db(conn_coll)
+                
+                for id_deck, name in responses:
+                        store_list_decks.append([str(id_deck), name])
+                
+                scrolledwindow_decks.add(tree_decks)
+                ok_button.set_sensitive(False)
+                ok_button.connect("clicked", add_deck, popover, selection, select_list_decks, details_store)
+                
+                add_deck_box.pack_start(scrolledwindow_decks, True, True, 0)
+                add_deck_box.pack_start(ok_button, True, True, 0)
+                add_deck_box.show_all()
+        
+        def add_deck(button, popover, selection, select_list_decks, details_store):
+                thread = threading.Thread(target = prepare_add_to_deck_details, args = (popover, selection, select_list_decks, details_store))
+                thread.daemon = True
+                thread.start()
+                popover.hide()
+        
+        add_deck_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        add_deck_box.set_margin_top(5)
+        add_deck_box.set_margin_bottom(5)
+        add_deck_box.set_margin_left(5)
+        add_deck_box.set_margin_right(5)
+        popover = Gtk.Popover.new(button_add_deck)
+        popover.props.width_request = 250
+        popover.connect("show", popover_show, selection, add_deck_box, details_store)
+        popover.add(add_deck_box)
+        return(popover)
+
 def gen_details_popover(button_show_details, selection):
         '''Displays details for the current selection of cards.'''
         def select_changed(selection, integer, TreeViewColumn, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment, button_add_deck, button_copy_details, button_delete_deck, button_remove, label_state):
@@ -537,7 +753,7 @@ def gen_details_popover(button_show_details, selection):
                         if defs.COLL_LOCK == False:
                                 nb_cards_in_deck = 0
                                 for row in pathlist:
-                                        if model[row][10] == Pango.Style.ITALIC:
+                                        if model[row][12] == Pango.Style.ITALIC:
                                                 nb_cards_in_deck += 1
                                 
                                 if nb_cards_in_deck == 0:
@@ -696,7 +912,7 @@ def gen_details_popover(button_show_details, selection):
                 # we create the toolbar and his buttons
                 button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
                 
-                button_add_deck = Gtk.Button()
+                button_add_deck = Gtk.MenuButton()
                 button_add_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_add-symbolic"), Gtk.IconSize.BUTTON))
                 
                 button_copy_details = Gtk.Button()
@@ -708,17 +924,19 @@ def gen_details_popover(button_show_details, selection):
                 button_remove = Gtk.Button()
                 button_remove.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-delete-symbolic"), Gtk.IconSize.BUTTON))
                 
-                for button in [button_add_deck, button_copy_details, button_delete_deck, button_remove]:
-                        button.set_sensitive(False)
-                        button_box.pack_start(button, True, True, 0)
-                
                 select = details_tree.get_selection()
                 select.set_mode(Gtk.SelectionMode.MULTIPLE)
                 select.connect("changed", select_changed, "blip", "blop", comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment, button_add_deck, button_copy_details, button_delete_deck, button_remove, label_state)
                 scrolledwindow.add(details_tree)
                 
+                button_add_deck.set_popover(functions.collection.gen_add_deck_details_popover(button_add_deck, select, details_store))
                 button_copy_details.connect("clicked", copy_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+                button_delete_deck.connect("clicked", delete_from_deck_details, select, details_store)
                 button_remove.connect("clicked", delete_card, select, details_store)
+                
+                for button in [button_add_deck, button_copy_details, button_delete_deck, button_remove]:
+                        button.set_sensitive(False)
+                        button_box.pack_start(button, True, True, 0)
                 
                 # we connect the widgets to widget_save_details
                 comboboxtext_condition.connect("changed", widget_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
@@ -878,7 +1096,6 @@ def gen_grid_search_coll(coll_object, searchbar):
                                 disconnect_db(conn)
                                 
                                 dict_rowcards_in_coll = {}
-                                where_request = []
                                 for card_coll in reponses_coll:
                                         id_coll, id_card, date, condition, lang, foil, loaned_to, comment, deck = card_coll
                                         

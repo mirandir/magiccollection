@@ -226,7 +226,7 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["foil_yes"] = "oui"
         translate["foil_no"] = "non"
         translate["foil_only_yesno"] = "Le critère de recherche Foil ne peut s'utiliser qu'avec les valeurs suivantes : 1, 0, " + translate["foil_yes"] + ", " + translate["foil_no"] + "."
-        translate["placeholder_date"] = "AAAA-MM-JJ"
+        translate["placeholder_date"] = "AAAA-MM-JJ" # y-m-d
         translate["date_format"] = "La recherche par Date d'ajout à la collection ne peut se faire qu'avec le format AAAA-MM-JJ (Année-Mois-Jour)."
         translate["quantity_card_coll_only_number"] = "La recherche par Nombre d'exemplaires dans la collection ne peut se faire qu'avec des valeurs numériques."
         translate["change_quantity"] = "Modifier la quantité"
@@ -237,5 +237,17 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["delete_all_warning"] = "Tous vos decks et toutes les cartes de votre collection vont être SUPPRIMÉS.\nÊtes-vous sûr(e) de vouloir continuer ?"
         translate["state_card_coll_date"] = "Cette carte a été ajoutée à la collection le <b>{d}/{m}/{y}</b>."
         translate["state_card_coll_deck"] = "Elle est utilisée dans le deck <b>{deck}</b>."
+        # decks
+        translate["list_decks_nb"] = "Liste des decks (%%%)"
+        translate["create_new_deck"] = "Créer un nouveau deck"
+        translate["estimate_deck"] = "Estimer la valeur du deck"
+        translate["delete_deck"] = "Supprimer le deck"
+        translate["decks_empty_welcome"] = "Vous n'avez pas encore saisi de deck dans " + translate["app_name"] + ".\nCliquez ici pour en saisir un."
+        translate["create_new_deck_name"] = "Nom du deck"
+        translate["create_new_deck_ok"] = "Valider"
+        translate["comment_deck"] = "Commentaire du deck"
+        translate["decks_click_deck"] = "Cliquez sur un deck pour afficher les cartes qu'il contient."
+        translate["nb_cards_in_deck"] = "%%% carte"
+        translate["nb_cards_in_deck_s"] = "%%% cartes"
         #########################
         return(translate)

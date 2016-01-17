@@ -22,7 +22,7 @@
 
 import os
 
-# importation des valeurs globales
+# import global values
 import defs
 
 def read_config_file():

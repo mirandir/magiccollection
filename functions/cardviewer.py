@@ -506,11 +506,11 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         # buttonmenu "more" - other editions, open Gatherer, price
                         # FIXME : add the prices !
                         more_button = Gtk.MenuButton()
-                        more_button.set_relief(Gtk.ReliefStyle.NONE)
                         more_popover = gen_more_popover(more_button, multiverseid, basename, nb_variante, edition_code, name_without_variants, foreign__name_without_variants, object_origin, id_, type_, basetext, power, toughness, basecolors)
                         if more_popover == None:
                                 more_pic = Gtk.Image.new_from_file(os.path.join(defs.PATH_MC, "images", "nothing.png"))
                                 more_button.set_sensitive(False)
+                                more_button.set_relief(Gtk.ReliefStyle.NONE)
                         else:
                                 more_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="content-loading-symbolic"), Gtk.IconSize.BUTTON)
                                 more_button.set_popover(more_popover)
@@ -627,6 +627,9 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
                                 name_for_add_popover = name_foreign.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                         else:
                                 name_for_add_popover = name.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                        if name_for_add_popover[:3] == "-- ":
+                                # proxy detected, we need to delete this "-- "
+                                name_for_add_popover = name_for_add_popover[3:]
                         cards_selected_list.append([str(id_), name_for_add_popover, edition])
                         #FIXME: generating and closing the popover when many many rows are selected is slow and can freeze MC (??!!), so we limit to 500
                         if count > 500:

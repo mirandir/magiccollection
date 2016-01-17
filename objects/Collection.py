@@ -392,7 +392,7 @@ class Collection:
         def show_details(self, treeview, treepath, column, selection, button_show_details):
                 button_show_details.emit("clicked")
         
-        def send_id_to_loader_with_selectinfo(self, selection, integer, TreeViewColumn, simple_search, selectinfo_button, button_show_details, button_change_quantity):
+        def send_id_to_loader_with_selectinfo(self, selection, integer, TreeViewColumn, simple_search, selectinfo_button, button_show_details, button_change_quantity, button_add_deck):
                 self.send_id_to_loader(selection, integer, TreeViewColumn, simple_search)
                 model, pathlist = selection.get_selected_rows()
                 label_selectinfo = selectinfo_button.get_child()
@@ -401,6 +401,7 @@ class Collection:
                         selectinfo_button.set_sensitive(False)
                         button_show_details.set_sensitive(False)
                         button_change_quantity.set_sensitive(False)
+                        button_add_deck.set_sensitive(False)
                 elif len(pathlist) == 1:
                         label_selectinfo.set_text(defs.STRINGS["info_select_coll"])
                         selectinfo_button.set_sensitive(True)
@@ -409,6 +410,26 @@ class Collection:
                         button_show_details.set_popover(details_popover)
                         button_change_quantity.set_sensitive(True)
                         button_change_quantity.set_popover(functions.collection.gen_quantity_popover(button_change_quantity, selection, details_store))
+                        
+                        cards_avail = {}
+                        nb_avail = 0
+                        for card in details_store:
+                                #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+                                if card[10] == "":
+                                        try:
+                                                cards_avail[card[13]]
+                                        except KeyError:
+                                                cards_avail[card[13]] = [card[0]]
+                                        else:
+                                                cards_avail[card[13]].append(card[0])
+                                        nb_avail += 1
+                                
+                        if nb_avail > 0:
+                                adjustment = Gtk.Adjustment(value=1, lower=1, upper=nb_avail, step_increment=1, page_increment=10, page_size=0)
+                                button_add_deck.set_sensitive(True)
+                                button_add_deck.set_popover(functions.collection.gen_add_deck_popover(button_add_deck, selection, details_store, adjustment, cards_avail))
+                        else:
+                                button_add_deck.set_sensitive(False)
                 else:
                         label_selectinfo.set_text(defs.STRINGS["info_selects_coll"].replace("%%%", str(len(pathlist))))
                         #FIXME: generating and closing the popover when many many rows are selected is slow and can freeze MC (??!!), so we limit to 500
@@ -420,6 +441,8 @@ class Collection:
                         button_show_details.set_sensitive(True)
                         button_show_details.set_popover(functions.collection.gen_details_popover(button_show_details, selection)[0])
                         button_change_quantity.set_sensitive(False)
+                        button_add_deck.set_sensitive(False)
+                        #button_add_deck.set_popover(functions.collection.gen_add_deck_popover(button_add_deck, selection, details_store))
                 
         def selectinfo_click(self, selectinfo_button, selection, popover):                
                 def checkbutton_toggled(checkbutton, path, selection):
