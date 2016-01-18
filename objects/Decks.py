@@ -116,7 +116,7 @@ class Decks:
                         if current_deck_name == deck_name:
                                 for i, card_data_deck in enumerate(self.mainstore):
                                         for card_in_coll_dict in ids_coll_dict.values():
-                                                if card_data_deck[0] == card_in_coll_dict:
+                                                if card_data_deck[0] == card_in_coll_dict and card_data_deck[16] == 0:
                                                         # we need to +1 the quantity
                                                         self.mainstore[i][15] = self.mainstore[i][15] + 1
                                                         if card_data_deck[0] not in c_added:
@@ -206,7 +206,7 @@ class Decks:
                         if current_deck_name == deck_name:
                                 for i, card_data_deck in enumerate(self.mainstore):
                                         for card_in_coll_dict in ids_coll_dict.values():
-                                                if card_data_deck[0] == card_in_coll_dict:
+                                                if card_data_deck[0] == card_in_coll_dict and card_data_deck[16] == 0:
                                                         # we need to -1 the quantity
                                                         self.mainstore[i][15] = self.mainstore[i][15] - 1
                                                         if self.mainstore[i][15] < 1:
@@ -328,7 +328,7 @@ class Decks:
                         if current_deck_name == old_deck:
                                 for i, card_data_deck in enumerate(self.mainstore):
                                         for card_in_coll_dict in ids_db_list:
-                                                if card_data_deck[0] == card_in_coll_dict:
+                                                if card_data_deck[0] == card_in_coll_dict and card_data_deck[16] == 0:
                                                         # we need to delete the row
                                                         if i not in row_to_delete:
                                                                 row_to_delete.append(i)
