@@ -406,13 +406,13 @@ class Collection:
                         label_selectinfo.set_text(defs.STRINGS["info_select_coll"])
                         selectinfo_button.set_sensitive(True)
                         button_show_details.set_sensitive(True)
-                        details_popover, details_store = functions.collection.gen_details_popover(button_show_details, selection)
-                        button_show_details.set_popover(details_popover)
+                        button_show_details.set_popover(functions.collection.gen_details_popover(button_show_details, selection))
                         button_change_quantity.set_sensitive(True)
-                        button_change_quantity.set_popover(functions.collection.gen_quantity_popover(button_change_quantity, selection, details_store))
+                        button_change_quantity.set_popover(functions.collection.gen_quantity_popover(button_change_quantity, selection))
                         
                         cards_avail = {}
                         nb_avail = 0
+                        details_store = functions.collection.gen_details_store(selection)
                         for card in details_store:
                                 #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
                                 if card[10] == "":
@@ -425,9 +425,8 @@ class Collection:
                                         nb_avail += 1
                                 
                         if nb_avail > 0:
-                                adjustment = Gtk.Adjustment(value=1, lower=1, upper=nb_avail, step_increment=1, page_increment=10, page_size=0)
                                 button_add_deck.set_sensitive(True)
-                                button_add_deck.set_popover(functions.collection.gen_add_deck_popover(button_add_deck, selection, details_store, adjustment, cards_avail))
+                                button_add_deck.set_popover(functions.collection.gen_add_deck_popover(button_add_deck, selection))
                         else:
                                 button_add_deck.set_sensitive(False)
                 else:
@@ -439,7 +438,7 @@ class Collection:
                                 selectinfo_button.set_sensitive(False)
                         
                         button_show_details.set_sensitive(True)
-                        button_show_details.set_popover(functions.collection.gen_details_popover(button_show_details, selection)[0])
+                        button_show_details.set_popover(functions.collection.gen_details_popover(button_show_details, selection))
                         button_change_quantity.set_sensitive(False)
                         button_add_deck.set_sensitive(False)
                         #button_add_deck.set_popover(functions.collection.gen_add_deck_popover(button_add_deck, selection, details_store))

@@ -464,7 +464,7 @@ def gen_delete_popover(button_delete, selection):
         popover.add(delete_box)
         return(popover)
 
-def gen_quantity_popover(button_change_quantity, selection, details_store):
+def gen_quantity_popover(button_change_quantity, selection):
         '''Allows the user to change the quantity of the selected card.'''
         def spinbutton_value_changed(spinbutton, button_ok, current_quantity):
                 value = spinbutton.get_value_as_int()
@@ -499,10 +499,11 @@ def gen_quantity_popover(button_change_quantity, selection, details_store):
                 popover.hide()
                 button_ok.set_sensitive(False)
         
-        def popover_show(popover, button_change_quantity, selection, details_store, quantity_box):
+        def popover_show(popover, button_change_quantity, selection, quantity_box):
                 for widget in quantity_box.get_children():
                         quantity_box.remove(widget)
                 
+                details_store = gen_details_store(selection)
                 id_db = details_store[0][13]
                 ids_coll_list = []
                 cards_in_deck = 0
@@ -537,22 +538,44 @@ def gen_quantity_popover(button_change_quantity, selection, details_store):
         quantity_box.set_margin_left(5)
         quantity_box.set_margin_right(5)
         popover = Gtk.Popover.new(button_change_quantity)
-        popover.connect("show", popover_show, button_change_quantity, selection, details_store, quantity_box)
+        popover.connect("show", popover_show, button_change_quantity, selection, quantity_box)
         popover.add(quantity_box)
         return(popover)
 
-def gen_add_deck_popover(button_add_deck, selection, details_store, adjustment, cards_avail):
+def gen_add_deck_popover(button_add_deck, selection):
         '''Displays a popover which can add the current selection to a deck, if it's possible.'''
-        def select_changed(selection, ok_button):
+        def select_changed(selection, ok_button, spinbutton):
                 model, treeiter = selection.get_selected()
                 if treeiter == None:
                         ok_button.set_sensitive(False)
                 else:
-                        ok_button.set_sensitive(True)
+                        if spinbutton.get_value_as_int() > 0:
+                                ok_button.set_sensitive(True)
+                        else:
+                                ok_button.set_sensitive(False)
         
-        def popover_show(popover, selection, add_deck_box, details_store, adjustment, cards_avail):
+        def popover_show(popover, selection, add_deck_box):
                 for widget in add_deck_box.get_children():
                         add_deck_box.remove(widget)
+                
+                cards_avail = {}
+                nb_avail = 0
+                details_store = gen_details_store(selection)
+                for card in details_store:
+                        #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+                        if card[10] == "":
+                                try:
+                                        cards_avail[card[13]]
+                                except KeyError:
+                                        cards_avail[card[13]] = [card[0]]
+                                else:
+                                        cards_avail[card[13]].append(card[0])
+                                nb_avail += 1
+                        
+                if nb_avail > 0:
+                        adjustment = Gtk.Adjustment(value=1, lower=1, upper=nb_avail, step_increment=1, page_increment=10, page_size=0)
+                else:
+                        adjustment = Gtk.Adjustment(value=0, lower=0, upper=0, step_increment=1, page_increment=10, page_size=0)
                 
                 scrolledwindow_decks = Gtk.ScrolledWindow()
                 scrolledwindow_decks.set_min_content_width(150)
@@ -574,7 +597,6 @@ def gen_add_deck_popover(button_add_deck, selection, details_store, adjustment, 
                 
                 select_list_decks = tree_decks.get_selection()
                 ok_button = Gtk.Button(defs.STRINGS["create_new_deck_ok"])
-                select_list_decks.connect("changed", select_changed, ok_button)
                 
                 conn_coll, c_coll = connect_db()
                 c_coll.execute("""SELECT id_deck, name FROM decks""")
@@ -587,6 +609,7 @@ def gen_add_deck_popover(button_add_deck, selection, details_store, adjustment, 
                 scrolledwindow_decks.add(tree_decks)
                 
                 spinbutton = Gtk.SpinButton(adjustment=adjustment)
+                select_list_decks.connect("changed", select_changed, ok_button, spinbutton)
                 
                 ok_button.set_sensitive(False)
                 ok_button.connect("clicked", add_deck, popover, select_list_decks, cards_avail, spinbutton, selection)
@@ -619,7 +642,7 @@ def gen_add_deck_popover(button_add_deck, selection, details_store, adjustment, 
         add_deck_box.set_margin_right(5)
         popover = Gtk.Popover.new(button_add_deck)
         popover.props.width_request = 250
-        popover.connect("show", popover_show, selection, add_deck_box, details_store, adjustment, cards_avail)
+        popover.connect("show", popover_show, selection, add_deck_box)
         popover.add(add_deck_box)
         return(popover)
 
@@ -690,6 +713,59 @@ def gen_add_deck_details_popover(button_add_deck, selection, details_store):
         popover.connect("show", popover_show, selection, add_deck_box, details_store)
         popover.add(add_deck_box)
         return(popover)
+
+def gen_details_store(selection):
+        '''Generate the details_store, which can be use by buttons and popover to gain informations about details of the current selection of cards.'''
+        model, pathlist = selection.get_selected_rows()
+        # first, we get the list of all cards' ids
+        ids_list = ""
+        for row in pathlist:
+                ids_list = ids_list + "\"" + model[row][0] + "\", "
+        ids_list = ids_list[:-2]
+        # we get data in the collection for this list
+        conn, c = connect_db()
+        c.execute("""SELECT * FROM collection WHERE id_card IN (""" + ids_list + """)""")
+        reponses_coll = c.fetchall()
+        disconnect_db(conn)
+        
+        # we create a (cleaner) dict with reponses_coll
+        dict_responses_coll = {}
+        for card_coll in reponses_coll:
+                id_coll, id_card, date, condition, lang, foil, loaned_to, comment, deck = card_coll
+                try:
+                        dict_responses_coll[id_card]
+                except KeyError:
+                        dict_responses_coll[id_card] = [[id_coll, date, condition, lang, foil, loaned_to, comment, deck]]
+                else:
+                        dict_responses_coll[id_card].append([id_coll, date, condition, lang, foil, loaned_to, comment, deck])
+        if len(dict_responses_coll) > 0:
+                details_store = Gtk.ListStore(str, str, str, str, str, str, str, str, str, str, str, int, Pango.Style, str)
+                for row in pathlist:
+                        card_id = model[row][0]
+                        card_name = model[row][1]
+                        card_editionln = model[row][2]
+                        card_nameforeign = model[row][3]
+                        
+                        # id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+                        for card in dict_responses_coll[card_id]:
+                                id_coll, date, condition, lang, foil, loaned_to, comment, deck = card
+                                bold = 400
+                                if comment != "":
+                                        bold = 700
+                                italic = Pango.Style.NORMAL
+                                if deck != "":
+                                        italic = Pango.Style.ITALIC
+                                
+                                details_store.insert_with_valuesv(-1, range(15), [str(id_coll), card_name, card_editionln, card_nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, card_id])
+                        
+                if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
+                        details_store.set_sort_column_id(3, Gtk.SortType.ASCENDING)
+                else:
+                        details_store.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+                
+                return(details_store)
+        else:
+                return(None)
 
 def gen_details_popover(button_show_details, selection):
         '''Displays details for the current selection of cards.'''
@@ -942,75 +1018,18 @@ def gen_details_popover(button_show_details, selection):
                                 for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment]:
                                         widget.set_sensitive(False)
         
-        def gen_details_store(selection):
-                model, pathlist = selection.get_selected_rows()
-                # first, we get the list of all cards' ids
-                ids_list = ""
-                for row in pathlist:
-                        ids_list = ids_list + "\"" + model[row][0] + "\", "
-                ids_list = ids_list[:-2]
-                # we get data in the collection for this list
-                conn, c = connect_db()
-                c.execute("""SELECT * FROM collection WHERE id_card IN (""" + ids_list + """)""")
-                reponses_coll = c.fetchall()
-                disconnect_db(conn)
-                
-                # we create a (cleaner) dict with reponses_coll
-                dict_responses_coll = {}
-                for card_coll in reponses_coll:
-                        id_coll, id_card, date, condition, lang, foil, loaned_to, comment, deck = card_coll
-                        try:
-                                dict_responses_coll[id_card]
-                        except KeyError:
-                                dict_responses_coll[id_card] = [[id_coll, date, condition, lang, foil, loaned_to, comment, deck]]
-                        else:
-                                dict_responses_coll[id_card].append([id_coll, date, condition, lang, foil, loaned_to, comment, deck])
-                if len(dict_responses_coll) > 0:
-                        details_store = Gtk.ListStore(str, str, str, str, str, str, str, str, str, str, str, int, Pango.Style, str)
-                        for row in pathlist:
-                                card_id = model[row][0]
-                                card_name = model[row][1]
-                                card_editionln = model[row][2]
-                                card_nameforeign = model[row][3]
-                                
-                                # id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
-                                for card in dict_responses_coll[card_id]:
-                                        id_coll, date, condition, lang, foil, loaned_to, comment, deck = card
-                                        bold = 400
-                                        if comment != "":
-                                                bold = 700
-                                        italic = Pango.Style.NORMAL
-                                        if deck != "":
-                                                italic = Pango.Style.ITALIC
-                                        
-                                        details_store.insert_with_valuesv(-1, range(15), [str(id_coll), card_name, card_editionln, card_nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, card_id])
-                                
-                        if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
-                                details_store.set_sort_column_id(3, Gtk.SortType.ASCENDING)
-                        else:
-                                details_store.set_sort_column_id(1, Gtk.SortType.ASCENDING)
-                        
-                        return(details_store)
-                else:
-                        return(None)
-        
         details_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         details_box.set_margin_top(5)
         details_box.set_margin_bottom(5)
         details_box.set_margin_left(5)
         details_box.set_margin_right(5)
         
-        details_store = gen_details_store(selection)
-        
         popover = Gtk.Popover.new(button_show_details)
         popover.connect("show", popover_show, details_box)
         popover.add(details_box)
         popover.props.width_request = 550
         
-        if details_store != None:
-                return(popover, details_store)
-        else:
-                return(None, None)
+        return(popover)
 
 def show_hide_searchbar(togglebutton, searchbar):
         '''Show / hide the searchbar'''

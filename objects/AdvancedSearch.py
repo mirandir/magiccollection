@@ -604,7 +604,7 @@ class AdvancedSearch:
                                         nb_row_in_coll += 1
                         if len(pathlist) == nb_row_in_coll:
                                 self.button_show_details.set_sensitive(True)
-                                self.button_show_details.set_popover(functions.collection.gen_details_popover(self.button_show_details, selection)[0])
+                                self.button_show_details.set_popover(functions.collection.gen_details_popover(self.button_show_details, selection))
                         else:
                                 self.button_show_details.set_sensitive(False)
         
