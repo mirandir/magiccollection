@@ -212,7 +212,7 @@ class Decks:
                                                         if self.mainstore[i][15] < 1:
                                                                 if i not in row_to_delete:
                                                                         row_to_delete.append(i)
-                                for id_to_delete in row_to_delete:
+                                for id_to_delete in reversed(row_to_delete):
                                         del(self.mainstore[id_to_delete])
                                 # we update the nb of cards
                                 nb_cards = 0
