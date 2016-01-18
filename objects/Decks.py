@@ -242,9 +242,9 @@ class Decks:
                                 if row[0] not in dict_responses_coll.keys() and row[0] in ids_coll_dict.values():
                                         coll_object.mainstore[i][13] = Pango.Style.NORMAL
         
-        def delete_proxies(self, deck_name, proxies_dict_to_delete):
-                '''Delete the proxy cards in 'proxies_dict_to_delete' of the deck 'deck_name'.
-                proxies_dict_to_delete[id_db] = int (> 0)
+        def change_nb_proxies(self, deck_name, proxies_dict_to_change):
+                '''Change the quantity of proxy cards in 'proxies_dict_to_change' for the deck 'deck_name'.
+                proxies_dict_to_change[id_db] = int (the modificator)
                 '''
                 # first, we need the proxies list of this deck
                 conn_coll, c_coll = functions.collection.connect_db()
@@ -257,8 +257,8 @@ class Decks:
                         id_, nb = proxy_data.split("ø")
                         dict_current_proxies[id_] = int(nb)
                 
-                for id_db, qnt in proxies_dict_to_delete.items():
-                        dict_current_proxies[id_db] = dict_current_proxies[id_db] - int(qnt)
+                for id_db, qnt in proxies_dict_to_change.items():
+                        dict_current_proxies[id_db] = dict_current_proxies[id_db] + int(qnt)
                         if dict_current_proxies[id_db] == 0:
                                 del(dict_current_proxies[id_db])
                 
@@ -283,11 +283,13 @@ class Decks:
                         if current_deck_name == deck_name:
                                 for i, card_data_deck in enumerate(self.mainstore):
                                         if card_data_deck[16] == 1:# proxy indicator
-                                                for card_in_coll_dict in proxies_dict_to_delete.keys():
+                                                for card_in_coll_dict in proxies_dict_to_change.keys():
                                                         if card_data_deck[0] == card_in_coll_dict:
-                                                                # we need to delete the row
-                                                                if i not in row_to_delete:
-                                                                        row_to_delete.append(i)
+                                                                self.mainstore[i][15] = self.mainstore[i][15] + proxies_dict_to_change[card_in_coll_dict]
+                                                                if self.mainstore[i][15] < 1:
+                                                                        # we need to delete the row
+                                                                        if i not in row_to_delete:
+                                                                                row_to_delete.append(i)
                                 for id_to_delete in reversed(row_to_delete):
                                         del(self.mainstore[id_to_delete])
                                 # we update the nb of cards
@@ -397,9 +399,16 @@ class Decks:
                                 self.store_list_decks.append([str(id_deck), name])
                         self.update_nb_decks()
         
-        def show_details(self, treeview, treepath, column, selection, button_show_details):
-                if button_show_details.get_sensitive():
-                        button_show_details.emit("clicked")
+        def show_details(self, treeview, treepath, column, selection, button_show_details, button_change_quantity):
+                model, pathlist = selection.get_selected_rows()
+                for row in pathlist:
+                        if model[row][16] == 0:
+                                if button_show_details.get_sensitive():
+                                        button_show_details.emit("clicked")
+                        elif model[row][16] == 1:
+                                if button_change_quantity.get_sensitive():
+                                        button_change_quantity.emit("clicked")
+                        break
         
         def send_id_to_loader(self, selection, integer, TreeViewColumn, simple_search):
                 model, pathlist = selection.get_selected_rows()
@@ -422,10 +431,17 @@ class Decks:
                                 self.button_show_details.set_sensitive(False)
                                 self.button_move.set_sensitive(False)
                         self.delete_button.set_sensitive(True)
+                        
+                        if len(pathlist) == 1:
+                                self.button_change_quantity.set_sensitive(True)
+                                self.button_change_quantity.set_popover(functions.decks.gen_deck_change_quantity_popover(self.button_change_quantity, selection, self))
+                        else:
+                                self.button_change_quantity.set_sensitive(False)
                 else:
                         self.button_show_details.set_sensitive(False)
                         self.button_move.set_sensitive(False)
                         self.delete_button.set_sensitive(False)
+                        self.button_change_quantity.set_sensitive(False)
         
         def load_card(self, cardid, simple_search):
                 '''Load a card in the card viewer'''

@@ -157,11 +157,11 @@ def prepare_delete_from_deck(button, deck_name, selection, decks_object):
                 if model[row][16] == 0:
                         ids_db_list_to_delete.append(model[row][0])
                 elif model[row][16] == 1:
-                        ids_db_dict_proxies_to_delete[model[row][0]] = model[row][15]
+                        ids_db_dict_proxies_to_delete[model[row][0]] = model[row][15] * -1
         if ids_db_list_to_delete != []:
                 GLib.idle_add(decks_object.move_row, deck_name, "", ids_db_list_to_delete)
         if ids_db_dict_proxies_to_delete != {}:
-                GLib.idle_add(decks_object.delete_proxies, deck_name, ids_db_dict_proxies_to_delete)
+                GLib.idle_add(decks_object.change_nb_proxies, deck_name, ids_db_dict_proxies_to_delete)
 
 def gen_deck_content(deck_name, box, decks_object):
         '''Displays the cards of the deck.'''
@@ -185,12 +185,12 @@ def gen_deck_content(deck_name, box, decks_object):
         decks_object.button_show_details.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="text-editor-symbolic"), Gtk.IconSize.BUTTON))
         decks_object.delete_button = Gtk.Button()
         decks_object.delete_button.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_delete-symbolic"), Gtk.IconSize.BUTTON))
-        button_change_quantity = Gtk.MenuButton()
-        button_change_quantity.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="zoom-in-symbolic"), Gtk.IconSize.BUTTON))
+        decks_object.button_change_quantity = Gtk.MenuButton()
+        decks_object.button_change_quantity.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="zoom-in-symbolic"), Gtk.IconSize.BUTTON))
         decks_object.button_move = Gtk.MenuButton()
         decks_object.button_move.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="send-to-symbolic"), Gtk.IconSize.BUTTON))
         
-        for button in [decks_object.button_show_details, decks_object.delete_button, button_change_quantity, decks_object.button_move]:
+        for button in [decks_object.button_show_details, decks_object.delete_button, decks_object.button_change_quantity, decks_object.button_move]:
                 button.set_sensitive(False)
                 toolbar_box.add(button)
         toolbar_box.show_all()
@@ -269,7 +269,7 @@ def gen_deck_content(deck_name, box, decks_object):
         decks_object.mainselect = select
         scrolledwindow.add(tree_coll)
         
-        tree_coll.connect("row-activated", decks_object.show_details, select, decks_object.button_show_details)
+        tree_coll.connect("row-activated", decks_object.show_details, select, decks_object.button_show_details, decks_object.button_change_quantity)
         decks_object.delete_button.connect("clicked", prepare_delete_from_deck, deck_name, select, decks_object)
         
         tree_coll.show_all()
@@ -309,6 +309,122 @@ def prepare_move_cards(select_list_decks, selection, old_deck, decks_object):
         for row in pathlist:
                 ids_db_list.append(model[row][0])
         GLib.idle_add(decks_object.move_row, old_deck, new_deck, ids_db_list)
+
+def prepare_add_cards_deck(current_deck_name, ids_coll_dict, decks_object):
+        GLib.idle_add(decks_object.add_cards_to_deck, current_deck_name, ids_coll_dict)
+
+def prepare_delete_cards_deck(current_deck_name, ids_coll_dict, decks_object):
+        GLib.idle_add(decks_object.delete_cards_from_deck, current_deck_name, ids_coll_dict)
+
+def gen_deck_change_quantity_popover(button_change_quantity, selection, decks_object):
+        '''Generate the popover which allow to change the quantity of the card selected in the deck selected.'''
+        def spinbutton_value_changed(spinbutton, button_ok, current_quantity):
+                value = spinbutton.get_value_as_int()
+                if value != current_quantity and defs.COLL_LOCK == False:
+                        button_ok.set_sensitive(True)
+                else:
+                        button_ok.set_sensitive(False)
+        
+        def button_ok_clicked(button_ok, spinbutton, id_db, ids_cards_free_list, ids_cards_in_current_deck_list, current_quantity, popover, selection, current_deck_name, decks_object):
+                new_value = spinbutton.get_value_as_int()
+                if new_value > current_quantity:
+                        # we add cards
+                        nb_cards_to_add = new_value - current_quantity
+                        
+                        ids_coll_dict = {}
+                        nb_added = 0
+                        for card_id_coll in reversed(ids_cards_free_list):
+                                ids_coll_dict[card_id_coll] = id_db
+                                nb_added += 1
+                                if nb_added == nb_cards_to_add:
+                                        break
+                        
+                        thread = threading.Thread(target = prepare_add_cards_deck, args = (current_deck_name, ids_coll_dict, decks_object))
+                        thread.daemon = True
+                        thread.start()
+                elif new_value < current_quantity:
+                        # we delete cards
+                        nb_cards_to_delete = current_quantity - new_value
+                        
+                        ids_coll_dict = {}
+                        nb_added = 0
+                        for card_id_coll in reversed(ids_cards_in_current_deck_list):
+                                ids_coll_dict[card_id_coll] = id_db
+                                nb_added += 1
+                                if nb_added == nb_cards_to_delete:
+                                        break
+                        thread = threading.Thread(target = prepare_delete_cards_deck, args = (current_deck_name, ids_coll_dict, decks_object))
+                        thread.daemon = True
+                        thread.start()
+                        
+                popover.hide()
+        
+        def button_ok_clicked_proxies(button, spinbutton, id_db, current_quantity, current_deck_name, popover, decks_object):
+                new_quantity = spinbutton.get_value_as_int()
+                diff = new_quantity - current_quantity
+                proxies_dict_to_change = {id_db: diff}
+                GLib.idle_add(decks_object.change_nb_proxies, current_deck_name, proxies_dict_to_change)
+                popover.hide()
+        
+        def popover_show(popover, button_change_quantity, selection, quantity_box, decks_object):
+                for widget in quantity_box.get_children():
+                        quantity_box.remove(widget)
+                
+                model_deck, pathlist_deck = decks_object.select_list_decks.get_selected_rows()
+                current_deck_name = model_deck[pathlist_deck][1]
+                
+                model, pathlist = decks_object.mainselect.get_selected_rows()
+                for row in pathlist:
+                        id_db = model[row][0]
+                        proxy = model[row][16]
+                        current_quantity = model[row][15]
+                        break
+                
+                if proxy == 0:
+                        details_store = functions.collection.gen_details_store(selection)
+                        ids_cards_free_list = []
+                        ids_cards_in_current_deck_list = []
+                        cards_in_deck = 0
+                        max_cards = len(details_store)
+                        for card in details_store:
+                                if card[10] == "":
+                                        ids_cards_free_list.append(card[0])
+                                else:
+                                        cards_in_deck += 1
+                                if card[10] == current_deck_name:
+                                        ids_cards_in_current_deck_list.append(card[0])
+                        
+                        cards_disp = max_cards - cards_in_deck + current_quantity
+                        
+                        adjustment = Gtk.Adjustment(value=current_quantity, lower=1, upper=cards_disp, step_increment=1, page_increment=10, page_size=0)
+                else:
+                        adjustment = Gtk.Adjustment(value=current_quantity, lower=1, upper=100, step_increment=1, page_increment=10, page_size=0)
+                label_change_quantity = Gtk.Label(defs.STRINGS["change_quantity"])
+                quantity_box.pack_start(label_change_quantity, True, True, 0)
+                spinbutton = Gtk.SpinButton(adjustment=adjustment)
+                quantity_box.pack_start(spinbutton, True, True, 0)
+                
+                button_ok = Gtk.Button(defs.STRINGS["change_quantity_validate"])
+                button_ok.set_sensitive(False)
+                quantity_box.pack_start(button_ok, True, True, 0)
+                
+                spinbutton.connect("value-changed", spinbutton_value_changed, button_ok, current_quantity)
+                if proxy == 0:
+                        button_ok.connect("clicked", button_ok_clicked, spinbutton, id_db, ids_cards_free_list, ids_cards_in_current_deck_list, current_quantity, popover, selection, current_deck_name, decks_object)
+                else:
+                        button_ok.connect("clicked", button_ok_clicked_proxies, spinbutton, id_db, current_quantity, current_deck_name, popover, decks_object)
+                
+                quantity_box.show_all()
+        
+        quantity_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        quantity_box.set_margin_top(5)
+        quantity_box.set_margin_bottom(5)
+        quantity_box.set_margin_left(5)
+        quantity_box.set_margin_right(5)
+        popover = Gtk.Popover.new(button_change_quantity)
+        popover.connect("show", popover_show, button_change_quantity, selection, quantity_box, decks_object)
+        popover.add(quantity_box)
+        return(popover)
 
 def gen_move_deck_popover(button_move, selection, decks_object):
         '''Create the popover which allow the user to move all the cards selected to one deck to another.'''
