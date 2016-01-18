@@ -505,14 +505,20 @@ def gen_quantity_popover(button_change_quantity, selection, details_store):
                 
                 id_db = details_store[0][13]
                 ids_coll_list = []
+                cards_in_deck = 0
                 for card in details_store:
-                        ids_coll_list.append(card[0])
+                        if card[10] == "":
+                                ids_coll_list.append(card[0])
+                        else:
+                                cards_in_deck += 1
                 current_quantity = len(details_store)
+                if cards_in_deck == 0:
+                        cards_in_deck = 1
                 
                 label_change_quantity = Gtk.Label(defs.STRINGS["change_quantity"])
                 quantity_box.pack_start(label_change_quantity, True, True, 0)
                 
-                adjustment = Gtk.Adjustment(value=current_quantity, lower=1, upper=100, step_increment=1, page_increment=10, page_size=0)
+                adjustment = Gtk.Adjustment(value=current_quantity, lower=cards_in_deck, upper=100, step_increment=1, page_increment=10, page_size=0)
                 spinbutton = Gtk.SpinButton(adjustment=adjustment)
                 quantity_box.pack_start(spinbutton, True, True, 0)
                 
