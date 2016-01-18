@@ -843,10 +843,156 @@ def gen_details_popover(button_show_details, selection):
                         thread.daemon = True
                         thread.start()
         
-        def popover_show(popover, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment):
-                if defs.COLL_LOCK:
+        def popover_show(popover, details_box):
+                details_store = gen_details_store(selection)
+                if details_store != None:
+                        for widget in details_box.get_children():
+                                details_box.remove(widget)
+                        
+                        # we create widgets for displaying the cards
+                        scrolledwindow = Gtk.ScrolledWindow()
+                        scrolledwindow.set_min_content_width(250)
+                        scrolledwindow.set_min_content_height(150)
+                        scrolledwindow.set_hexpand(True)
+                        scrolledwindow.set_vexpand(True)
+                        scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
+                        
+                        # we need : id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+                        details_tree = Gtk.TreeView(details_store)
+                        details_tree.set_enable_search(False)
+                        # columns
+                        if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
+                                columns_to_display = ["id_coll", "name_foreign", "edition"]
+                                coll_columns_dict, renderer_dict = functions.various.gen_treeview_columns(columns_to_display, details_tree)
+                                renderer_dict["name_foreign"].set_fixed_size(90, 25)
+                        else:
+                                columns_to_display = ["id_coll", "name", "edition"]
+                                coll_columns_dict, renderer_dict = functions.various.gen_treeview_columns(columns_to_display, details_tree)
+                                renderer_dict["name"].set_fixed_size(90, 25)
+                        renderer_dict["id_coll"].set_fixed_size(10, 25)
+                        renderer_dict["edition"].set_fixed_size(40, 25)
+                        
+                        grid_details, label_add_condition, comboboxtext_condition, label_add_lang, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, label_add_comment, scrolledwindow_comment, textview_comment = functions.various.gen_details_widgets()
                         for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment]:
                                 widget.set_sensitive(False)
+                        
+                        # we create the 'state' widget
+                        scrolledwindow_state = Gtk.ScrolledWindow()
+                        scrolledwindow_state.set_hexpand(True)
+                        scrolledwindow_state.set_min_content_height(40)
+                        scrolledwindow_state.set_shadow_type(Gtk.ShadowType.NONE)
+                        label_state = Gtk.Label('')
+                        scrolledwindow_state.add(label_state)
+                        
+                        # we create the toolbar and his buttons
+                        button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+                        
+                        button_add_deck = Gtk.MenuButton()
+                        button_add_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_add-symbolic"), Gtk.IconSize.BUTTON))
+                        
+                        button_copy_details = Gtk.Button()
+                        button_copy_details.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-copy-symbolic"), Gtk.IconSize.BUTTON))
+                        
+                        button_delete_deck = Gtk.Button()
+                        button_delete_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_delete-symbolic"), Gtk.IconSize.BUTTON))
+                        
+                        button_remove = Gtk.Button()
+                        button_remove.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-delete-symbolic"), Gtk.IconSize.BUTTON))
+                        
+                        select = details_tree.get_selection()
+                        select.set_mode(Gtk.SelectionMode.MULTIPLE)
+                        select.connect("changed", select_changed, "blip", "blop", comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment, button_add_deck, button_copy_details, button_delete_deck, button_remove, label_state)
+                        scrolledwindow.add(details_tree)
+                        
+                        button_add_deck.set_popover(functions.collection.gen_add_deck_details_popover(button_add_deck, select, details_store))
+                        button_copy_details.connect("clicked", copy_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+                        button_delete_deck.connect("clicked", delete_from_deck_details, select, details_store)
+                        button_remove.connect("clicked", delete_card, select, details_store)
+                        
+                        for button in [button_add_deck, button_copy_details, button_delete_deck, button_remove]:
+                                button.set_sensitive(False)
+                                button_box.pack_start(button, True, True, 0)
+                        
+                        # we connect the widgets to widget_save_details
+                        comboboxtext_condition.connect("changed", widget_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+                        entry_lang.connect("changed", widget_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+                        checkbutton_foil.connect("toggled", widget_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+                        # we need a specific one for some widgets
+                        checkbutton_loaned.connect("toggled", checkbutton_loaned_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+                        entry_loaned.connect("changed", entry_loaned_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+                        textview_comment.get_buffer().connect("changed", textview_comment_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
+                        
+                        box1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+                        details_box.pack_start(box1, True, True, 0)
+                        
+                        box1.pack_start(scrolledwindow, True, True, 0)
+                        
+                        box1.pack_start(button_box, False, True, 0)
+                        
+                        details_box.pack_start(scrolledwindow_state, True, True, 0)
+                        
+                        box2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+                        details_box.pack_start(box2, True, True, 0)
+                        
+                        box2.pack_start(grid_details, True, True, 0)
+                        
+                        details_box.show_all()
+                
+                        if defs.COLL_LOCK:
+                                for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment]:
+                                        widget.set_sensitive(False)
+        
+        def gen_details_store(selection):
+                model, pathlist = selection.get_selected_rows()
+                # first, we get the list of all cards' ids
+                ids_list = ""
+                for row in pathlist:
+                        ids_list = ids_list + "\"" + model[row][0] + "\", "
+                ids_list = ids_list[:-2]
+                # we get data in the collection for this list
+                conn, c = connect_db()
+                c.execute("""SELECT * FROM collection WHERE id_card IN (""" + ids_list + """)""")
+                reponses_coll = c.fetchall()
+                disconnect_db(conn)
+                
+                # we create a (cleaner) dict with reponses_coll
+                dict_responses_coll = {}
+                for card_coll in reponses_coll:
+                        id_coll, id_card, date, condition, lang, foil, loaned_to, comment, deck = card_coll
+                        try:
+                                dict_responses_coll[id_card]
+                        except KeyError:
+                                dict_responses_coll[id_card] = [[id_coll, date, condition, lang, foil, loaned_to, comment, deck]]
+                        else:
+                                dict_responses_coll[id_card].append([id_coll, date, condition, lang, foil, loaned_to, comment, deck])
+                if len(dict_responses_coll) > 0:
+                        details_store = Gtk.ListStore(str, str, str, str, str, str, str, str, str, str, str, int, Pango.Style, str)
+                        for row in pathlist:
+                                card_id = model[row][0]
+                                card_name = model[row][1]
+                                card_editionln = model[row][2]
+                                card_nameforeign = model[row][3]
+                                
+                                # id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+                                for card in dict_responses_coll[card_id]:
+                                        id_coll, date, condition, lang, foil, loaned_to, comment, deck = card
+                                        bold = 400
+                                        if comment != "":
+                                                bold = 700
+                                        italic = Pango.Style.NORMAL
+                                        if deck != "":
+                                                italic = Pango.Style.ITALIC
+                                        
+                                        details_store.insert_with_valuesv(-1, range(15), [str(id_coll), card_name, card_editionln, card_nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, card_id])
+                                
+                        if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
+                                details_store.set_sort_column_id(3, Gtk.SortType.ASCENDING)
+                        else:
+                                details_store.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+                        
+                        return(details_store)
+                else:
+                        return(None)
         
         details_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         details_box.set_margin_top(5)
@@ -854,147 +1000,14 @@ def gen_details_popover(button_show_details, selection):
         details_box.set_margin_left(5)
         details_box.set_margin_right(5)
         
-        model, pathlist = selection.get_selected_rows()
+        details_store = gen_details_store(selection)
         
-        # first, we get the list of all cards' ids
-        ids_list = ""
-        for row in pathlist:
-                ids_list = ids_list + "\"" + model[row][0] + "\", "
-        ids_list = ids_list[:-2]
-        # we get data in the collection for this list
-        conn, c = connect_db()
-        c.execute("""SELECT * FROM collection WHERE id_card IN (""" + ids_list + """)""")
-        reponses_coll = c.fetchall()
-        disconnect_db(conn)
+        popover = Gtk.Popover.new(button_show_details)
+        popover.connect("show", popover_show, details_box)
+        popover.add(details_box)
+        popover.props.width_request = 550
         
-        # we create a (cleaner) dict with reponses_coll
-        dict_responses_coll = {}
-        for card_coll in reponses_coll:
-                id_coll, id_card, date, condition, lang, foil, loaned_to, comment, deck = card_coll
-                try:
-                        dict_responses_coll[id_card]
-                except KeyError:
-                        dict_responses_coll[id_card] = [[id_coll, date, condition, lang, foil, loaned_to, comment, deck]]
-                else:
-                        dict_responses_coll[id_card].append([id_coll, date, condition, lang, foil, loaned_to, comment, deck])
-        
-        if len(dict_responses_coll) > 0:
-                # we create widgets for displaying the cards
-                scrolledwindow = Gtk.ScrolledWindow()
-                scrolledwindow.set_min_content_width(250)
-                scrolledwindow.set_min_content_height(150)
-                scrolledwindow.set_hexpand(True)
-                scrolledwindow.set_vexpand(True)
-                scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
-                
-                # we need : id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
-                details_store = Gtk.ListStore(str, str, str, str, str, str, str, str, str, str, str, int, Pango.Style, str)
-                details_tree = Gtk.TreeView(details_store)
-                details_tree.set_enable_search(False)
-                # columns
-                if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
-                        columns_to_display = ["id_coll", "name_foreign", "edition"]
-                        coll_columns_dict, renderer_dict = functions.various.gen_treeview_columns(columns_to_display, details_tree)
-                        renderer_dict["name_foreign"].set_fixed_size(90, 25)
-                else:
-                        columns_to_display = ["id_coll", "name", "edition"]
-                        coll_columns_dict, renderer_dict = functions.various.gen_treeview_columns(columns_to_display, details_tree)
-                        renderer_dict["name"].set_fixed_size(90, 25)
-                renderer_dict["id_coll"].set_fixed_size(10, 25)
-                renderer_dict["edition"].set_fixed_size(40, 25)
-                
-                grid_details, label_add_condition, comboboxtext_condition, label_add_lang, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, label_add_comment, scrolledwindow_comment, textview_comment = functions.various.gen_details_widgets()
-                for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment]:
-                        widget.set_sensitive(False)
-                
-                # we create the 'state' widget
-                scrolledwindow_state = Gtk.ScrolledWindow()
-                scrolledwindow_state.set_hexpand(True)
-                scrolledwindow_state.set_min_content_height(40)
-                scrolledwindow_state.set_shadow_type(Gtk.ShadowType.NONE)
-                label_state = Gtk.Label('')
-                scrolledwindow_state.add(label_state)
-                
-                # we create the toolbar and his buttons
-                button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-                
-                button_add_deck = Gtk.MenuButton()
-                button_add_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_add-symbolic"), Gtk.IconSize.BUTTON))
-                
-                button_copy_details = Gtk.Button()
-                button_copy_details.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-copy-symbolic"), Gtk.IconSize.BUTTON))
-                
-                button_delete_deck = Gtk.Button()
-                button_delete_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_delete-symbolic"), Gtk.IconSize.BUTTON))
-                
-                button_remove = Gtk.Button()
-                button_remove.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-delete-symbolic"), Gtk.IconSize.BUTTON))
-                
-                select = details_tree.get_selection()
-                select.set_mode(Gtk.SelectionMode.MULTIPLE)
-                select.connect("changed", select_changed, "blip", "blop", comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment, button_add_deck, button_copy_details, button_delete_deck, button_remove, label_state)
-                scrolledwindow.add(details_tree)
-                
-                button_add_deck.set_popover(functions.collection.gen_add_deck_details_popover(button_add_deck, select, details_store))
-                button_copy_details.connect("clicked", copy_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
-                button_delete_deck.connect("clicked", delete_from_deck_details, select, details_store)
-                button_remove.connect("clicked", delete_card, select, details_store)
-                
-                for button in [button_add_deck, button_copy_details, button_delete_deck, button_remove]:
-                        button.set_sensitive(False)
-                        button_box.pack_start(button, True, True, 0)
-                
-                # we connect the widgets to widget_save_details
-                comboboxtext_condition.connect("changed", widget_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
-                entry_lang.connect("changed", widget_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
-                checkbutton_foil.connect("toggled", widget_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
-                # we need a specific one for some widgets
-                checkbutton_loaned.connect("toggled", checkbutton_loaned_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
-                entry_loaned.connect("changed", entry_loaned_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
-                textview_comment.get_buffer().connect("changed", textview_comment_save_details, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, select, details_store)
-                
-                for row in pathlist:
-                        card_id = model[row][0]
-                        card_name = model[row][1]
-                        card_editionln = model[row][2]
-                        card_nameforeign = model[row][3]
-                        
-                        # id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
-                        for card in dict_responses_coll[card_id]:
-                                id_coll, date, condition, lang, foil, loaned_to, comment, deck = card
-                                bold = 400
-                                if comment != "":
-                                        bold = 700
-                                italic = Pango.Style.NORMAL
-                                if deck != "":
-                                        italic = Pango.Style.ITALIC
-                                
-                                details_store.insert_with_valuesv(-1, range(15), [str(id_coll), card_name, card_editionln, card_nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, card_id])
-                        
-                if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
-                        details_store.set_sort_column_id(3, Gtk.SortType.ASCENDING)
-                else:
-                        details_store.set_sort_column_id(1, Gtk.SortType.ASCENDING)
-                
-                box1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-                details_box.pack_start(box1, True, True, 0)
-                
-                box1.pack_start(scrolledwindow, True, True, 0)
-                
-                box1.pack_start(button_box, False, True, 0)
-                
-                details_box.pack_start(scrolledwindow_state, True, True, 0)
-                
-                box2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-                details_box.pack_start(box2, True, True, 0)
-                
-                box2.pack_start(grid_details, True, True, 0)
-                
-                details_box.show_all()
-                popover = Gtk.Popover.new(button_show_details)
-                popover.connect("show", popover_show, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment)
-                popover.add(details_box)
-                popover.props.width_request = 550
+        if details_store != None:
                 return(popover, details_store)
         else:
                 return(None, None)
