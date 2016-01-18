@@ -20,7 +20,8 @@
 
 # Some functions for dealing with the decks
 
-from gi.repository import Gtk, Gio, Pango, GdkPixbuf
+from gi.repository import Gtk, Gio, Pango, GdkPixbuf, GLib
+import threading
 
 # import global values
 import defs
@@ -172,10 +173,10 @@ def gen_deck_content(deck_name, box, decks_object):
         delete_button.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_delete-symbolic"), Gtk.IconSize.BUTTON))
         button_change_quantity = Gtk.MenuButton()
         button_change_quantity.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="zoom-in-symbolic"), Gtk.IconSize.BUTTON))
-        button_move = Gtk.MenuButton()
-        button_move.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="send-to-symbolic"), Gtk.IconSize.BUTTON))
+        decks_object.button_move = Gtk.MenuButton()
+        decks_object.button_move.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="send-to-symbolic"), Gtk.IconSize.BUTTON))
         
-        for button in [decks_object.button_show_details, delete_button, button_change_quantity, button_move]:
+        for button in [decks_object.button_show_details, delete_button, button_change_quantity, decks_object.button_move]:
                 button.set_sensitive(False)
                 toolbar_box.add(button)
         toolbar_box.show_all()
@@ -284,6 +285,91 @@ def gen_deck_content(deck_name, box, decks_object):
                 decks_object.mainstore.set_sort_column_id(3, Gtk.SortType.ASCENDING)
         else:
                 decks_object.mainstore.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+
+def prepare_move_cards(select_list_decks, selection, old_deck, decks_object):
+        model_deck, pathlist_deck = select_list_decks.get_selected_rows()
+        new_deck = model_deck[pathlist_deck][1]
+        model, pathlist = selection.get_selected_rows()
+        ids_db_list = []
+        for row in pathlist:
+                ids_db_list.append(model[row][0])
+        GLib.idle_add(decks_object.move_row, old_deck, new_deck, ids_db_list)
+
+def gen_move_deck_popover(button_move, selection, decks_object):
+        '''Create the popover which allow the user to move all the cards selected to one deck to another.'''
+        def select_changed(selection, ok_button):
+                model, treeiter = selection.get_selected()
+                if treeiter == None:
+                        ok_button.set_sensitive(False)
+                else:
+                        ok_button.set_sensitive(True)
+        
+        def popover_show(popover, decks_object, move_deck_box, selection):
+                for widget in move_deck_box.get_children():
+                        move_deck_box.remove(widget)
+                
+                model, pathlist = decks_object.select_list_decks.get_selected_rows()
+                current_deck_name = model[pathlist][1]
+                
+                scrolledwindow_decks = Gtk.ScrolledWindow()
+                scrolledwindow_decks.set_min_content_width(150)
+                scrolledwindow_decks.set_min_content_height(150)
+                scrolledwindow_decks.set_hexpand(True)
+                scrolledwindow_decks.set_shadow_type(Gtk.ShadowType.IN)
+                
+                # id_deck, name
+                store_list_decks = Gtk.ListStore(str, str)
+                
+                tree_decks = Gtk.TreeView(store_list_decks)
+                tree_decks.set_enable_search(False)
+                renderer_decks = Gtk.CellRendererText()
+                column_name_decks = Gtk.TreeViewColumn(defs.STRINGS["list_decks_nb"].replace("(%%%)", ""), renderer_decks, text=1)
+                
+                column_name_decks.set_sort_column_id(1)
+                store_list_decks.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+                tree_decks.append_column(column_name_decks)
+                
+                select_list_decks = tree_decks.get_selection()
+                ok_button = Gtk.Button(defs.STRINGS["create_new_deck_ok"])
+                select_list_decks.connect("changed", select_changed, ok_button)
+                
+                conn_coll, c_coll = functions.collection.connect_db()
+                c_coll.execute("""SELECT id_deck, name FROM decks""")
+                responses = c_coll.fetchall()
+                functions.collection.disconnect_db(conn_coll)
+                
+                for id_deck, name in responses:
+                        if name != current_deck_name:
+                                store_list_decks.append([str(id_deck), name])
+                
+                scrolledwindow_decks.add(tree_decks)
+                
+                ok_button.set_sensitive(False)
+                ok_button.connect("clicked", move_cards, popover, select_list_decks, selection, current_deck_name, decks_object)
+                
+                move_label = Gtk.Label(defs.STRINGS["move_to_other_deck"])
+                
+                move_deck_box.pack_start(move_label, True, True, 0)
+                move_deck_box.pack_start(scrolledwindow_decks, True, True, 0)
+                move_deck_box.pack_start(ok_button, True, True, 0)
+                move_deck_box.show_all()
+        
+        def move_cards(button, popover, select_list_decks, selection, old_deck, decks_object):
+                thread = threading.Thread(target = prepare_move_cards, args = (select_list_decks, selection, old_deck, decks_object))
+                thread.daemon = True
+                thread.start()
+                popover.hide()
+        
+        move_deck_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        move_deck_box.set_margin_top(5)
+        move_deck_box.set_margin_bottom(5)
+        move_deck_box.set_margin_left(5)
+        move_deck_box.set_margin_right(5)
+        popover = Gtk.Popover.new(button_move)
+        popover.props.width_request = 300
+        popover.connect("show", popover_show, decks_object, move_deck_box, selection)
+        popover.add(move_deck_box)
+        return(popover)
 
 def gen_new_deck_popover(button_new_deck, deck_object):
         '''Create the popover which create deck.'''

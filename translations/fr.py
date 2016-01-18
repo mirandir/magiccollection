@@ -249,5 +249,6 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["decks_click_deck"] = "Cliquez sur un deck pour afficher les cartes qu'il contient."
         translate["nb_cards_in_deck"] = "%%% carte"
         translate["nb_cards_in_deck_s"] = "%%% cartes"
+        translate["move_to_other_deck"] = "Déplacer la sélection dans un autre deck"
         #########################
         return(translate)

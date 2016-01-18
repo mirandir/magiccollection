@@ -242,6 +242,83 @@ class Decks:
                                 if row[0] not in dict_responses_coll.keys() and row[0] in ids_coll_dict.values():
                                         coll_object.mainstore[i][13] = Pango.Style.NORMAL
         
+        def move_row(self, old_deck, new_deck, ids_db_list):
+                '''Move all the cards in the list of ids_db from 'old_deck' to 'new_deck'. 'new_deck' can be "" to delete all this cards from 'old_deck'.'''
+                conn_coll, c_coll = functions.collection.connect_db()
+                functions.various.lock_db(True, None)
+                for id_db in ids_db_list:
+                        c_coll.execute("""UPDATE collection SET deck = ? WHERE id_card = ? AND deck = ?""", (new_deck, id_db, old_deck,))
+                conn_coll.commit()
+                # we need the list of all cards in 'ids_db_list'
+                ids_list = ""
+                for id_ in ids_db_list:
+                        ids_list = ids_list + "\"" + id_ + "\", "
+                ids_list = ids_list[:-2]
+                c_coll.execute("""SELECT id_coll, id_card, deck FROM collection WHERE id_card IN (""" + ids_list + """)""")
+                responses_coll_in_deck = c_coll.fetchall()
+                
+                functions.collection.disconnect_db(conn_coll)
+                functions.various.lock_db(False, None)
+                
+                # if 'old_deck' is the deck selected in the Decks mode, we need to update it
+                row_to_delete = []
+                model, pathlist = self.select_list_decks.get_selected_rows()
+                try:
+                        current_deck_name = model[pathlist][1]
+                except TypeError:
+                        current_deck_name = ""
+                if current_deck_name != "":
+                        if current_deck_name == old_deck:
+                                for i, card_data_deck in enumerate(self.mainstore):
+                                        for card_in_coll_dict in ids_db_list:
+                                                if card_data_deck[0] == card_in_coll_dict:
+                                                        # we need to delete the row
+                                                        if i not in row_to_delete:
+                                                                row_to_delete.append(i)
+                                for id_to_delete in reversed(row_to_delete):
+                                        del(self.mainstore[id_to_delete])
+                                # we update the nb of cards
+                                nb_cards = 0
+                                for card_data_deck in self.mainstore:
+                                        nb_cards = nb_cards + card_data_deck[15]
+                                if nb_cards < 2:
+                                        self.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck"].replace("%%%", str(nb_cards)))
+                                else:
+                                        self.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck_s"].replace("%%%", str(nb_cards)))
+                
+                tmp_id_dict = {}
+                for card_data in responses_coll_in_deck:
+                        id_coll, id_card, deck = card_data
+                        if deck != "":
+                                in_deck = True
+                        else:
+                                in_deck = False
+                        try:
+                                tmp_id_dict[id_card]
+                        except KeyError:
+                                tmp_id_dict[id_card] = in_deck
+                        else:
+                                if tmp_id_dict[id_card]:
+                                        pass
+                                else:
+                                        tmp_id_dict[id_card] = in_deck
+                
+                coll_object = defs.MAINWINDOW.collection
+                for i, row in enumerate(coll_object.mainstore):
+                        if row[0] in tmp_id_dict.keys():
+                                if tmp_id_dict[row[0]]:
+                                        coll_object.mainstore[i][13] = Pango.Style.ITALIC
+                                else:
+                                        coll_object.mainstore[i][13] = Pango.Style.NORMAL
+                
+                if coll_object.tree_coll.get_model() == coll_object.searchstore:
+                        for i, row in enumerate(coll_object.searchstore):
+                                if row[0] in tmp_id_dict.keys():
+                                        if tmp_id_dict[row[0]]:
+                                                coll_object.searchstore[i][13] = Pango.Style.ITALIC
+                                        else:
+                                                coll_object.searchstore[i][13] = Pango.Style.NORMAL
+        
         def update_nb_decks(self):
                 '''Update the label which displays the number of decks.'''
                 if self.label_nb_decks != None:
@@ -282,8 +359,11 @@ class Decks:
                         if nb_row_proxy == 0:
                                 self.button_show_details.set_sensitive(True)
                                 self.button_show_details.set_popover(functions.collection.gen_details_popover(self.button_show_details, selection)[0])
+                                self.button_move.set_popover(functions.decks.gen_move_deck_popover(self.button_move, selection, self))
+                                self.button_move.set_sensitive(True)
                         else:
                                 self.button_show_details.set_sensitive(False)
+                                self.button_move.set_sensitive(False)
         
         def load_card(self, cardid, simple_search):
                 '''Load a card in the card viewer'''
