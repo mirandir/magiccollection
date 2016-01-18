@@ -149,6 +149,20 @@ def gen_decks_display(deck_object, box):
                 deck_object.update_nb_decks()
                 deck_object.mainbox.show_all()
 
+def prepare_delete_from_deck(button, deck_name, selection, decks_object):
+        model, pathlist = selection.get_selected_rows()
+        ids_db_list_to_delete = []
+        ids_db_dict_proxies_to_delete = {}
+        for row in pathlist:
+                if model[row][16] == 0:
+                        ids_db_list_to_delete.append(model[row][0])
+                elif model[row][16] == 1:
+                        ids_db_dict_proxies_to_delete[model[row][0]] = model[row][15]
+        if ids_db_list_to_delete != []:
+                GLib.idle_add(decks_object.move_row, deck_name, "", ids_db_list_to_delete)
+        if ids_db_dict_proxies_to_delete != {}:
+                GLib.idle_add(decks_object.delete_proxies, deck_name, ids_db_dict_proxies_to_delete)
+
 def gen_deck_content(deck_name, box, decks_object):
         '''Displays the cards of the deck.'''
         for widget in box.get_children():
@@ -169,14 +183,14 @@ def gen_deck_content(deck_name, box, decks_object):
         # the buttons
         decks_object.button_show_details = Gtk.MenuButton()
         decks_object.button_show_details.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="text-editor-symbolic"), Gtk.IconSize.BUTTON))
-        delete_button = Gtk.Button()
-        delete_button.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_delete-symbolic"), Gtk.IconSize.BUTTON))
+        decks_object.delete_button = Gtk.Button()
+        decks_object.delete_button.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_delete-symbolic"), Gtk.IconSize.BUTTON))
         button_change_quantity = Gtk.MenuButton()
         button_change_quantity.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="zoom-in-symbolic"), Gtk.IconSize.BUTTON))
         decks_object.button_move = Gtk.MenuButton()
         decks_object.button_move.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="send-to-symbolic"), Gtk.IconSize.BUTTON))
         
-        for button in [decks_object.button_show_details, delete_button, button_change_quantity, decks_object.button_move]:
+        for button in [decks_object.button_show_details, decks_object.delete_button, button_change_quantity, decks_object.button_move]:
                 button.set_sensitive(False)
                 toolbar_box.add(button)
         toolbar_box.show_all()
@@ -256,6 +270,7 @@ def gen_deck_content(deck_name, box, decks_object):
         scrolledwindow.add(tree_coll)
         
         tree_coll.connect("row-activated", decks_object.show_details, select, decks_object.button_show_details)
+        decks_object.delete_button.connect("clicked", prepare_delete_from_deck, deck_name, select, decks_object)
         
         tree_coll.show_all()
         scrolledwindow.show_all()

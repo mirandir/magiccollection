@@ -242,8 +242,65 @@ class Decks:
                                 if row[0] not in dict_responses_coll.keys() and row[0] in ids_coll_dict.values():
                                         coll_object.mainstore[i][13] = Pango.Style.NORMAL
         
+        def delete_proxies(self, deck_name, proxies_dict_to_delete):
+                '''Delete the proxy cards in 'proxies_dict_to_delete' of the deck 'deck_name'.
+                proxies_dict_to_delete[id_db] = int (> 0)
+                '''
+                # first, we need the proxies list of this deck
+                conn_coll, c_coll = functions.collection.connect_db()
+                functions.various.lock_db(True, None)
+                
+                c_coll.execute("""SELECT proxies FROM decks WHERE name = ?""", (deck_name,))
+                response_proxies = c_coll.fetchone()
+                dict_current_proxies = {}
+                for proxy_data in response_proxies[0].split(";;;"):
+                        id_, nb = proxy_data.split("ø")
+                        dict_current_proxies[id_] = int(nb)
+                
+                for id_db, qnt in proxies_dict_to_delete.items():
+                        dict_current_proxies[id_db] = dict_current_proxies[id_db] - int(qnt)
+                        if dict_current_proxies[id_db] == 0:
+                                del(dict_current_proxies[id_db])
+                
+                # now we prepare the proxies' data for writing
+                proxies_str = ""
+                for id_, qnt in dict_current_proxies.items():
+                        proxies_str = proxies_str + id_ + "ø" + str(qnt) + ";;;"
+                proxies_str = proxies_str[:-3]
+                c_coll.execute("""UPDATE decks SET proxies = ? WHERE name = ?""", (proxies_str, deck_name,))
+                
+                functions.collection.disconnect_db(conn_coll)
+                functions.various.lock_db(False, None)
+                
+                # if 'deck_name' is the deck selected in the Decks mode, we need to update it
+                row_to_delete = []
+                model, pathlist = self.select_list_decks.get_selected_rows()
+                try:
+                        current_deck_name = model[pathlist][1]
+                except TypeError:
+                        current_deck_name = ""
+                if current_deck_name != "":
+                        if current_deck_name == deck_name:
+                                for i, card_data_deck in enumerate(self.mainstore):
+                                        if card_data_deck[16] == 1:# proxy indicator
+                                                for card_in_coll_dict in proxies_dict_to_delete.keys():
+                                                        if card_data_deck[0] == card_in_coll_dict:
+                                                                # we need to delete the row
+                                                                if i not in row_to_delete:
+                                                                        row_to_delete.append(i)
+                                for id_to_delete in reversed(row_to_delete):
+                                        del(self.mainstore[id_to_delete])
+                                # we update the nb of cards
+                                nb_cards = 0
+                                for card_data_deck in self.mainstore:
+                                        nb_cards = nb_cards + card_data_deck[15]
+                                if nb_cards < 2:
+                                        self.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck"].replace("%%%", str(nb_cards)))
+                                else:
+                                        self.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck_s"].replace("%%%", str(nb_cards)))
+        
         def move_row(self, old_deck, new_deck, ids_db_list):
-                '''Move all the cards in the list of ids_db from 'old_deck' to 'new_deck'. 'new_deck' can be "" to delete all this cards from 'old_deck'.'''
+                '''Move all the cards in the list of ids_db from 'old_deck' to 'new_deck'. 'new_deck' can be "" to delete all these cards from 'old_deck'.'''
                 conn_coll, c_coll = functions.collection.connect_db()
                 functions.various.lock_db(True, None)
                 for id_db in ids_db_list:
@@ -346,7 +403,7 @@ class Decks:
         
         def send_id_to_loader(self, selection, integer, TreeViewColumn, simple_search):
                 model, pathlist = selection.get_selected_rows()
-                if pathlist != None:
+                if pathlist != []:
                         tree_iter = model.get_iter(pathlist[0])
                         id_ = model.get_value(tree_iter, 0)
                         self.load_card(id_, simple_search)
@@ -364,6 +421,11 @@ class Decks:
                         else:
                                 self.button_show_details.set_sensitive(False)
                                 self.button_move.set_sensitive(False)
+                        self.delete_button.set_sensitive(True)
+                else:
+                        self.button_show_details.set_sensitive(False)
+                        self.button_move.set_sensitive(False)
+                        self.delete_button.set_sensitive(False)
         
         def load_card(self, cardid, simple_search):
                 '''Load a card in the card viewer'''
