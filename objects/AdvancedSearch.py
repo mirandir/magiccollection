@@ -251,8 +251,6 @@ class AdvancedSearch:
         
         def disp_result(self, reponses, type_s, wait_button):
                 '''Display the result with GLib.idle_add'''
-                #GLib.idle_add(self.empty_box_results)
-                #functions.various.force_update_gui(0)
                 GLib.idle_add(self.disp_result2, reponses, type_s, wait_button)
         
         def disp_result2(self, reponses, type_s, wait_button):
@@ -261,6 +259,7 @@ class AdvancedSearch:
                 def insert_data(store_results, cards_added, card, bold, italic):
                         store_results.insert_with_valuesv(-1, range(15), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic])
                         cards_added.append(card["name"] + "-" + card["edition_ln"])
+                        functions.various.force_update_gui(0)
                 
                 def _start(AS_object, store_results, scrolledwindow):
                         AS_object.label_nb_cards.set_text("")
@@ -320,15 +319,15 @@ class AdvancedSearch:
                         if len(reponses) > 5000: 
                                 label_wait = Gtk.Label()
                                 label_wait.set_markup("<big>" + defs.STRINGS["please_wait"] + "</big>")
-                                GLib.idle_add(wait_button.pack_start, label_wait, True, True, 0, priority=GLib.PRIORITY_HIGH_IDLE)
+                                wait_button.pack_start(label_wait, True, True, 0)
                                 time.sleep(4)
-                                GLib.idle_add(label_wait.show, priority=GLib.PRIORITY_HIGH_IDLE)
+                                label_wait.show()
                                 functions.various.force_update_gui(0)
                                        
                         scrolledwindow = Gtk.ScrolledWindow()
                         # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic"
                         store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style)
-                        GLib.idle_add(_start, self, store_results, scrolledwindow)
+                        _start(self, store_results, scrolledwindow)
                         cards_added = []
                         
                         cards = functions.various.prepare_cards_data_for_treeview(reponses)
@@ -374,6 +373,7 @@ class AdvancedSearch:
                                                                 else:
                                                                         # current print is older
                                                                         del(cards[card["id_"]])
+                                                functions.various.force_update_gui(0)
                         
                         nb_lines_added = 0
                         
@@ -406,24 +406,24 @@ class AdvancedSearch:
                                 
                                 if add:
                                         nb_lines_added += 1
-                                        GLib.idle_add(insert_data, store_results, cards_added, card, bold, italic)
+                                        insert_data(store_results, cards_added, card, bold, italic)
                         
-                        GLib.idle_add(_end, store_results, wait_button)
+                        _end(store_results, wait_button)
                         
                         if type_s == "edition":
                                 if nb_lines_added > 1:
-                                        GLib.idle_add(self.label_nb_cards.set_text, str(nb_lines_added) + " " + defs.STRINGS["cards"])
+                                        self.label_nb_cards.set_text(str(nb_lines_added) + " " + defs.STRINGS["cards"])
                                 else:
-                                        GLib.idle_add(self.label_nb_cards.set_text, str(nb_lines_added) + " " + defs.STRINGS["card"])
+                                        self.label_nb_cards.set_text(str(nb_lines_added) + " " + defs.STRINGS["card"])
                         else:
                                 if nb_lines_added > 1:
-                                        GLib.idle_add(self.label_nb_cards.set_text, str(nb_lines_added) + " " + defs.STRINGS["cards_result"])
+                                        self.label_nb_cards.set_text(str(nb_lines_added) + " " + defs.STRINGS["cards_result"])
                                 else:
-                                        GLib.idle_add(self.label_nb_cards.set_text, str(nb_lines_added) + " " + defs.STRINGS["card_result"])
+                                        self.label_nb_cards.set_text(str(nb_lines_added) + " " + defs.STRINGS["card_result"])
                         
-                        GLib.idle_add(scrolledwindow.show_all)
+                        scrolledwindow.show_all()
                 else:
-                        GLib.idle_add(_no_result, self, wait_button)
+                        _no_result(self, wait_button)
                 functions.various.lock_db(None, False)
         
         def prepare_request(self, widget, search_widgets_list, overlay_right_content_bot, select):

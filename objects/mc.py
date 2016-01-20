@@ -227,6 +227,7 @@ class MC_Window(Gtk.ApplicationWindow):
                 self.main_stack.show_all()
                 # default view is collection
                 #self.main_stack.set_visible_child_name("collection")
+                self.widget_overlay.destroy()
 
 class MagicCollection(Gtk.Application):
         '''App creation'''
@@ -257,10 +258,11 @@ class MagicCollection(Gtk.Application):
                 thread.start()
                 
         def load_mc(self):
-                self.mainwindow.widget_overlay.destroy()
                 if defs.DB_VERSION != None:
                         functions.various.gen_dict_editions()
                         self.mainwindow.create_gui()
+                else:
+                        self.mainwindow.widget_overlay.destroy()
 
         def do_startup(self):
                 # start the application

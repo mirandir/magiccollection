@@ -453,6 +453,7 @@ def prepare_cards_data_for_treeview(cards):
                 dict_card["text"] = text
                 
                 cards_ok[id_str] = dict_card
+                force_update_gui(0)
         
         return(cards_ok)
 
