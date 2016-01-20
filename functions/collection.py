@@ -1123,7 +1123,7 @@ def gen_grid_search_coll(coll_object, searchbar):
                         coll_object.label_nb_card_coll.set_label(defs.STRINGS["nb_card_found_coll_s"].replace("%%%", str(nb_results)))
         
         def prepare_request(widget, search_widgets_list, overlay_right_content):
-                if defs.AS_LOCK == False and defs.COLL_LOCK == False:
+                if defs.AS_LOCK == False:
                         request_list = functions.db.prepare_request(search_widgets_list, "coll")
                         request = request_list[0]
                         quantity_card_req = request_list[1]

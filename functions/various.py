@@ -881,7 +881,7 @@ def lock_db(lock_coll, lock_cards):
                         GLib.idle_add(defs.BUTTON_COLL_LOCK.set_label, defs.STRINGS["add_button_validate"])
                         GLib.idle_add(defs.BUTTON_COLL_LOCK.set_sensitive, True)
         
-        if defs.AS_LOCK == True or defs.COLL_LOCK == True:
+        '''if defs.AS_LOCK == True or defs.COLL_LOCK == True:
                 try:
                         GLib.idle_add(defs.MAINWINDOW.collection.button_search.set_label, defs.STRINGS["coll_button_search_wait"])
                 except AttributeError:
@@ -891,4 +891,4 @@ def lock_db(lock_coll, lock_cards):
                 try:
                         GLib.idle_add(defs.MAINWINDOW.collection.button_search.set_label, defs.STRINGS["search_coll"])
                 except AttributeError:
-                        pass
+                        pass'''
