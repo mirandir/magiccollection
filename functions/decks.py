@@ -147,6 +147,7 @@ def gen_decks_display(deck_object, box):
                 label_click_deck.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
                 label_click_deck.set_justify(Gtk.Justification.CENTER)
                 deck_object.right_content_bot.pack_start(label_click_deck, True, True, 0)
+                deck_object.right_content.pack_start(deck_object.right_content_bot, True, True, 0)
                 
                 deck_object.update_nb_decks()
                 deck_object.mainbox.show_all()

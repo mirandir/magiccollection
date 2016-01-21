@@ -63,7 +63,6 @@ class Decks:
                 
                 self.right_content_bot = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
                 functions.decks.gen_decks_display(self, self.right_content)
-                self.right_content.pack_start(self.right_content_bot, True, True, 0)
                 
                 # we load nothing in the card viewer
                 self.load_card(None, 0)
@@ -81,7 +80,7 @@ class Decks:
                 functions.various.lock_db(False, None)
                 
                 if self.store_list_decks == None:
-                        self.gen_decks_display(self.right_content)
+                        functions.decks.gen_decks_display(self, self.right_content)
                 else:
                         self.gen_list_decks()
         
