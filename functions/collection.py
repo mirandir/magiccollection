@@ -56,16 +56,22 @@ def read_coll(box, coll_object):
                 toolbar_box.set_spacing(4)
                 # the buttons
                 coll_object.button_search_coll = Gtk.ToggleButton()
+                coll_object.button_search_coll.set_tooltip_text(defs.STRINGS["search_collection_tooltip"])
                 coll_object.button_search_coll.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-find-symbolic"), Gtk.IconSize.BUTTON))
                 coll_object.button_show_details = Gtk.MenuButton()
+                coll_object.button_show_details.set_tooltip_text(defs.STRINGS["show_details_tooltip"])
                 coll_object.button_show_details.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="text-editor-symbolic"), Gtk.IconSize.BUTTON))
                 coll_object.button_change_quantity = Gtk.MenuButton()
+                coll_object.button_change_quantity.set_tooltip_text(defs.STRINGS["change_quantity_tooltip"])
                 coll_object.button_change_quantity.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="zoom-in-symbolic"), Gtk.IconSize.BUTTON))
                 coll_object.button_add_deck = Gtk.MenuButton()
+                coll_object.button_add_deck.set_tooltip_text(defs.STRINGS["add_deck_tooltip"])
                 coll_object.button_add_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_add-symbolic"), Gtk.IconSize.BUTTON))
                 coll_object.button_estimate = Gtk.MenuButton()
+                coll_object.button_estimate.set_tooltip_text(defs.STRINGS["estimate_cards_tooltip"])
                 coll_object.button_estimate.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="accessories-calculator-symbolic"), Gtk.IconSize.BUTTON))
                 coll_object.button_delete = Gtk.MenuButton()
+                coll_object.button_delete.set_tooltip_text(defs.STRINGS["delete_cards_tooltip"])
                 coll_object.button_delete.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="user-trash-symbolic"), Gtk.IconSize.BUTTON))
                 
                 for button in [coll_object.button_search_coll, coll_object.button_show_details, coll_object.button_change_quantity, coll_object.button_add_deck, coll_object.button_estimate, coll_object.button_delete]:
@@ -493,10 +499,15 @@ def gen_delete_popover(button_delete, selection):
                         defs.MAINWINDOW.collection.del_all_collection_decks()
         
         def button_delete_select_clicked(button, popover, selection):
-                thread = threading.Thread(target = prepare_delete_rows_from_selection, args = [selection])
-                thread.daemon = True
-                thread.start()
                 popover.hide()
+                dialog = Gtk.MessageDialog(defs.MAINWINDOW, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, defs.STRINGS["delete_select_warning"])
+                response = dialog.run()
+                dialog.destroy()
+                # -8 yes, -9 no
+                if response == -8:
+                        thread = threading.Thread(target = prepare_delete_rows_from_selection, args = [selection])
+                        thread.daemon = True
+                        thread.start()
         
         delete_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         delete_box.set_margin_top(5)
@@ -560,9 +571,6 @@ def gen_quantity_popover(button_change_quantity, selection):
                 current_quantity = len(details_store)
                 if cards_in_deck == 0:
                         cards_in_deck = 1
-                
-                label_change_quantity = Gtk.Label(defs.STRINGS["change_quantity"])
-                quantity_box.pack_start(label_change_quantity, True, True, 0)
                 
                 adjustment = Gtk.Adjustment(value=current_quantity, lower=cards_in_deck, upper=100, step_increment=1, page_increment=10, page_size=0)
                 spinbutton = Gtk.SpinButton(adjustment=adjustment)
@@ -1063,15 +1071,19 @@ def gen_details_popover(button_show_details, selection):
                         button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
                         
                         button_add_deck = Gtk.MenuButton()
+                        button_add_deck.set_tooltip_text(defs.STRINGS["add_deck_tooltip"])
                         button_add_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_add-symbolic"), Gtk.IconSize.BUTTON))
                         
                         button_copy_details = Gtk.Button()
+                        button_copy_details.set_tooltip_text(defs.STRINGS["copy_details_tooltip"])
                         button_copy_details.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-copy-symbolic"), Gtk.IconSize.BUTTON))
                         
                         button_delete_deck = Gtk.Button()
+                        button_delete_deck.set_tooltip_text(defs.STRINGS["delete_from_deck_tooltip"])
                         button_delete_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_delete-symbolic"), Gtk.IconSize.BUTTON))
                         
                         button_remove = Gtk.Button()
+                        button_remove.set_tooltip_text(defs.STRINGS["delete_cards_details_tooltip"])
                         button_remove.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-delete-symbolic"), Gtk.IconSize.BUTTON))
                         
                         select = details_tree.get_selection()

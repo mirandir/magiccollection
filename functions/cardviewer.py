@@ -252,12 +252,15 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                 else:
                                         df_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="weather-clear-symbolic"), Gtk.IconSize.LARGE_TOOLBAR)
                                 df_button.connect("clicked", object_origin.load_card_from_outside, str(id_otherface), [], simple_search)
+                                df_button.set_tooltip_text(defs.STRINGS["dfbutton_seeotherside_tooltip"])
                         elif layout == "flip" or basename == "Curse of the Fire Penguin":
                                 df_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="object-flip-vertical-symbolic"), Gtk.IconSize.SMALL_TOOLBAR)
                                 df_button.connect("clicked", vertical_flip_pic, card_pic)
+                                df_button.set_tooltip_text(defs.STRINGS["dfbutton_returncard_tooltip"])
                         else:
                                 df_pic.set_from_file(os.path.join(defs.PATH_MC, "images", "nothing.png"))
                                 df_button.set_sensitive(False)
+                                df_button.set_tooltip_text("")
                         df_button.add(df_pic)
                         grid.attach(df_button, 0, 0, 1, 1)
                         first_widget = df_button
@@ -506,6 +509,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         # buttonmenu "more" - other editions, open Gatherer, price
                         # FIXME : add the prices !
                         more_button = Gtk.MenuButton()
+                        more_button.set_tooltip_text(defs.STRINGS["morebutton_tooltip"])
                         more_popover = gen_more_popover(more_button, multiverseid, basename, nb_variante, edition_code, name_without_variants, foreign__name_without_variants, object_origin, id_, type_, basetext, power, toughness, basecolors)
                         if more_popover == None:
                                 more_pic = Gtk.Image.new_from_file(os.path.join(defs.PATH_MC, "images", "nothing.png"))

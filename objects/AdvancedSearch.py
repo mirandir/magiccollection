@@ -109,6 +109,7 @@ class AdvancedSearch:
                 edition_nb_cards_symbol.pack_start(self.icon_edition, False, False, 0)
                 
                 self.button_show_details = Gtk.MenuButton()
+                self.button_show_details.set_tooltip_text(defs.STRINGS["show_details_tooltip"])
                 image_button_show_details = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="text-editor-symbolic"), Gtk.IconSize.BUTTON)
                 image_button_show_details.show()
                 self.button_show_details.add(image_button_show_details)

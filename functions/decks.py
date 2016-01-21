@@ -199,12 +199,16 @@ def gen_deck_content(deck_name, box, decks_object):
         toolbar_box.set_spacing(4)
         # the buttons
         decks_object.button_show_details = Gtk.MenuButton()
+        decks_object.button_show_details.set_tooltip_text(defs.STRINGS["show_details_tooltip"])
         decks_object.button_show_details.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="text-editor-symbolic"), Gtk.IconSize.BUTTON))
         decks_object.delete_button = Gtk.Button()
+        decks_object.delete_button.set_tooltip_text(defs.STRINGS["delete_from_deck_tooltip"])
         decks_object.delete_button.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="deck_delete-symbolic"), Gtk.IconSize.BUTTON))
         decks_object.button_change_quantity = Gtk.MenuButton()
+        decks_object.button_change_quantity.set_tooltip_text(defs.STRINGS["change_quantity_tooltip"])
         decks_object.button_change_quantity.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="zoom-in-symbolic"), Gtk.IconSize.BUTTON))
         decks_object.button_move = Gtk.MenuButton()
+        decks_object.button_move.set_tooltip_text(defs.STRINGS["move_to_other_deck_tooltip"])
         decks_object.button_move.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="send-to-symbolic"), Gtk.IconSize.BUTTON))
         
         for button in [decks_object.button_show_details, decks_object.delete_button, decks_object.button_change_quantity, decks_object.button_move]:
@@ -416,8 +420,6 @@ def gen_deck_change_quantity_popover(button_change_quantity, selection, decks_ob
                         adjustment = Gtk.Adjustment(value=current_quantity, lower=1, upper=cards_disp, step_increment=1, page_increment=10, page_size=0)
                 else:
                         adjustment = Gtk.Adjustment(value=current_quantity, lower=1, upper=100, step_increment=1, page_increment=10, page_size=0)
-                label_change_quantity = Gtk.Label(defs.STRINGS["change_quantity"])
-                quantity_box.pack_start(label_change_quantity, True, True, 0)
                 spinbutton = Gtk.SpinButton(adjustment=adjustment)
                 quantity_box.pack_start(spinbutton, True, True, 0)
                 
@@ -495,9 +497,6 @@ def gen_move_deck_popover(button_move, selection, decks_object):
                 ok_button.set_sensitive(False)
                 ok_button.connect("clicked", move_cards, popover, select_list_decks, selection, current_deck_name, decks_object)
                 
-                move_label = Gtk.Label(defs.STRINGS["move_to_other_deck"])
-                
-                move_deck_box.pack_start(move_label, True, True, 0)
                 move_deck_box.pack_start(scrolledwindow_decks, True, True, 0)
                 move_deck_box.pack_start(ok_button, True, True, 0)
                 move_deck_box.show_all()

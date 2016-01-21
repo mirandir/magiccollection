@@ -63,6 +63,7 @@ class MC_Window(Gtk.ApplicationWindow):
                 #self.set_titlebar(self.headerbar)
                 
                 search_button = Gtk.ToggleButton()
+                search_button.set_tooltip_text(defs.STRINGS["search_card_tooltip"])
                 search_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-find-symbolic"), Gtk.IconSize.BUTTON)
                 search_button.add(search_pic)
                 
@@ -225,8 +226,6 @@ class MC_Window(Gtk.ApplicationWindow):
                 
                 self.main_stackswitcher.show_all()
                 self.main_stack.show_all()
-                # default view is collection
-                #self.main_stack.set_visible_child_name("collection")
                 self.widget_overlay.destroy()
 
 class MagicCollection(Gtk.Application):
