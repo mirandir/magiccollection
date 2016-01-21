@@ -410,20 +410,7 @@ class Collection:
                         button_change_quantity.set_sensitive(True)
                         button_change_quantity.set_popover(functions.collection.gen_quantity_popover(button_change_quantity, selection))
                         
-                        cards_avail = {}
-                        nb_avail = 0
-                        details_store = functions.collection.gen_details_store(selection)
-                        for card in details_store:
-                                #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
-                                if card[10] == "":
-                                        try:
-                                                cards_avail[card[13]]
-                                        except KeyError:
-                                                cards_avail[card[13]] = [card[0]]
-                                        else:
-                                                cards_avail[card[13]].append(card[0])
-                                        nb_avail += 1
-                                
+                        nb_avail = functions.collection.add_deck_test_avail(selection)
                         if nb_avail > 0:
                                 button_add_deck.set_sensitive(True)
                                 button_add_deck.set_popover(functions.collection.gen_add_deck_popover(button_add_deck, selection))
@@ -440,8 +427,12 @@ class Collection:
                         button_show_details.set_sensitive(True)
                         button_show_details.set_popover(functions.collection.gen_details_popover(button_show_details, selection))
                         button_change_quantity.set_sensitive(False)
-                        button_add_deck.set_sensitive(False)
-                        #button_add_deck.set_popover(functions.collection.gen_add_deck_popover(button_add_deck, selection, details_store))
+                        nb_avail = functions.collection.add_deck_test_avail(selection)
+                        if nb_avail > 0:
+                                button_add_deck.set_sensitive(True)
+                                button_add_deck.set_popover(functions.collection.gen_add_deck_popover(button_add_deck, selection))
+                        else:
+                                button_add_deck.set_sensitive(False)
                 
         def selectinfo_click(self, selectinfo_button, selection, popover):                
                 def checkbutton_toggled(checkbutton, path, selection):

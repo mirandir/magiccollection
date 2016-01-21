@@ -371,6 +371,7 @@ class Decks:
                                         coll_object.mainstore[i][13] = Pango.Style.ITALIC
                                 else:
                                         coll_object.mainstore[i][13] = Pango.Style.NORMAL
+                coll_object.mainselect.emit("changed")
                 
                 if coll_object.tree_coll.get_model() == coll_object.searchstore:
                         for i, row in enumerate(coll_object.searchstore):
