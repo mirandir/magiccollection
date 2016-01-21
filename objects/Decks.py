@@ -85,13 +85,16 @@ class Decks:
                 else:
                         self.gen_list_decks()
         
-        def display_deck_content(self, selection, integer, TreeViewColumn, tree_editions):
+        def display_deck_content(self, selection, integer, TreeViewColumn, tree_editions, button_delete_deck):
                 '''Displays the content of the deck 'deck_name' in self.right_content_bot.'''
                 model, treeiter = selection.get_selected()
                 if treeiter != None:
+                        button_delete_deck.set_sensitive(True)
                         deck_name = model[treeiter][1]
                         #functions.decks.gen_deck_content(deck_name, self.right_content_bot, self)
                         GLib.idle_add(functions.decks.gen_deck_content, deck_name, self.right_content_bot, self)
+                else:
+                        button_delete_deck.set_sensitive(False)
         
         def add_cards_to_deck(self, deck_name, ids_coll_dict):
                 '''Add the cards in 'ids_coll_dict' to the deck 'deck_name'.
@@ -378,6 +381,69 @@ class Decks:
                                         else:
                                                 coll_object.searchstore[i][13] = Pango.Style.NORMAL
         
+        def delete_deck(self, deck_name):
+                '''Delete a deck.'''
+                functions.various.lock_db(True, None)
+                conn_coll, c_coll = functions.collection.connect_db()
+                c_coll.execute("""SELECT id_coll, id_card FROM collection WHERE deck = ?""", (deck_name,))
+                responses_ids = c_coll.fetchall()
+                ids_db_list = []
+                for data in responses_ids:
+                        if data[1] not in ids_db_list:
+                                ids_db_list.append(data[1])
+                # we need the data of all cards in 'ids_db_list'
+                ids_str = ""
+                for id_ in ids_db_list:
+                        ids_str = ids_str + "\"" + id_ + "\", "
+                ids_str = ids_str[:-2]
+                c_coll.execute("""SELECT id_coll, id_card, deck FROM collection WHERE id_card IN (""" + ids_str + """)""")
+                responses = c_coll.fetchall()                
+                
+                c_coll.execute("""UPDATE collection SET deck = \"\" WHERE deck = ?""", (deck_name,))
+                c_coll.execute("""DELETE FROM decks WHERE name = ?""", (deck_name,))
+                functions.collection.disconnect_db(conn_coll)
+                functions.various.lock_db(False, None)
+                
+                model, pathlist = self.select_list_decks.get_selected_rows()
+                del(model[pathlist])
+                
+                if self.update_nb_decks() < 1:
+                        self.mainstore.clear()
+                        self.label_nb_cards.set_text("")
+                
+                tmp_id_dict = {}
+                for card_data in responses:
+                        id_coll, id_card, deck = card_data
+                        if deck != "" and deck != deck_name:
+                                in_deck = True
+                        else:
+                                in_deck = False
+                        try:
+                                tmp_id_dict[id_card]
+                        except KeyError:
+                                tmp_id_dict[id_card] = in_deck
+                        else:
+                                if tmp_id_dict[id_card]:
+                                        pass
+                                else:
+                                        tmp_id_dict[id_card] = in_deck
+                
+                coll_object = defs.MAINWINDOW.collection
+                for i, row in enumerate(coll_object.mainstore):
+                        if row[0] in tmp_id_dict.keys():
+                                if tmp_id_dict[row[0]]:
+                                        coll_object.mainstore[i][13] = Pango.Style.ITALIC
+                                else:
+                                        coll_object.mainstore[i][13] = Pango.Style.NORMAL
+                
+                if coll_object.tree_coll.get_model() == coll_object.searchstore:
+                        for i, row in enumerate(coll_object.searchstore):
+                                if row[0] in tmp_id_dict.keys():
+                                        if tmp_id_dict[row[0]]:
+                                                coll_object.searchstore[i][13] = Pango.Style.ITALIC
+                                        else:
+                                                coll_object.searchstore[i][13] = Pango.Style.NORMAL
+                
         def update_nb_decks(self):
                 '''Update the label which displays the number of decks.'''
                 if self.label_nb_decks != None:
@@ -386,6 +452,9 @@ class Decks:
                         count_nb = c_coll.fetchone()[0]
                         functions.collection.disconnect_db(conn_coll)
                         self.label_nb_decks.set_text(defs.STRINGS["list_decks_nb"].replace("%%%", str(count_nb)))
+                        return(count_nb)
+                else:
+                        return(None)
         
         def gen_list_decks(self):
                 if self.store_list_decks != None:

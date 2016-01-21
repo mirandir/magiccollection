@@ -96,7 +96,6 @@ def gen_decks_display(deck_object, box):
                 
                 deck_object.select_list_decks = tree_decks.get_selection()
                 deck_object.gen_list_decks()
-                deck_object.select_list_decks.connect("changed", deck_object.display_deck_content, "blip", "blop", tree_decks)
                 
                 scrolledwindow_decks.add(tree_decks)
                 right_content_top.pack_start(scrolledwindow_decks, False, True, 0)
@@ -110,6 +109,7 @@ def gen_decks_display(deck_object, box):
                 
                 button_delete_deck = Gtk.Button(defs.STRINGS["delete_deck"])
                 button_delete_deck.set_sensitive(False)
+                button_delete_deck.connect("clicked", prepare_delete_deck, deck_object.select_list_decks, deck_object)
                 
                 box_buttons = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
                 box_buttons.set_valign(Gtk.Align.CENTER)
@@ -132,6 +132,8 @@ def gen_decks_display(deck_object, box):
                 box_comm.pack_start(scrolledwindow_comm, False, True, 0)
                 right_content_top.pack_start(box_comm, False, True, 0)
                 
+                deck_object.select_list_decks.connect("changed", deck_object.display_deck_content, "blip", "blop", tree_decks, button_delete_deck)
+                
                 ###### the content of right_content_mid ######
                 deck_object.label_nb_cards = Gtk.Label()
                 box.pack_start(deck_object.label_nb_cards, False, True, 0)
@@ -148,6 +150,20 @@ def gen_decks_display(deck_object, box):
                 
                 deck_object.update_nb_decks()
                 deck_object.mainbox.show_all()
+
+def prepare_delete_deck(button, select_list_decks, decks_object):
+        def real_work(decks_object, deck_name):
+                GLib.idle_add(decks_object.delete_deck, deck_name)
+        model_deck, pathlist_deck = select_list_decks.get_selected_rows()
+        deck_name = model_deck[pathlist_deck][1]
+        dialog = Gtk.MessageDialog(defs.MAINWINDOW, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, defs.STRINGS["delete_deck_warning"].replace("%%%", deck_name))
+        response = dialog.run()
+        dialog.destroy()
+        # -8 yes, -9 no
+        if response == -8:        
+                thread = threading.Thread(target = real_work, args = (decks_object, deck_name))
+                thread.daemon = True
+                thread.start()
 
 def prepare_delete_from_deck(button, deck_name, selection, decks_object):
         model, pathlist = selection.get_selected_rows()
