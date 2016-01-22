@@ -270,5 +270,16 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["delete_deck_warning"] = "Êtes-vous sûr(e) de vouloir supprimer le deck %%% ?"
         translate["delete_from_deck_tooltip"] = "Supprimer du deck"
         translate["move_to_other_deck_tooltip"] = "Déplacer dans un autre deck"
+        # languages
+        translate["l_english"] = "Anglais"
+        translate["l_chinese"] = "Chinois"
+        translate["l_french"] = "Français"
+        translate["l_german"] = "Allemand"
+        translate["l_italian"] = "Italien"
+        translate["l_japanese"] = "Japonais"
+        translate["l_korean"] = "Coréen"
+        translate["l_portuguese"] = "Portugais"
+        translate["l_russian"] = "Russe"
+        translate["l_spanish"] = "Espagnol"
         #########################
         return(translate)

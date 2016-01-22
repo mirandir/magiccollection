@@ -893,7 +893,7 @@ def update_entrycompletions(entry_lang, entry_loaned):
         reponses_loaned = c.fetchall()
         functions.collection.disconnect_db(conn)
         
-        list_entrycompletion_lang = []
+        list_entrycompletion_lang = [defs.STRINGS["l_english"], defs.STRINGS["l_chinese"], defs.STRINGS["l_french"], defs.STRINGS["l_german"], defs.STRINGS["l_italian"], defs.STRINGS["l_japanese"], defs.STRINGS["l_korean"], defs.STRINGS["l_portuguese"], defs.STRINGS["l_russian"], defs.STRINGS["l_spanish"]]
         for data in reponses_lang:
                 if data[0] not in list_entrycompletion_lang:
                         list_entrycompletion_lang.append(data[0])
