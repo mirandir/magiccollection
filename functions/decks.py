@@ -573,17 +573,29 @@ def gen_new_deck_popover(button_new_deck, decks_object):
                 popover.hide()
                 decks_object.create_new_deck(entry_name_deck.get_text())
         
+        def entry_changed(entry, ok_button, list_decks_names):
+                if defs.COLL_LOCK == False and entry.get_text() != "" and entry.get_text().lower() not in list_decks_names:
+                        ok_button.set_sensitive(True)
+                else:
+                        ok_button.set_sensitive(False)
+        
         def popover_show(popover, decks_object, new_deck_box):
+                conn_coll, c_coll = functions.collection.connect_db()
+                c_coll.execute("""SELECT name FROM decks""")
+                responses = c_coll.fetchall()
+                functions.collection.disconnect_db(conn_coll)
+                list_decks_names = []
+                for deck_name in responses:
+                        list_decks_names.append(deck_name[0].lower())
+                
                 for widget in new_deck_box.get_children():
                         new_deck_box.remove(widget)
                 label_name_deck = Gtk.Label(defs.STRINGS["create_new_deck_name"])
                 entry_name_deck = Gtk.Entry()
                 ok_button = Gtk.Button(defs.STRINGS["create_new_deck_ok"])
+                entry_name_deck.connect("changed", entry_changed, ok_button, list_decks_names)
+                ok_button.set_sensitive(False)
                 ok_button.connect("clicked", create_deck, entry_name_deck, decks_object, popover)
-                if defs.COLL_LOCK:
-                        ok_button.set_sensitive(False)
-                else:
-                        ok_button.set_sensitive(True)
                 for widget in [label_name_deck, entry_name_deck, ok_button]:
                         new_deck_box.pack_start(widget, True, True, 0)
                 new_deck_box.show_all()
