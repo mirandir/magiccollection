@@ -852,6 +852,8 @@ def gen_details_widgets():
         entry_loaned.set_sensitive(False)
         grid_details.attach_next_to(entry_loaned, checkbutton_loaned, Gtk.PositionType.RIGHT, 1, 1)
         
+        update_entrycompletions(entry_lang, entry_loaned)
+        
         label_add_comment = Gtk.Label(defs.STRINGS["add_comment"])
         grid_details.attach_next_to(label_add_comment, checkbutton_foil, Gtk.PositionType.BOTTOM, 4, 1)
         
@@ -881,15 +883,37 @@ def lock_db(lock_coll, lock_cards):
                 if defs.BUTTON_COLL_LOCK != None:
                         GLib.idle_add(defs.BUTTON_COLL_LOCK.set_label, defs.STRINGS["add_button_validate"])
                         GLib.idle_add(defs.BUTTON_COLL_LOCK.set_sensitive, True)
+
+def update_entrycompletions(entry_lang, entry_loaned):
+        '''Retrieve a list of each language and each "loaned to" already writed in the collection, and add it to the entries.'''
+        conn, c = functions.collection.connect_db()
+        c.execute("""SELECT lang, loaned_to FROM collection WHERE lang != \"\"""")
+        reponses_lang = c.fetchall()
+        c.execute("""SELECT loaned_to FROM collection WHERE loaned_to != \"\"""")
+        reponses_loaned = c.fetchall()
+        functions.collection.disconnect_db(conn)
         
-        '''if defs.AS_LOCK == True or defs.COLL_LOCK == True:
-                try:
-                        GLib.idle_add(defs.MAINWINDOW.collection.button_search.set_label, defs.STRINGS["coll_button_search_wait"])
-                except AttributeError:
-                        pass
+        list_entrycompletion_lang = []
+        for data in reponses_lang:
+                if data[0] not in list_entrycompletion_lang:
+                        list_entrycompletion_lang.append(data[0])
+        list_entrycompletion_loaned = []
+        for data in reponses_loaned:
+                if data[0] not in list_entrycompletion_loaned:
+                        list_entrycompletion_loaned.append(data[0])
         
-        if defs.AS_LOCK == False and defs.COLL_LOCK == False:
-                try:
-                        GLib.idle_add(defs.MAINWINDOW.collection.button_search.set_label, defs.STRINGS["search_coll"])
-                except AttributeError:
-                        pass'''
+        liststore_lang = Gtk.ListStore(str)
+        entrycompletion_lang = Gtk.EntryCompletion()
+        entrycompletion_lang.set_model(liststore_lang)
+        entrycompletion_lang.set_text_column(0)
+        for elm in list_entrycompletion_lang:
+                liststore_lang.append([elm])
+        entry_lang.set_completion(entrycompletion_lang)
+        
+        liststore_loaned = Gtk.ListStore(str)
+        entrycompletion_loaned = Gtk.EntryCompletion()
+        entrycompletion_loaned.set_model(liststore_loaned)
+        entrycompletion_loaned.set_text_column(0)
+        for elm in list_entrycompletion_loaned:
+                liststore_loaned.append([elm])
+        entry_loaned.set_completion(entrycompletion_loaned)

@@ -877,6 +877,9 @@ def gen_details_store(selection):
 def gen_details_popover(button_show_details, selection):
         '''Displays details for the current selection of cards.'''
         def select_changed(selection, integer, TreeViewColumn, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment, button_add_deck, button_copy_details, button_delete_deck, button_remove, label_state):
+                # we update the entrycompletions
+                functions.various.update_entrycompletions(entry_lang, entry_loaned)
+                
                 model, pathlist = selection.get_selected_rows()
                 label_state.set_markup("")
                 if len(pathlist) > 0:
