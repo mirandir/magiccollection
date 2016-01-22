@@ -48,6 +48,7 @@ class MC_Window(Gtk.ApplicationWindow):
                 self.accelgroup = Gtk.AccelGroup()
                 self.add_accel_group(self.accelgroup)
                 self.connect("delete-event", self.delete_main_window)
+                self.connect("key-press-event", self.change_mode)
                 
                 if defs.DISPLAY_WIDTH > 1279:
                         self.resize(1200, 670)
@@ -119,6 +120,18 @@ class MC_Window(Gtk.ApplicationWindow):
                 self.add(self.overlay)
                 self.overlay.add_overlay(button)
                 self.main_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
+        
+        def change_mode(self, window, event):
+                keyname = Gdk.keyval_name(event.keyval)
+                if event.state & Gdk.ModifierType.MOD1_MASK and keyname == "c" :
+                        if self.main_stack.get_visible_child_name() != "collection":
+                                self.main_stack.set_visible_child_name("collection")
+                if event.state & Gdk.ModifierType.MOD1_MASK and keyname == "d" :
+                        if self.main_stack.get_visible_child_name() != "decks":
+                                self.main_stack.set_visible_child_name("decks")
+                if event.state & Gdk.ModifierType.MOD1_MASK and keyname == "s" :
+                        if self.main_stack.get_visible_child_name() != "advancedsearch":
+                                self.main_stack.set_visible_child_name("advancedsearch")
         
         def delete_main_window(self, *args):
                 if defs.COLL_LOCK:

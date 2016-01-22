@@ -503,6 +503,9 @@ def gen_move_deck_popover(button_move, selection, decks_object):
                 else:
                         ok_button.set_sensitive(True)
         
+        def row_activated(a, b, c, popover, select_list_decks, selection, current_deck_name, decks_object):
+                move_cards(None, popover, select_list_decks, selection, current_deck_name, decks_object)
+        
         def popover_show(popover, decks_object, move_deck_box, selection):
                 for widget in move_deck_box.get_children():
                         move_deck_box.remove(widget)
@@ -545,6 +548,7 @@ def gen_move_deck_popover(button_move, selection, decks_object):
                 
                 ok_button.set_sensitive(False)
                 ok_button.connect("clicked", move_cards, popover, select_list_decks, selection, current_deck_name, decks_object)
+                tree_decks.connect("row-activated", row_activated, popover, select_list_decks, selection, current_deck_name, decks_object)
                 
                 move_deck_box.pack_start(scrolledwindow_decks, True, True, 0)
                 move_deck_box.pack_start(ok_button, True, True, 0)

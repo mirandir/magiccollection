@@ -612,6 +612,9 @@ def gen_add_deck_popover(button_add_deck, selection):
                         else:
                                 ok_button.set_sensitive(False)
         
+        def row_activated(a, b, c, popover, select_list_decks, cards_avail, spinbuttons_dict, selection):
+                add_deck(None, popover, select_list_decks, cards_avail, spinbuttons_dict, selection)
+        
         def spin_value_changed(spinbutton, spinbuttons_dict, select_list_decks, ok_button):
                 model, treeiter = select_list_decks.get_selected()
                 if treeiter == None:
@@ -719,6 +722,7 @@ def gen_add_deck_popover(button_add_deck, selection):
                 else:
                         scrolledwindow_cards.set_min_content_height(150)
                 ok_button.connect("clicked", add_deck, popover, select_list_decks, cards_avail, spinbuttons_dict, selection)
+                tree_decks.connect("row-activated", row_activated, popover, select_list_decks, cards_avail, spinbuttons_dict, selection)
                 add_deck_box.pack_start(scrolledwindow_decks, True, True, 0)
                 add_deck_box.pack_start(scrolledwindow_cards, True, True, 0)
                 add_deck_box.pack_start(ok_button, True, True, 0)
@@ -762,6 +766,9 @@ def gen_add_deck_details_popover(button_add_deck, selection, details_store):
                 else:
                         ok_button.set_sensitive(True)
         
+        def row_activated(a, b, c, popover, selection, select_list_decks, details_store):
+                add_deck(None, popover, selection, select_list_decks, details_store)
+        
         def popover_show(popover, selection, add_deck_box, details_store):
                 for widget in add_deck_box.get_children():
                         add_deck_box.remove(widget)
@@ -798,6 +805,7 @@ def gen_add_deck_details_popover(button_add_deck, selection, details_store):
                 
                 scrolledwindow_decks.add(tree_decks)
                 ok_button.set_sensitive(False)
+                tree_decks.connect("row-activated", row_activated, popover, selection, select_list_decks, details_store)
                 ok_button.connect("clicked", add_deck, popover, selection, select_list_decks, details_store)
                 
                 add_deck_box.pack_start(scrolledwindow_decks, True, True, 0)
