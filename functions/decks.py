@@ -22,6 +22,7 @@
 
 from gi.repository import Gtk, Gio, Pango, GdkPixbuf, GLib
 import threading
+import time
 
 # import global values
 import defs
@@ -29,7 +30,7 @@ import defs
 import functions.collection
 import functions.db
 
-def gen_decks_display(deck_object, box):
+def gen_decks_display(decks_object, box):
         for widget in box.get_children():
                 box.remove(widget)
         
@@ -57,15 +58,15 @@ def gen_decks_display(deck_object, box):
                 button_new_deck.set_margin_right(100)
                 button_new_deck.set_can_focus(False)
                 button_new_deck.add(tmp_box)
-                button_new_deck.set_popover(gen_new_deck_popover(button_new_deck, deck_object))
+                button_new_deck.set_popover(gen_new_deck_popover(button_new_deck, decks_object))
                 box.pack_start(button_new_deck, False, False, 0)
         else:
                 # the details button
-                deck_object.button_show_details = Gtk.MenuButton()
+                decks_object.button_show_details = Gtk.MenuButton()
                 image_button_show_details = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="text-editor-symbolic"), Gtk.IconSize.BUTTON)
                 image_button_show_details.show()
-                deck_object.button_show_details.add(image_button_show_details)
-                deck_object.button_show_details.set_sensitive(False)
+                decks_object.button_show_details.add(image_button_show_details)
+                decks_object.button_show_details.set_sensitive(False)
                 
                 ###### the content of right_content_top ######
                 right_content_top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -79,37 +80,37 @@ def gen_decks_display(deck_object, box):
                 scrolledwindow_decks.set_shadow_type(Gtk.ShadowType.IN)
                 
                 # id_deck, name
-                deck_object.store_list_decks = Gtk.ListStore(str, str)
+                decks_object.store_list_decks = Gtk.ListStore(str, str)
                 
-                tree_decks = Gtk.TreeView(deck_object.store_list_decks)
+                tree_decks = Gtk.TreeView(decks_object.store_list_decks)
                 tree_decks.set_enable_search(False)
                 renderer_decks = Gtk.CellRendererText()
                 column_name_decks = Gtk.TreeViewColumn(defs.STRINGS["list_decks_nb"], renderer_decks, text=1)
                 
-                deck_object.label_nb_decks = Gtk.Label(defs.STRINGS["list_decks_nb"])
-                deck_object.label_nb_decks.show()
+                decks_object.label_nb_decks = Gtk.Label(defs.STRINGS["list_decks_nb"])
+                decks_object.label_nb_decks.show()
                 
-                column_name_decks.set_widget(deck_object.label_nb_decks)
+                column_name_decks.set_widget(decks_object.label_nb_decks)
                 column_name_decks.set_sort_column_id(1)
-                deck_object.store_list_decks.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+                decks_object.store_list_decks.set_sort_column_id(1, Gtk.SortType.ASCENDING)
                 tree_decks.append_column(column_name_decks)
                 
-                deck_object.select_list_decks = tree_decks.get_selection()
-                deck_object.gen_list_decks()
+                decks_object.select_list_decks = tree_decks.get_selection()
+                decks_object.gen_list_decks()
                 
                 scrolledwindow_decks.add(tree_decks)
                 right_content_top.pack_start(scrolledwindow_decks, False, True, 0)
                 
                 # the buttons for managing decks
                 button_new_deck = Gtk.MenuButton(defs.STRINGS["create_new_deck"])
-                button_new_deck.set_popover(gen_new_deck_popover(button_new_deck, deck_object))
+                button_new_deck.set_popover(gen_new_deck_popover(button_new_deck, decks_object))
                 
                 button_estimate_deck = Gtk.Button(defs.STRINGS["estimate_deck"])
                 button_estimate_deck.set_sensitive(False)
                 
                 button_delete_deck = Gtk.Button(defs.STRINGS["delete_deck"])
                 button_delete_deck.set_sensitive(False)
-                button_delete_deck.connect("clicked", prepare_delete_deck, deck_object.select_list_decks, deck_object)
+                button_delete_deck.connect("clicked", prepare_delete_deck, decks_object.select_list_decks, decks_object)
                 
                 box_buttons = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
                 box_buttons.set_valign(Gtk.Align.CENTER)
@@ -125,6 +126,8 @@ def gen_decks_display(deck_object, box):
                 textview_comm = Gtk.TextView()
                 textview_comm.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
                 textview_comm.set_sensitive(False)
+                textbuffer = textview_comm.get_buffer()
+                textbuffer.connect("changed", textview_comment_save, decks_object, textview_comm)
                 scrolledwindow_comm.add(textview_comm)
                 
                 box_comm = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
@@ -132,11 +135,11 @@ def gen_decks_display(deck_object, box):
                 box_comm.pack_start(scrolledwindow_comm, False, True, 0)
                 right_content_top.pack_start(box_comm, False, True, 0)
                 
-                deck_object.select_list_decks.connect("changed", deck_object.display_deck_content, "blip", "blop", tree_decks, button_delete_deck)
+                decks_object.select_list_decks.connect("changed", decks_object.display_deck_content, "blip", "blop", tree_decks, button_delete_deck, textview_comm)
                 
                 ###### the content of right_content_mid ######
-                deck_object.label_nb_cards = Gtk.Label()
-                box.pack_start(deck_object.label_nb_cards, False, True, 0)
+                decks_object.label_nb_cards = Gtk.Label()
+                box.pack_start(decks_object.label_nb_cards, False, True, 0)
                 
                 ###### the content of self.right_content_bot ######
                 label_click_deck = Gtk.Label()
@@ -146,11 +149,11 @@ def gen_decks_display(deck_object, box):
                 label_click_deck.set_ellipsize(Pango.EllipsizeMode.END)
                 label_click_deck.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
                 label_click_deck.set_justify(Gtk.Justification.CENTER)
-                deck_object.right_content_bot.pack_start(label_click_deck, True, True, 0)
-                deck_object.right_content.pack_start(deck_object.right_content_bot, True, True, 0)
+                decks_object.right_content_bot.pack_start(label_click_deck, True, True, 0)
+                decks_object.right_content.pack_start(decks_object.right_content_bot, True, True, 0)
                 
-                deck_object.update_nb_decks()
-                deck_object.mainbox.show_all()
+                decks_object.update_nb_decks()
+                decks_object.mainbox.show_all()
 
 def prepare_delete_deck(button, select_list_decks, decks_object):
         def real_work(decks_object, deck_name):
@@ -180,7 +183,45 @@ def prepare_delete_from_deck(button, deck_name, selection, decks_object):
         if ids_db_dict_proxies_to_delete != {}:
                 GLib.idle_add(decks_object.change_nb_proxies, deck_name, ids_db_dict_proxies_to_delete)
 
-def gen_deck_content(deck_name, box, decks_object):
+def prepare_deck_comment_save(textbuffer, decks_object):
+        def real_prepare_deck_comment_save(textbuffer, decks_object):
+                start = textbuffer.get_start_iter()
+                end = textbuffer.get_end_iter()
+                comment = textbuffer.get_text(start, end, False)
+                model_deck, pathlist_deck = decks_object.select_list_decks.get_selected_rows()
+                deck_name = model_deck[pathlist_deck][1]
+                decks_object.update_deck_comment(deck_name, comment)
+                
+        if defs.CURRENT_SAVE_COMMENT_DECK_THREAD == None:
+                # we are the first thread, we need to note this
+                defs.CURRENT_SAVE_COMMENT_DECK_THREAD = 1
+        else:
+                defs.CURRENT_SAVE_COMMENT_DECK_THREAD += 1
+        my_number = int(defs.CURRENT_SAVE_COMMENT_DECK_THREAD)
+        defs.SAVE_COMMENT_DECK_TIMER = 250 # 250 ms
+        
+        # now, we wait until the end of the timer (or until another thread take our turn)
+        go = 1
+        while defs.SAVE_COMMENT_DECK_TIMER > 0:
+                if my_number != defs.CURRENT_SAVE_COMMENT_DECK_THREAD:
+                        # too bad, we have to stop now
+                        go = 0
+                        break
+                else:
+                        time.sleep(1 / 1000)
+                        defs.SAVE_COMMENT_DECK_TIMER -= 1
+        
+        if go == 1:
+                defs.CURRENT_SAVE_COMMENT_DECK_THREAD = None
+                GLib.idle_add(real_prepare_deck_comment_save, textbuffer, decks_object)
+
+def textview_comment_save(textbuffer, decks_object, textview_comm):
+        if textview_comm.get_sensitive():
+                thread = threading.Thread(target = prepare_deck_comment_save, args = (textbuffer, decks_object))
+                thread.daemon = True
+                thread.start()
+
+def gen_deck_content(deck_name, box, decks_object, textview_comm):
         '''Displays the cards of the deck.'''
         for widget in box.get_children():
                 box.remove(widget)
@@ -188,8 +229,8 @@ def gen_deck_content(deck_name, box, decks_object):
         conn, c = functions.collection.connect_db()
         c.execute("""SELECT id_coll, id_card FROM collection WHERE deck = ?""", (deck_name,))
         responses = c.fetchall()
-        c.execute("""SELECT proxies FROM decks WHERE name = ?""", (deck_name,))
-        responses_proxies = c.fetchone()
+        c.execute("""SELECT proxies, comment FROM decks WHERE name = ?""", (deck_name,))
+        responses_datadeck = c.fetchone()
         functions.collection.disconnect_db(conn)
         nb_cards = len(responses)
         
@@ -217,6 +258,13 @@ def gen_deck_content(deck_name, box, decks_object):
         toolbar_box.show_all()
         box.pack_end(toolbar_box, False, True, 0)  
         
+        # the comment
+        comment = responses_datadeck[1]
+        textview_comm.set_sensitive(False)
+        textbuffer = textview_comm.get_buffer()
+        textbuffer.set_text(comment, -1)
+        textview_comm.set_sensitive(True)
+        
         # the real cards in the deck
         dict_cards_in_deck = {}
         for card_deck in responses: 
@@ -231,10 +279,11 @@ def gen_deck_content(deck_name, box, decks_object):
                         dict_cards_in_deck[id_card][0] = nb_card + 1
         
         # the proxies
+        responses_proxies = responses_datadeck[0]
         dict_proxies_in_deck = {}
-        if responses_proxies[0] != "":
+        if responses_proxies != "":
                 nb_proxies = 0
-                for card_proxy in responses_proxies[0].split(";;;"):
+                for card_proxy in responses_proxies.split(";;;"):
                         id_card, nb_card = card_proxy.split("ø")
                         bold = 400
                         italic = Pango.Style.ITALIC
@@ -518,19 +567,19 @@ def gen_move_deck_popover(button_move, selection, decks_object):
         popover.add(move_deck_box)
         return(popover)
 
-def gen_new_deck_popover(button_new_deck, deck_object):
+def gen_new_deck_popover(button_new_deck, decks_object):
         '''Create the popover which create deck.'''
-        def create_deck(button, entry_name_deck, deck_object, popover):
+        def create_deck(button, entry_name_deck, decks_object, popover):
                 popover.hide()
-                deck_object.create_new_deck(entry_name_deck.get_text())
+                decks_object.create_new_deck(entry_name_deck.get_text())
         
-        def popover_show(popover, deck_object, new_deck_box):
+        def popover_show(popover, decks_object, new_deck_box):
                 for widget in new_deck_box.get_children():
                         new_deck_box.remove(widget)
                 label_name_deck = Gtk.Label(defs.STRINGS["create_new_deck_name"])
                 entry_name_deck = Gtk.Entry()
                 ok_button = Gtk.Button(defs.STRINGS["create_new_deck_ok"])
-                ok_button.connect("clicked", create_deck, entry_name_deck, deck_object, popover)
+                ok_button.connect("clicked", create_deck, entry_name_deck, decks_object, popover)
                 if defs.COLL_LOCK:
                         ok_button.set_sensitive(False)
                 else:
@@ -547,6 +596,6 @@ def gen_new_deck_popover(button_new_deck, deck_object):
         new_deck_box.set_margin_right(5)
         popover = Gtk.Popover.new(button_new_deck)
         popover.props.width_request = 300
-        popover.connect("show", popover_show, deck_object, new_deck_box)
+        popover.connect("show", popover_show, decks_object, new_deck_box)
         popover.add(new_deck_box)
         return(popover)

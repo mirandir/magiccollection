@@ -84,14 +84,21 @@ class Decks:
                 else:
                         self.gen_list_decks()
         
-        def display_deck_content(self, selection, integer, TreeViewColumn, tree_editions, button_delete_deck):
+        def update_deck_comment(self, deck_name, new_comment):
+                '''Write a new comment to the deck 'deck_name'.'''
+                conn_coll, c_coll = functions.collection.connect_db()
+                functions.various.lock_db(True, None)
+                c_coll.execute("""UPDATE decks SET comment = ? WHERE name = ?""", (new_comment, deck_name,))
+                functions.collection.disconnect_db(conn_coll)
+                functions.various.lock_db(False, None)
+        
+        def display_deck_content(self, selection, integer, TreeViewColumn, tree_editions, button_delete_deck, textview_comm):
                 '''Displays the content of the deck 'deck_name' in self.right_content_bot.'''
                 model, treeiter = selection.get_selected()
                 if treeiter != None:
                         button_delete_deck.set_sensitive(True)
                         deck_name = model[treeiter][1]
-                        #functions.decks.gen_deck_content(deck_name, self.right_content_bot, self)
-                        GLib.idle_add(functions.decks.gen_deck_content, deck_name, self.right_content_bot, self)
+                        GLib.idle_add(functions.decks.gen_deck_content, deck_name, self.right_content_bot, self, textview_comm)
                 else:
                         button_delete_deck.set_sensitive(False)
         
