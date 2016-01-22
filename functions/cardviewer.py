@@ -603,9 +603,22 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         @name_for_add_popover_ss -> a str. If @simple_search is 1, this string contains the name of the displayed card, to show it in the popover. Not used if @simple_search is not 1.
         @edition_longname_ss -> a str. Like @name_for_add_popover_ss, but for the edition of the card.
         @id_ss -> a str. Like @name_for_add_popover_ss, but for the id of the card.
-        @split_flip_df_data -> a list which contains informations about the flip / split / double-faced cards in the database. This list is empty if the displayed card are not flip / split / double-faced.
+        @split_flip_df_data -> a list which contains informations about the flip / split / double-faced cards in the database. This list is empty if the displayed card are not fliped / splited / double-faced.
         
         """
+        
+        def radiobutton_collection_toggled(radiobutton, expander, scrolledwindow_decks):
+                if radiobutton.get_active():
+                        expander.show()
+                        scrolledwindow_decks.hide()
+        
+        def radiobutton_proxies_toggled(radiobutton, expander, scrolledwindow_decks, select_list_decks):
+                if radiobutton.get_active():
+                        expander.hide()
+                        scrolledwindow_decks.show()
+                        model, pathlist = select_list_decks.get_selected_rows()
+                        if len(pathlist) == 0:
+                                select_list_decks.select_path(0)
         
         def getKey(item):
                 """We use this to correctly sort some characters."""
@@ -613,6 +626,13 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         
         cards_selected_list = []
         
+        nb_decks = 0
+        if object_origin == defs.MAINWINDOW.decks:
+                conn_coll, c_coll = functions.collection.connect_db()
+                c_coll.execute("""SELECT id_deck, name FROM decks""")
+                decks_names = c_coll.fetchall()
+                nb_decks = len(decks_names)
+                functions.collection.disconnect_db(conn_coll)
         # we get the current selection - in the mainselect treeview
         selection = object_origin.mainselect
         try:
@@ -716,7 +736,10 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         
         if len(cards_selected_list) == 1:
                 label_add = Gtk.Label()
-                label_add.set_markup(defs.STRINGS["add_card_question"].replace("%%%", "<b>" + cards_selected_list[0][1] + " (" + cards_selected_list[0][2] + ")</b>"))
+                if nb_decks > 0:
+                        label_add.set_markup(defs.STRINGS["add_card_question_without_collection"].replace("%%%", "<b>" + cards_selected_list[0][1] + " (" + cards_selected_list[0][2] + ")</b>"))
+                else:
+                        label_add.set_markup(defs.STRINGS["add_card_question"].replace("%%%", "<b>" + cards_selected_list[0][1] + " (" + cards_selected_list[0][2] + ")</b>"))
                 label_add.set_max_width_chars(70)
                 label_add.set_line_wrap(True)
                 label_add.set_lines(3)
@@ -726,7 +749,10 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
                 separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
                 popover_box.pack_start(separator, True, True, 0)
         else:
-                label_add = Gtk.Label(defs.STRINGS["add_cards_question"].replace("%%%", str(len(cards_selected_list))))
+                if nb_decks > 0:
+                        label_add = Gtk.Label(defs.STRINGS["add_cards_question_without_collection"].replace("%%%", str(len(cards_selected_list))))
+                else:
+                        label_add = Gtk.Label(defs.STRINGS["add_cards_question"].replace("%%%", str(len(cards_selected_list))))
                 popover_box.pack_start(label_add, True, True, 0)
                 if len(cards_selected_list) > 100:
                         label_warning = Gtk.Label()
@@ -758,6 +784,47 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
                 separator2 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
                 popover_box.pack_start(separator2, True, True, 0)
         
+        radiobutton_proxies = None
+        select_list_decks = None
+        if nb_decks > 0:
+                box_radio_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+                box_radio_buttons.set_halign(Gtk.Align.CENTER)
+                radiobutton_collection = Gtk.RadioButton(label=defs.STRINGS["cv_add_collection"])
+                if len(cards_selected_list) == 1:
+                        radiobutton_proxies = Gtk.RadioButton(label=defs.STRINGS["cv_add_proxies"], group=radiobutton_collection)
+                else:
+                        radiobutton_proxies = Gtk.RadioButton(label=defs.STRINGS["cv_add_proxies_s"], group=radiobutton_collection)
+                box_radio_buttons.pack_start(radiobutton_collection, False, False, 0)
+                box_radio_buttons.pack_start(radiobutton_proxies, False, False, 0)
+                popover_box.pack_start(box_radio_buttons, False, False, 0)
+                
+                scrolledwindow_decks = Gtk.ScrolledWindow()
+                scrolledwindow_decks.set_min_content_width(150)
+                scrolledwindow_decks.set_min_content_height(150)
+                scrolledwindow_decks.set_hexpand(True)
+                scrolledwindow_decks.set_shadow_type(Gtk.ShadowType.IN)
+                # id_deck, name
+                store_list_decks = Gtk.ListStore(str, str)
+                
+                tree_decks = Gtk.TreeView(store_list_decks)
+                tree_decks.set_enable_search(False)
+                tree_decks.show()
+                renderer_decks = Gtk.CellRendererText()
+                column_name_decks = Gtk.TreeViewColumn(defs.STRINGS["list_decks_nb"].replace("(%%%)", ""), renderer_decks, text=1)
+                
+                column_name_decks.set_sort_column_id(1)
+                store_list_decks.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+                tree_decks.append_column(column_name_decks)
+                
+                select_list_decks = tree_decks.get_selection()
+                
+                for id_deck, name in decks_names:
+                        store_list_decks.append([str(id_deck), name])
+                
+                scrolledwindow_decks.add(tree_decks)
+                scrolledwindow_decks.set_no_show_all(True)
+                popover_box.pack_start(scrolledwindow_decks, False, False, 0)
+        
         box_quantity = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         label_quantity = Gtk.Label(defs.STRINGS["quantity"])
         box_quantity.pack_start(label_quantity, False, False, 0)
@@ -775,6 +842,10 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         eventbox.destroy()
         popover.add(popover_box)
         
+        if nb_decks > 0:
+                radiobutton_collection.connect("toggled", radiobutton_collection_toggled, expander, scrolledwindow_decks)
+                radiobutton_proxies.connect("toggled", radiobutton_proxies_toggled, expander, scrolledwindow_decks, select_list_decks)
+        
         grid_details, label_add_condition, comboboxtext_condition, label_add_lang, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, label_add_comment, scrolledwindow, textview = functions.various.gen_details_widgets()
         
         expander.add(grid_details)
@@ -788,7 +859,7 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
                 button_add.set_sensitive(False)
         else:
                 button_add = Gtk.Button(defs.STRINGS["add_button_validate"])
-        button_add.connect("clicked", button_add_clicked, popover, spinbutton, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview, cards_selected_list, overlay_labels)
+        button_add.connect("clicked", button_add_clicked, popover, spinbutton, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview, cards_selected_list, overlay_labels, radiobutton_proxies, select_list_decks)
         defs.BUTTON_COLL_LOCK = button_add
         popover_box.pack_start(button_add, True, True, 0)
         
@@ -800,15 +871,20 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         popover.set_position(Gtk.PositionType.RIGHT)
         popover.show_all()
 
-def button_add_clicked(button_add, popover, spinbutton, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview, cards_selected_list, overlay_labels):
-        """This is called when the user click on the add to the collection button. It add the selected cards to the collection.
+def button_add_clicked(button_add, popover, spinbutton, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview, cards_selected_list, overlay_labels, radiobutton_proxies, select_list_decks):
+        """This is called when the user click on the add to the collection button. It add the selected cards to the collection or the deck selected if proxy mode is enabled.
         
         @button_add -> the 'add to the collection' GtkButton
         @popover -> the 'add to the collection' GtkPopover
         @spinbutton -> the GtkSpinButton where the user indicated the number of each card to add.
         @comboboxtext_condition -> the GtkComboBox where the user indicated the condition of each card to add.
+        @radiobutton_proxies -> None or a Gtk.RadioButton (for proxy mode).
+        @select_list_decks -> None or a Gtk.TreeSelection (for proxy mode).
         
         """
+        
+        def add_proxies(deck_name, proxies_dict_to_change):
+                GLib.idle_add(defs.MAINWINDOW.decks.change_nb_proxies, deck_name, proxies_dict_to_change)
         
         functions.various.lock_db(True, None)
         button_add.set_sensitive(False)
@@ -841,9 +917,25 @@ def button_add_clicked(button_add, popover, spinbutton, comboboxtext_condition, 
                 spinner_labels.show()
                 overlay_labels.add_overlay(spinner_labels)
                 spinner_labels.start()
-        thread = threading.Thread(target = defs.MAINWINDOW.collection.add_collection, args = [cards_to_add, spinner_labels])
-        thread.daemon = True
-        thread.start()
+        
+        proxies_mode = 0
+        if radiobutton_proxies != None:
+                if radiobutton_proxies.get_active():
+                        proxies_mode = 1
+        
+        if proxies_mode == 0:
+                thread = threading.Thread(target = defs.MAINWINDOW.collection.add_collection, args = [cards_to_add, spinner_labels])
+                thread.daemon = True
+                thread.start()
+        elif proxies_mode == 1:
+                proxies_dict_to_change = {}
+                for card in cards_selected_list:
+                        proxies_dict_to_change[card[0]] = nb
+                model_deck, pathlist_deck = select_list_decks.get_selected_rows()
+                deck_name = model_deck[pathlist_deck][1]
+                thread = threading.Thread(target = add_proxies, args = (deck_name, proxies_dict_to_change))
+                thread.daemon = True
+                thread.start()
 
 def popover_add_close(popover, add_pic):
         add_pic.destroy()

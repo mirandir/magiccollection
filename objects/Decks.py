@@ -263,11 +263,18 @@ class Decks:
                 response_proxies = c_coll.fetchone()
                 dict_current_proxies = {}
                 for proxy_data in response_proxies[0].split(";;;"):
-                        id_, nb = proxy_data.split("ø")
-                        dict_current_proxies[id_] = int(nb)
+                        if proxy_data != "":
+                                id_, nb = proxy_data.split("ø")
+                                dict_current_proxies[id_] = int(nb)
                 
+                dict_proxies_to_add = {}
                 for id_db, qnt in proxies_dict_to_change.items():
-                        dict_current_proxies[id_db] = dict_current_proxies[id_db] + int(qnt)
+                        try:
+                                dict_current_proxies[id_db] = dict_current_proxies[id_db] + int(qnt)
+                        except KeyError:
+                                if int(qnt) > 0:
+                                        dict_current_proxies[id_db] = int(qnt)
+                                        dict_proxies_to_add[id_db] = int(qnt)
                         if dict_current_proxies[id_db] == 0:
                                 del(dict_current_proxies[id_db])
                 
@@ -299,8 +306,26 @@ class Decks:
                                                                         # we need to delete the row
                                                                         if i not in row_to_delete:
                                                                                 row_to_delete.append(i)
+                                # we delete
                                 for id_to_delete in reversed(row_to_delete):
                                         del(self.mainstore[id_to_delete])
+                                # we add
+                                if len(dict_proxies_to_add) > 0:
+                                        conn, c = functions.db.connect_db()
+                                        tmp_req = ""
+                                        for tmp in dict_proxies_to_add.keys():
+                                                tmp_req = tmp_req + "\"" + str(tmp) + "\", "
+                                        tmp_req = tmp_req[:-2]
+                                        request = """SELECT * FROM cards WHERE cards.id IN (""" + tmp_req + """)"""
+                                        c.execute(request)
+                                        reponses_db = c.fetchall()
+                                        functions.db.disconnect_db(conn)
+                                        
+                                        cards = functions.various.prepare_cards_data_for_treeview(reponses_db)
+                                        for id_, card in cards.items():
+                                                nb_card = dict_proxies_to_add[id_]
+                                                self.mainstore.insert_with_valuesv(-1, range(17), [card["id_"], "-- " + card["name"], card["edition_ln"], "-- " + card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], 400, Pango.Style.ITALIC, card["nb_variant"], nb_card, 1])
+                                
                                 # we update the nb of cards
                                 nb_cards = 0
                                 for card_data_deck in self.mainstore:
