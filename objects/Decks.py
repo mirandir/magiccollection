@@ -100,7 +100,7 @@ class Decks:
                         deck_name = model[treeiter][1]
                         GLib.idle_add(functions.decks.gen_deck_content, deck_name, self.right_content_bot, self, textview_comm)
                 else:
-                        button_delete_deck.set_sensitive(False)
+                        selection.select_path(0)
         
         def add_cards_to_deck(self, deck_name, ids_coll_dict):
                 '''Add the cards in 'ids_coll_dict' to the deck 'deck_name'.
