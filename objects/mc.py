@@ -56,7 +56,10 @@ class MC_Window(Gtk.ApplicationWindow):
                         else:
                                 self.resize(1000, 600)
                 else:
-                        self.resize(1020, 570)
+                        if defs.OS == "gnome":
+                                self.resize(1020, 570)
+                        else:
+                                self.resize(920, 500)
                 
                 self.main_stack = Gtk.Stack()
                 
@@ -64,7 +67,6 @@ class MC_Window(Gtk.ApplicationWindow):
                 self.headerbar = Gtk.HeaderBar()
                 self.headerbar.props.show_close_button = True
                 self.headerbar.props.title = defs.STRINGS["app_name"]
-                #self.set_titlebar(self.headerbar)
                 
                 search_button = Gtk.ToggleButton()
                 search_button.set_tooltip_text(defs.STRINGS["search_card_tooltip"])
@@ -85,7 +87,6 @@ class MC_Window(Gtk.ApplicationWindow):
                 search_button.add_accelerator("clicked", self.accelgroup, Gdk.keyval_from_name("f"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE)
                 self.headerbar.pack_start(search_button)
                 
-                #search_entry.set_placeholder_text(defs.STRINGS["search_card"])
                 self.headerbar.pack_start(search_entry)
                 
                 
