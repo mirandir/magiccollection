@@ -51,7 +51,10 @@ class MC_Window(Gtk.ApplicationWindow):
                 self.connect("key-press-event", self.change_mode)
                 
                 if defs.DISPLAY_WIDTH > 1279:
-                        self.resize(1200, 670)
+                        if defs.OS == "gnome":
+                                self.resize(1200, 670)
+                        else:
+                                self.resize(1000, 600)
                 else:
                         self.resize(1020, 570)
                 
