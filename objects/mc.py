@@ -93,10 +93,7 @@ class MC_Window(Gtk.ApplicationWindow):
                 button.set_valign(Gtk.Align.CENTER)
                 button.set_halign(Gtk.Align.CENTER)
                 button.set_can_focus(False)
-                #defs.MAINWINDOW.widget_overlay = button
-                #defs.MAINWINDOW.overlay.add_overlay(button)
                 button.show()
-                #functions.various.force_update_gui(0)
                 
                 self.widget_overlay = button
                 
@@ -225,8 +222,6 @@ class MC_Window(Gtk.ApplicationWindow):
         
         def create_gui(self):
                 '''GUI creation'''
-                #FIXME: read configuration for knowing what to do here                
-                # main content
                 self.main_stackswitcher = Gtk.StackSwitcher()
                 
                 self.collection = objects.Collection.Collection(self)
@@ -283,21 +278,32 @@ class MagicCollection(Gtk.Application):
                 # create a Gmenu
                 menu = Gio.Menu()
                 
+                # preferences
+                section_pref = Gio.Menu()
+                section_pref.append(defs.STRINGS["preferences"], "app.preferences")
+                menu.append_section(None, section_pref)
+                
+                section_oth = Gio.Menu()
                 # the Help submenu
                 submenu_help = Gio.Menu()
-                menu.append_submenu(defs.STRINGS["help"], submenu_help)
+                section_oth.append_submenu(defs.STRINGS["help"], submenu_help)
                 # doc
                 submenu_help.append(defs.STRINGS["doc"], "app.doc")
                 # website
                 submenu_help.append(defs.STRINGS["website"], "app.website")
                 
-                # menu options
-                menu.append(defs.STRINGS["about"], "app.about")
-                menu.append(defs.STRINGS["quit"], "app.quit")
+                # others menu entries
+                section_oth.append(defs.STRINGS["about"], "app.about")
+                section_oth.append(defs.STRINGS["quit"], "app.quit")
+                menu.append_section(None, section_oth)
                 
                 # set the menu as menu of the application
                 self.set_app_menu(menu)
                 
+                # option "preferences"
+                preferences_action = Gio.SimpleAction.new("preferences", None)
+                preferences_action.connect("activate", self.preferences)
+                self.add_action(preferences_action)
                 # option "doc"
                 doc_action = Gio.SimpleAction.new("doc", None)
                 doc_action.connect("activate", self.doc)
@@ -315,6 +321,9 @@ class MagicCollection(Gtk.Application):
                 quit_action.connect("activate", self.quit_cb)
                 self.add_action(quit_action)
                 
+        def preferences(self, action, param):
+                functions.config.show_pref_dialog()
+        
         def doc(self, action, param):
                 functions.various.open_link_in_browser(None, defs.SITEMC + "magiccollection/utilisation.html", None)
         

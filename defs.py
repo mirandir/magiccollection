@@ -78,6 +78,19 @@ LOC_NAME_FOREIGN = {
 "es" : "name_spanish"
 }
 
+# dict locale -> language name
+LOC_LANG_NAME = {
+0: ["zh", STRINGS["l_chinese"]],
+1: ["fr", STRINGS["l_french"]],
+2: ["de", STRINGS["l_german"]],
+3: ["it", STRINGS["l_italian"]],
+4: ["ja", STRINGS["l_japanese"]],
+5: ["ko", STRINGS["l_korean"]],
+6: ["pt", STRINGS["l_portuguese"]],
+7: ["ru", STRINGS["l_russian"]],
+8: ["es", STRINGS["l_spanish"]]
+}
+
 # screen's size
 DISPLAY_WIDTH = Gdk.Screen.get_default().get_width()
 DISPLAY_HEIGHT = Gdk.Screen.get_default().get_height()
@@ -105,6 +118,7 @@ Gtk.IconTheme.append_search_path(Gtk.IconTheme.get_default(), os.path.join(PATH_
 # we add a custom size for gicons
 Gtk.icon_size_register('150_mana_symbol', 150, 150)
 Gtk.icon_size_register('100_mana_symbol', 100, 100)
+Gtk.icon_size_register('12_config_warning', 12, 12)
 
 # MC website
 SITEMC = "http://mirandir.pagesperso-orange.fr/"
@@ -136,7 +150,7 @@ VARCONFIGDEFAULT = {
 "fr_language": fr_language,
 "show_en_name_in_card_viewer": "0",
 "cards_price": "0",
-"price_cur": "0",
+"price_cur": "1",
 "dark_theme": "0",
 "as_columns": as_columns,
 "coll_columns": coll_columns,
@@ -148,6 +162,21 @@ VARCONFIGDEFAULT = {
 AS_COLUMNS_CHOICE = ["name", "edition", "name_foreign", "colors", "cmc", "type", "artist", "power", "toughness", "rarity"]
 COLL_COLUMNS_CHOICE = ["name", "edition", "name_foreign", "colors", "cmc", "type", "artist", "power", "toughness", "rarity", "nb"]
 DECKS_COLUMNS_CHOICE = ["name", "edition", "name_foreign", "colors", "cmc", "type", "artist", "power", "toughness", "rarity", "nb"]
+
+# dict column name -> column name translated
+COLUMN_NAME_TRANSLATED = {
+"name": STRINGS["column_english_name_complete"],
+"edition": STRINGS["column_edition_complete"],
+"name_foreign": STRINGS["column_nonenglish_name"],
+"colors": STRINGS["column_colors_complete"],
+"cmc": STRINGS["column_cmc_complete"],
+"type": STRINGS["column_type_complete"],
+"artist": STRINGS["column_artist_complete"],
+"power": STRINGS["column_power"],
+"toughness": STRINGS["column_toughness"],
+"rarity": STRINGS["column_rarity_complete"],
+"nb": STRINGS["column_nb_complete"]
+}
 
 SEARCH_ITEMS = {
 0:["name", STRINGS["name_ad"]],
@@ -237,6 +266,7 @@ EDITIONS_PRICES = ["champs promos", "game day promos", "grand prix promos", "lau
 MAINWINDOW = None
 DB_DOWNLOAD_PROGRESS = 0
 MEM_SEARCHS = {}
+PREF_WINDOW_OPEN = False
 
 # threads things
 COLL_LOCK = False
