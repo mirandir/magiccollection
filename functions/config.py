@@ -180,15 +180,18 @@ def show_pref_dialog():
                 checkbutton_no_reprints.connect("toggled", checkbutton_toggled, "no_reprints")
                 box_display.pack_start(checkbutton_no_reprints, False, True, 0)
                 
-                label_cardviewer = Gtk.Label()
-                label_cardviewer.set_markup("<b>" + defs.STRINGS["config_cardviewer"] + "</b>")
-                box_display.pack_start(label_cardviewer, False, True, 0)
-                
-                checkbutton_show_en_name_in_card_viewer = Gtk.CheckButton(defs.STRINGS["config_show_en_name_in_card_viewer"])
-                if dict_config["show_en_name_in_card_viewer"] == "1":
-                                checkbutton_show_en_name_in_card_viewer.set_active(True)
-                checkbutton_show_en_name_in_card_viewer.connect("toggled", checkbutton_toggled, "show_en_name_in_card_viewer")
-                box_display.pack_start(checkbutton_show_en_name_in_card_viewer, False, True, 0)
+                if defs.LANGUAGE != "en":
+                        label_cardviewer = Gtk.Label()
+                        label_cardviewer.set_markup("<b>" + defs.STRINGS["config_cardviewer"] + "</b>")
+                        label_cardviewer.set_alignment(0.0, 0.5)
+                        box_display.pack_start(label_cardviewer, False, True, 0)
+                        
+                        checkbutton_show_en_name_in_card_viewer = Gtk.CheckButton(defs.STRINGS["config_show_en_name_in_card_viewer"])
+                        checkbutton_show_en_name_in_card_viewer.set_margin_left(12)
+                        if dict_config["show_en_name_in_card_viewer"] == "1":
+                                        checkbutton_show_en_name_in_card_viewer.set_active(True)
+                        checkbutton_show_en_name_in_card_viewer.connect("toggled", checkbutton_toggled, "show_en_name_in_card_viewer")
+                        box_display.pack_start(checkbutton_show_en_name_in_card_viewer, False, True, 0)
                 
                 label_collection = Gtk.Label()
                 label_collection.set_markup("<b>" + defs.STRINGS["config_collection"] + "</b>")
@@ -292,9 +295,9 @@ def show_pref_dialog():
                 
                 for grid in [box_display, box_columns, box_internet, box_prices]:
                         grid.props.border_width = 12
-                for label in [label_editions, label_ext_sort_as, label_searches, label_cardviewer, label_collection, label_general_aspect, label_pics_cards, label_connection, label_nonenglish_names, label_columns_order_disp, label_columns_order_disp_helper]:
+                for label in [label_editions, label_ext_sort_as, label_searches, label_collection, label_general_aspect, label_pics_cards, label_connection, label_nonenglish_names, label_columns_order_disp, label_columns_order_disp_helper]:
                         label.set_alignment(0.0, 0.5)
-                for widget in [label_ext_sort_as, checkbutton_no_reprints, checkbutton_show_en_name_in_card_viewer, checkbutton_add_collection_show_details, checkbutton_dark_theme, checkbutton_download_pic_collection_decks, checkbutton_download_pic_as, checkbutton_not_internet_popup, label_fr_language, label_columns_order_disp_helper, box_columns_coll_decks, scrolledwindow_columns_as]:
+                for widget in [label_ext_sort_as, checkbutton_no_reprints, checkbutton_add_collection_show_details, checkbutton_dark_theme, checkbutton_download_pic_collection_decks, checkbutton_download_pic_as, checkbutton_not_internet_popup, label_fr_language, label_columns_order_disp_helper, box_columns_coll_decks, scrolledwindow_columns_as]:
                         widget.set_margin_left(12)
                 
                 notebook.append_page(box_display, Gtk.Label(defs.STRINGS["config_display"]))

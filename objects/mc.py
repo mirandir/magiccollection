@@ -36,12 +36,133 @@ import functions.db
 import functions.various
 import functions.config
 
+class MagicCollection(Gtk.Application):
+        '''App creation'''
+        def __init__(self):
+                Gtk.Application.__init__(self)
+                self.mainwindow = None
+                GLib.set_application_name(defs.STRINGS["app_name"])
+                GLib.set_prgname(defs.STRINGS["app_name"])
+                if functions.config.read_config("dark_theme") == "1":
+                        settings = Gtk.Settings.get_default()
+                        settings.set_property("gtk-application-prefer-dark-theme", True)
+
+        def do_activate(self):
+                mainwindow = MC_Window(self)
+                self.mainwindow = mainwindow
+                mainwindow.show_all()
+                
+                # we hide the MenuBar (yes, it's bad)
+                for widget in self.mainwindow.get_children():
+                        if widget.__class__.__name__ == "MenuBar":
+                                widget.hide()
+                
+                '''print(defs.OS)
+                print(defs.STRINGS["language_name"])'''
+                
+                # checking and loading database
+                thread = threading.Thread(target = functions.db.check_db)
+                thread.daemon = True
+                thread.start()
+                
+        def load_mc(self):
+                if defs.DB_VERSION != None:
+                        functions.various.gen_dict_editions()
+                        self.mainwindow.create_gui()
+                else:
+                        self.mainwindow.widget_overlay.destroy()
+
+        def do_startup(self):
+                # start the application
+                Gtk.Application.do_startup(self)
+                
+                # create a Gmenu
+                menu = Gio.Menu()
+                
+                # preferences
+                section_pref = Gio.Menu()
+                section_pref.append(defs.STRINGS["preferences"], "app.preferences")
+                menu.append_section(None, section_pref)
+                
+                section_oth = Gio.Menu()
+                # the Help submenu
+                submenu_help = Gio.Menu()
+                section_oth.append_submenu(defs.STRINGS["help"], submenu_help)
+                # doc
+                submenu_help.append(defs.STRINGS["doc"], "app.doc")
+                # website
+                submenu_help.append(defs.STRINGS["website"], "app.website")
+                
+                # others menu entries
+                section_oth.append(defs.STRINGS["about"], "app.about")
+                section_oth.append(defs.STRINGS["quit"], "app.quit")
+                menu.append_section(None, section_oth)
+                
+                # set the menu as menu of the application
+                self.set_app_menu(menu)
+                
+                # option "preferences"
+                preferences_action = Gio.SimpleAction.new("preferences", None)
+                preferences_action.connect("activate", self.preferences)
+                self.add_action(preferences_action)
+                # option "doc"
+                doc_action = Gio.SimpleAction.new("doc", None)
+                doc_action.connect("activate", self.doc)
+                self.add_action(doc_action)
+                # option "website"
+                website_action = Gio.SimpleAction.new("website", None)
+                website_action.connect("activate", self.website)
+                self.add_action(website_action)
+                # option "about"
+                about_action = Gio.SimpleAction.new("about", None)
+                about_action.connect("activate", self.about_cb, self)
+                self.add_action(about_action)
+                # option "quit"
+                quit_action = Gio.SimpleAction.new("quit", None)
+                quit_action.connect("activate", self.quit_cb)
+                self.add_action(quit_action)
+                
+        def preferences(self, action, param):
+                functions.config.show_pref_dialog()
+        
+        def doc(self, action, param):
+                functions.various.open_link_in_browser(None, defs.SITEMC + "magiccollection/utilisation.html", None)
+        
+        def website(self, action, param):
+                functions.various.open_link_in_browser(None, defs.SITEMC + "magiccollection/", None)
+        
+        def about_cb(self, action, parameters, app):
+                aboutdialog = Gtk.AboutDialog("")
+                aboutdialog.set_transient_for(app.mainwindow)
+                aboutdialog.set_title(defs.STRINGS["about"] + " - " + defs.STRINGS["app_name"])
+                aboutdialog.set_program_name(defs.STRINGS["app_name"])
+                if defs.DB_VERSION != None:
+                        aboutdialog.set_version(defs.VERSION + " - " + defs.STRINGS["aboutdialog_db"] + " " + defs.DB_VERSION)
+                else:
+                        aboutdialog.set_version(defs.VERSION)
+                aboutdialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "mclogo_min.png")))
+                aboutdialog.set_copyright(defs.STRINGS["about_copyright"])
+                aboutdialog.set_comments(defs.STRINGS["about_comment"])
+                aboutdialog.set_authors(["mirandir [mirandir@orange.fr]"])
+                aboutdialog.set_license(defs.STRINGS["about_licence"])
+                aboutdialog.set_wrap_license(True)
+                
+                aboutdialog.run()
+                aboutdialog.destroy()
+
+        def quit_cb(self, action, parameter):
+                if defs.COLL_LOCK:
+                        # don't quit
+                        functions.various.message_dialog(defs.STRINGS["coll_busy"], 0)
+                else:
+                        # quit
+                        self.quit()
+
 class MC_Window(Gtk.ApplicationWindow):
         '''Mainwindow creation'''
         def __init__(self, app):
                 Gtk.Window.__init__(self, title=defs.STRINGS["app_name"], application=app)
                 self.set_wmclass(defs.STRINGS["app_name"], defs.STRINGS["app_name"])
-                self.set_title(defs.STRINGS["app_name"])
                 self.set_icon_from_file(os.path.join(defs.PATH_MC, "images", "mclogo.png"))
                 self.app = app
                 defs.MAINWINDOW = self
@@ -239,124 +360,3 @@ class MC_Window(Gtk.ApplicationWindow):
                 self.main_stackswitcher.show_all()
                 self.main_stack.show_all()
                 self.widget_overlay.destroy()
-
-class MagicCollection(Gtk.Application):
-        '''App creation'''
-        def __init__(self):
-                Gtk.Application.__init__(self)
-                self.mainwindow = None
-                GLib.set_application_name(defs.STRINGS["app_name"])
-                if functions.config.read_config("dark_theme") == "1":
-                        settings = Gtk.Settings.get_default()
-                        settings.set_property("gtk-application-prefer-dark-theme", True)
-
-        def do_activate(self):
-                mainwindow = MC_Window(self)
-                self.mainwindow = mainwindow
-                mainwindow.show_all()
-                
-                # we hide the MenuBar (yes, it's bad)
-                for widget in self.mainwindow.get_children():
-                        if widget.__class__.__name__ == "MenuBar":
-                                widget.hide()
-                
-                '''print(defs.OS)
-                print(defs.STRINGS["language_name"])'''
-                
-                # checking and loading database
-                thread = threading.Thread(target = functions.db.check_db)
-                thread.daemon = True
-                thread.start()
-                
-        def load_mc(self):
-                if defs.DB_VERSION != None:
-                        functions.various.gen_dict_editions()
-                        self.mainwindow.create_gui()
-                else:
-                        self.mainwindow.widget_overlay.destroy()
-
-        def do_startup(self):
-                # start the application
-                Gtk.Application.do_startup(self)
-                
-                # create a Gmenu
-                menu = Gio.Menu()
-                
-                # preferences
-                section_pref = Gio.Menu()
-                section_pref.append(defs.STRINGS["preferences"], "app.preferences")
-                menu.append_section(None, section_pref)
-                
-                section_oth = Gio.Menu()
-                # the Help submenu
-                submenu_help = Gio.Menu()
-                section_oth.append_submenu(defs.STRINGS["help"], submenu_help)
-                # doc
-                submenu_help.append(defs.STRINGS["doc"], "app.doc")
-                # website
-                submenu_help.append(defs.STRINGS["website"], "app.website")
-                
-                # others menu entries
-                section_oth.append(defs.STRINGS["about"], "app.about")
-                section_oth.append(defs.STRINGS["quit"], "app.quit")
-                menu.append_section(None, section_oth)
-                
-                # set the menu as menu of the application
-                self.set_app_menu(menu)
-                
-                # option "preferences"
-                preferences_action = Gio.SimpleAction.new("preferences", None)
-                preferences_action.connect("activate", self.preferences)
-                self.add_action(preferences_action)
-                # option "doc"
-                doc_action = Gio.SimpleAction.new("doc", None)
-                doc_action.connect("activate", self.doc)
-                self.add_action(doc_action)
-                # option "website"
-                website_action = Gio.SimpleAction.new("website", None)
-                website_action.connect("activate", self.website)
-                self.add_action(website_action)
-                # option "about"
-                about_action = Gio.SimpleAction.new("about", None)
-                about_action.connect("activate", self.about_cb, self)
-                self.add_action(about_action)
-                # option "quit"
-                quit_action = Gio.SimpleAction.new("quit", None)
-                quit_action.connect("activate", self.quit_cb)
-                self.add_action(quit_action)
-                
-        def preferences(self, action, param):
-                functions.config.show_pref_dialog()
-        
-        def doc(self, action, param):
-                functions.various.open_link_in_browser(None, defs.SITEMC + "magiccollection/utilisation.html", None)
-        
-        def website(self, action, param):
-                functions.various.open_link_in_browser(None, defs.SITEMC + "magiccollection/", None)
-        
-        def about_cb(self, action, parameters, app):
-                aboutdialog = Gtk.AboutDialog("")
-                aboutdialog.set_transient_for(app.mainwindow)
-                aboutdialog.set_title(defs.STRINGS["about"] + " - " + defs.STRINGS["app_name"])
-                aboutdialog.set_program_name(defs.STRINGS["app_name"])
-                if defs.DB_VERSION != None:
-                        aboutdialog.set_version(defs.VERSION + " - " + defs.STRINGS["aboutdialog_db"] + " " + defs.DB_VERSION)
-                else:
-                        aboutdialog.set_version(defs.VERSION)
-                aboutdialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "mclogo_min.png")))
-                aboutdialog.set_copyright(defs.STRINGS["about_copyright"])
-                aboutdialog.set_comments(defs.STRINGS["about_comment"])
-                aboutdialog.set_authors(["mirandir [mirandir@orange.fr]"])
-                aboutdialog.set_license(defs.STRINGS["about_licence"])
-                aboutdialog.set_wrap_license(True)
-                
-                aboutdialog.run()
-                aboutdialog.destroy()
-
-        def quit_cb(self, action, parameter):
-                if defs.COLL_LOCK:
-                        # don't quit
-                        functions.various.message_dialog(defs.STRINGS["coll_busy"], 0)
-                else:
-                        # quit
-                        self.quit()
