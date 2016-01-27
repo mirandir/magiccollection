@@ -67,7 +67,6 @@ def download_symbols():
                                                 tar.extract(t_file_name, os.path.join(defs.CACHEMCPIC, "icons"))
                                         except:
                                                 pass
-                                #tar.extractall(os.path.join(defs.CACHEMCPIC, "icons"))
                                 tar.close()
                                 os.remove(os.path.join(defs.CACHEMCPIC, "icons", "all.tar"))
                 
@@ -90,27 +89,27 @@ def download_symbols():
                                                 pass
                         i += 1
 
-def valid_filename_os(nom):
+def valid_filename_os(name):
         '''Checks if the file name is valid for the current OS, and corrects it if necessary'''
         if defs.OS == "windows":
                 # the current OS is Windows
                 # last character must not be "." or " "
-                if nom[-1] == " " or nom[-1] == ".":
-                        nom = nom[:-1]
+                if name[-1] == " " or name[-1] == ".":
+                        name = name[:-1]
                 # we replace forbiden characters
                 carac_interdits = ["<", ">", ":", "\"", "/", "\\", "|", "?", "*"]
                 for ci in carac_interdits:
-                        nom = nom.replace(ci, "")
+                        name = name.replace(ci, "")
                 # we change forbiden file names
-                noms_interdits = ["CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"]
-                for ni in noms_interdits:
-                        if nom == ni:
-                                nom = nom + "_"
+                names_forb = ["CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"]
+                for ni in names_forb:
+                        if name == ni:
+                                name = name + "_"
                                 break
-                return(nom)
+                return(name)
         else:
                 # the current OS is not Windows, we replace "/"
-                return(nom.replace("/", ""))
+                return(name.replace("/", ""))
 
 def check_folders_config():
         '''Checks if needed folders and config files are here'''

@@ -203,15 +203,16 @@ def show_pref_dialog():
                 checkbutton_add_collection_show_details.connect("toggled", checkbutton_toggled, "add_collection_show_details")
                 box_display.pack_start(checkbutton_add_collection_show_details, False, True, 0)
                 
-                label_general_aspect = Gtk.Label()
-                label_general_aspect.set_markup("<b>" + defs.STRINGS["config_general_aspect"] + "</b>")
-                box_display.pack_start(label_general_aspect, False, True, 0)
-                
-                checkbutton_dark_theme = Gtk.CheckButton(defs.STRINGS["config_dark_theme"])
-                if dict_config["dark_theme"] == "1":
-                                checkbutton_dark_theme.set_active(True)
-                checkbutton_dark_theme.connect("toggled", checkbutton_dark_theme_toggled, "dark_theme")
-                box_display.pack_start(checkbutton_dark_theme, False, True, 0)
+                if Gtk.Settings.get_default().get_property("gtk-theme-name") == "Adwaita":
+                        label_general_aspect = Gtk.Label()
+                        label_general_aspect.set_markup("<b>" + defs.STRINGS["config_general_aspect"] + "</b>")
+                        box_display.pack_start(label_general_aspect, False, True, 0)
+                        
+                        checkbutton_dark_theme = Gtk.CheckButton(defs.STRINGS["config_dark_theme"])
+                        if dict_config["dark_theme"] == "1":
+                                        checkbutton_dark_theme.set_active(True)
+                        checkbutton_dark_theme.connect("toggled", checkbutton_dark_theme_toggled, "dark_theme")
+                        box_display.pack_start(checkbutton_dark_theme, False, True, 0)
                 
                 # columns
                 box_columns = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
