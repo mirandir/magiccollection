@@ -194,6 +194,10 @@ class MC_Window(Gtk.ApplicationWindow):
                 search_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-find-symbolic"), Gtk.IconSize.BUTTON)
                 search_button.add(search_pic)
                 
+                search_revealer = Gtk.Revealer()
+                search_revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_RIGHT)
+                search_revealer.set_transition_duration(150)
+                
                 search_entry = Gtk.Entry()
                 icon_go = Gio.ThemedIcon(name="go-jump-symbolic")
                 search_entry.set_icon_from_gicon(Gtk.EntryIconPosition.PRIMARY, icon_go)
@@ -201,14 +205,14 @@ class MC_Window(Gtk.ApplicationWindow):
                 search_entry.connect("activate", self.search_launched, self.main_stack)
                 search_entry.connect("icon-release", self.search_icon_release, self.main_stack)
                 search_entry.connect("changed", self.update_icons_search_entry)
-                search_entry.set_no_show_all(True)
                 search_entry.set_size_request(210, -1)
+                search_revealer.add(search_entry)
                 
-                search_button.connect("clicked", self.search_button_toggled, search_entry)
+                search_button.connect("clicked", self.search_button_toggled, search_entry, search_revealer)
                 search_button.add_accelerator("clicked", self.accelgroup, Gdk.keyval_from_name("f"), Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE)
                 self.headerbar.pack_start(search_button)
                 
-                self.headerbar.pack_start(search_entry)
+                self.headerbar.pack_start(search_revealer)
                 
                 
                 self.overlay = Gtk.Overlay()
@@ -338,12 +342,12 @@ class MC_Window(Gtk.ApplicationWindow):
                                 result_window.destroy()
                 search_entry.set_sensitive(True)
         
-        def search_button_toggled(self, togglebutton, search_entry):
+        def search_button_toggled(self, togglebutton, search_entry, search_revealer):
                 if togglebutton.get_active():
-                        search_entry.show()
+                        search_revealer.set_reveal_child(True)
                         search_entry.grab_focus()
                 else:
-                        search_entry.hide()
+                        search_revealer.set_reveal_child(False)
         
         def create_gui(self):
                 '''GUI creation'''
