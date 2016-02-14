@@ -72,7 +72,7 @@ def prepare_request(search_widgets_list, type_request):
                         comboboxtext = elm[1]
                 
                 # needed for SQLite
-                text = entry.get_text().replace('"', '')
+                text = entry.get_text().replace('"', '').replace('%', '\%').replace('_', '\_')
                 if text != "" and text != "!" and text != ":" + defs.STRINGS["operator_or"] + ":" and text != ":" + defs.STRINGS["operator_and"] + ":":
                         search_type = ""
                         for infosearch in defs.SEARCH_ITEMS.values():
@@ -177,9 +177,9 @@ def prepare_request(search_widgets_list, type_request):
                                                         tmp_request = """cards.flavor != \"\""""
                                         else:
                                                 if negate == 0:
-                                                        tmp_request = """py_lower(cards.flavor) LIKE \"%""" + text_to_find + """%\""""
+                                                        tmp_request = """py_lower(cards.flavor) LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                                 else:
-                                                        tmp_request = """py_lower(cards.flavor) NOT LIKE \"%""" + text_to_find + """%\""""
+                                                        tmp_request = """py_lower(cards.flavor) NOT LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         else:
@@ -188,9 +188,9 @@ def prepare_request(search_widgets_list, type_request):
                                 elif search_type == "artist":
                                         text_to_find = text.strip().lower()
                                         if negate == 0:
-                                                tmp_request = """py_lower(cards.artist) LIKE \"%""" + text_to_find + """%\""""
+                                                tmp_request = """py_lower(cards.artist) LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                         else:
-                                                tmp_request = """py_lower(cards.artist) NOT LIKE \"%""" + text_to_find + """%\""""
+                                                tmp_request = """py_lower(cards.artist) NOT LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         else:
@@ -205,9 +205,9 @@ def prepare_request(search_widgets_list, type_request):
                                                         tmp_request = """cards.text != \"\""""
                                         else:
                                                 if negate == 0:
-                                                        tmp_request = """py_lower(cards.text) LIKE \"%""" + text_to_find + """%\""""
+                                                        tmp_request = """py_lower(cards.text) LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                                 else:
-                                                        tmp_request = """py_lower(cards.text) NOT LIKE \"%""" + text_to_find + """%\""""
+                                                        tmp_request = """py_lower(cards.text) NOT LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         else:
@@ -359,14 +359,14 @@ def prepare_request(search_widgets_list, type_request):
                                                 for color in text_to_find.upper():
                                                         if nb_args == 0:
                                                                 if negate == 0:
-                                                                        tmp_request = """(cards.colors LIKE \"%""" + color + """%\")"""
+                                                                        tmp_request = """(cards.colors LIKE \"%""" + color + """%\" ESCAPE '\\')"""
                                                                 else:
-                                                                        tmp_request = """(cards.colors NOT LIKE \"%""" + color + """%\")"""
+                                                                        tmp_request = """(cards.colors NOT LIKE \"%""" + color + """%\" ESCAPE '\\')"""
                                                         else:
                                                                 if negate == 0:
-                                                                        tmp_request = tmp_request + """ AND (cards.colors LIKE \"%""" + color + """%\")"""
+                                                                        tmp_request = tmp_request + """ AND (cards.colors LIKE \"%""" + color + """%\" ESCAPE '\\')"""
                                                                 else:
-                                                                        tmp_request = tmp_request + """ AND (cards.colors NOT LIKE \"%""" + color + """%\")"""
+                                                                        tmp_request = tmp_request + """ AND (cards.colors NOT LIKE \"%""" + color + """%\" ESCAPE '\\')"""
                                                         nb_args += 1
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
@@ -398,9 +398,9 @@ def prepare_request(search_widgets_list, type_request):
                                                 elif text_to_find == defs.STRINGS["counter"] or text_to_find == defs.STRINGS["counters"]:
                                                         text_to_find = "counter"
                                         if negate == 0:
-                                                tmp_request = """cards.type LIKE \"%""" + text_to_find + """%\""""
+                                                tmp_request = """cards.type LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                         else:
-                                                tmp_request = """cards.type NOT LIKE \"%""" + text_to_find + """%\""""
+                                                tmp_request = """cards.type NOT LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         else:
@@ -459,14 +459,14 @@ def prepare_request(search_widgets_list, type_request):
                                                 for word in list_text_to_find:
                                                         if nb_args == 0:
                                                                 if negate == 0:
-                                                                        tmp_request = """(py_lara(cards.name || cards.name_chinesetrad || cards.name_chinesesimp || cards.name_french || cards.name_german || cards.name_italian || cards.name_japanese || cards.name_korean || cards.name_portuguesebrazil || cards.name_portuguese || cards.name_russian || cards.name_spanish) LIKE \"%""" + word + """%\")"""
+                                                                        tmp_request = """(py_lara(cards.name || cards.name_chinesetrad || cards.name_chinesesimp || cards.name_french || cards.name_german || cards.name_italian || cards.name_japanese || cards.name_korean || cards.name_portuguesebrazil || cards.name_portuguese || cards.name_russian || cards.name_spanish) LIKE \"%""" + word + """%\" ESCAPE '\\')"""
                                                                 else:
-                                                                        tmp_request = """(py_lara(cards.name || cards.name_chinesetrad || cards.name_chinesesimp || cards.name_french || cards.name_german || cards.name_italian || cards.name_japanese || cards.name_korean || cards.name_portuguesebrazil || cards.name_portuguese || cards.name_russian || cards.name_spanish) NOT LIKE \"%""" + word + """%\")"""
+                                                                        tmp_request = """(py_lara(cards.name || cards.name_chinesetrad || cards.name_chinesesimp || cards.name_french || cards.name_german || cards.name_italian || cards.name_japanese || cards.name_korean || cards.name_portuguesebrazil || cards.name_portuguese || cards.name_russian || cards.name_spanish) NOT LIKE \"%""" + word + """%\" ESCAPE '\\')"""
                                                         else:
                                                                 if negate == 0:
-                                                                        tmp_request = tmp_request + """ AND (py_lara(cards.name || cards.name_chinesetrad || cards.name_chinesesimp || cards.name_french || cards.name_german || cards.name_italian || cards.name_japanese || cards.name_korean || cards.name_portuguesebrazil || cards.name_portuguese || cards.name_russian || cards.name_spanish) LIKE \"%""" + word + """%\")"""
+                                                                        tmp_request = tmp_request + """ AND (py_lara(cards.name || cards.name_chinesetrad || cards.name_chinesesimp || cards.name_french || cards.name_german || cards.name_italian || cards.name_japanese || cards.name_korean || cards.name_portuguesebrazil || cards.name_portuguese || cards.name_russian || cards.name_spanish) LIKE \"%""" + word + """%\" ESCAPE '\\')"""
                                                                 else:
-                                                                        tmp_request = tmp_request + """ AND (py_lara(cards.name || cards.name_chinesetrad || cards.name_chinesesimp || cards.name_french || cards.name_german || cards.name_italian || cards.name_japanese || cards.name_korean || cards.name_portuguesebrazil || cards.name_portuguese || cards.name_russian || cards.name_spanish) NOT LIKE \"%""" + word + """%\")"""
+                                                                        tmp_request = tmp_request + """ AND (py_lara(cards.name || cards.name_chinesetrad || cards.name_chinesesimp || cards.name_french || cards.name_german || cards.name_italian || cards.name_japanese || cards.name_korean || cards.name_portuguesebrazil || cards.name_portuguese || cards.name_russian || cards.name_spanish) NOT LIKE \"%""" + word + """%\" ESCAPE '\\')"""
                                                         nb_args += 1
                                                 if tmp_enum_req == "":
                                                         tmp_enum_req = "(" + tmp_request + ")"
@@ -511,9 +511,9 @@ def prepare_request(search_widgets_list, type_request):
                                                         tmp_request = """coll.lang != \"\""""
                                         else:
                                                 if negate == 0:
-                                                        tmp_request = """py_lara(coll.lang) LIKE \"%""" + text_to_find + """%\""""
+                                                        tmp_request = """py_lara(coll.lang) LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                                 else:
-                                                        tmp_request = """py_lara(coll.lang) NOT LIKE \"%""" + text_to_find + """%\""""
+                                                        tmp_request = """py_lara(coll.lang) NOT LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         else:
@@ -547,9 +547,9 @@ def prepare_request(search_widgets_list, type_request):
                                                         tmp_request = """coll.loaned_to != \"\""""
                                         else:
                                                 if negate == 0:
-                                                        tmp_request = """py_lara(coll.loaned_to) LIKE \"%""" + text_to_find + """%\""""
+                                                        tmp_request = """py_lara(coll.loaned_to) LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                                 else:
-                                                        tmp_request = """py_lara(coll.loaned_to) NOT LIKE \"%""" + text_to_find + """%\""""
+                                                        tmp_request = """py_lara(coll.loaned_to) NOT LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         else:
@@ -564,9 +564,9 @@ def prepare_request(search_widgets_list, type_request):
                                                         tmp_request = """coll.comment != \"\""""
                                         else:
                                                 if negate == 0:
-                                                        tmp_request = """py_lara(coll.comment) LIKE \"%""" + text_to_find + """%\""""
+                                                        tmp_request = """py_lara(coll.comment) LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                                 else:
-                                                        tmp_request = """py_lara(coll.comment) NOT LIKE \"%""" + text_to_find + """%\""""
+                                                        tmp_request = """py_lara(coll.comment) NOT LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         else:
@@ -603,9 +603,9 @@ def prepare_request(search_widgets_list, type_request):
                                                         tmp_request = """coll.deck != \"\""""
                                         else:
                                                 if negate == 0:
-                                                        tmp_request = """py_lara(coll.deck) LIKE \"%""" + text_to_find + """%\""""
+                                                        tmp_request = """py_lara(coll.deck) LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                                 else:
-                                                        tmp_request = """py_lara(coll.deck) NOT LIKE \"%""" + text_to_find + """%\""""
+                                                        tmp_request = """py_lara(coll.deck) NOT LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         else:
@@ -643,7 +643,7 @@ def prepare_request(search_widgets_list, type_request):
                                         i += 1
                         else:
                                 request = request[:-4]
-                        #print(request)
+                        print(request)
                         return([request, quantity_card_req])
                 else:
                         return([None, None])
