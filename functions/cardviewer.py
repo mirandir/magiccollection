@@ -465,13 +465,24 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                         texttagItalic = textbuffer.create_tag("Italic", style=Pango.Style.ITALIC)
                                         textview.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
                                         textview.set_editable(False)
+                                        
+                                        text_final = ""
                                         if text == "" or flavor == "":
-                                                textbuffer.set_text(text + flavor)
+                                                text_final = text + flavor
                                         else:
-                                                textbuffer.set_text(text + "\n\n" + flavor)
+                                                text_final = text + "\n\n" + flavor
+                                        textbuffer.set_text(text_final)
+                                        
+                                        # flavor in italic
+                                        start_iter = textbuffer.get_start_iter()
+                                        found = start_iter.forward_search(flavor, 0, None)
+                                        if found:
+                                                match_start, match_end = found
+                                                textbuffer.apply_tag(texttagItalic, match_start, match_end)
+                                        
                                         # we replace {?} by pictures (see PIC_IN_TEXT in defs.py)
                                         nb_to_replace = 0
-                                        for char in text:
+                                        for char in text_final:
                                                 if char == "{":
                                                         nb_to_replace += 1
                                         if nb_to_replace > 0:
@@ -492,13 +503,6 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                                                                 match_start, match_end = found
                                                                                 textbuffer.delete(match_start, match_end)
                                                                         
-                                        # flavor in italic
-                                        start_iter = textbuffer.get_start_iter()
-                                        found = start_iter.forward_search(flavor, 0, None)
-                                        if found:
-                                                match_start, match_end = found
-                                                textbuffer.apply_tag(texttagItalic, match_start, match_end)
-                                                        
                                         widget.add(textview)
                         else:
                                 widget = Gtk.Image()
