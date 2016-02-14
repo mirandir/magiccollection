@@ -643,7 +643,7 @@ def prepare_request(search_widgets_list, type_request):
                                         i += 1
                         else:
                                 request = request[:-4]
-                        print(request)
+                        #print(request)
                         return([request, quantity_card_req])
                 else:
                         return([None, None])
