@@ -337,12 +337,18 @@ def delete_from_treeview(widget, event, selection):
         if len(pathlist) > 0:
                 key = Gdk.keyval_name(event.keyval)
                 if key == "Delete":
-                        dialog = Gtk.MessageDialog(defs.MAINWINDOW, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, defs.STRINGS["delete_select_warning"])
-                        response = dialog.run()
-                        dialog.destroy()
-                        # -8 yes, -9 no
-                        if response == -8:
-                                prepare_delete_rows_from_selection(selection)
+                        nb_rows_in_deck = 0
+                        for row in pathlist:
+                                if model[row][13] == Pango.Style.ITALIC:
+                                        nb_rows_in_deck += 1
+                                        break
+                        if nb_rows_in_deck == 0:
+                                dialog = Gtk.MessageDialog(defs.MAINWINDOW, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, defs.STRINGS["delete_select_warning"])
+                                response = dialog.run()
+                                dialog.destroy()
+                                # -8 yes, -9 no
+                                if response == -8:
+                                        prepare_delete_rows_from_selection(selection)
 
 def prepare_delete_rows_from_selection(selection):
         model, pathlist = selection.get_selected_rows()
