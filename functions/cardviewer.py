@@ -1064,7 +1064,7 @@ def gen_more_popover(more_button, multiverseid, basename, nb_variante, edition_c
                         id_, variant, edition_long = card
                         if variant != "":
                                 space = " "
-                                variant = "[" + variant + "]"
+                                variant = "(" + variant + ")"
                         else:
                                 space = ""
                         if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys() and foreign__name != "":
