@@ -1215,6 +1215,7 @@ def gen_grid_search_coll(coll_object, searchbar):
                                 coll_object.label_nb_card_coll.set_label(defs.STRINGS["nb_card_coll"].replace("%%%", str(nb_coll)))
                         else:
                                 coll_object.label_nb_card_coll.set_label(defs.STRINGS["nb_card_coll_s"].replace("%%%", str(nb_coll)))
+                        coll_object.button_search_coll.set_label(defs.STRINGS["search_collection_button"])
                         
                 coll_object.tree_coll.set_model(coll_object.mainstore)
                 button.set_sensitive(False)
@@ -1252,6 +1253,7 @@ def gen_grid_search_coll(coll_object, searchbar):
                 
                 coll_object.tree_coll.set_model(coll_object.searchstore)
                 coll_object.button_back_coll.set_sensitive(True)
+                coll_object.button_search_coll.set_label("● " + defs.STRINGS["search_collection_button"])
                 
                 if quantity_card_req != None:
                         nb_results = nb_cards_disp
