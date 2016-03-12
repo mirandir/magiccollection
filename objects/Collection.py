@@ -516,9 +516,9 @@ class Collection:
         
         def load_card(self, cardid, simple_search):
                 '''Load a card in the card viewer'''
-                #GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
-                functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)
+                GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
+                #functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)
         
         def load_card_from_outside(self, widget_orig, cardid, list_widgets_to_destroy, simple_search):
-                #GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
-                functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)
+                GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
+                #functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)
