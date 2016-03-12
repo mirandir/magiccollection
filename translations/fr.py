@@ -78,7 +78,7 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["db_damaged"] = "La base de données semble endommagée. Merci de relancer " + translate["app_name"] + " pour corriger le problème."
         translate["no_internet_update_db"] = "Impossible de vérifier les mises à jour de la base de données : aucune connexion internet n'a été trouvée."
         translate["no_internet_download_db"] = "Impossible de télécharger la mise à jour de la base de données : aucune connexion internet n'a été trouvée."
-        translate["error_download_db"] = "Erreur lors du téléchargement de la base de données."
+        translate["error_download_db"] = "Erreur lors du téléchargement de la base de données des cartes."
         translate["warning_ver_db"] = "Attention : cette version de la base de données ne fonctionnera qu'avec " + translate["app_name"] + " version %%% ou supérieure."
         translate["changelog_db"] = "Nouveautés :"
         translate["new_update_db"] = "Une mise à jour de la base de données des cartes est disponible.%%%\nVoulez-vous la télécharger maintenant ?"
@@ -88,7 +88,7 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         # advanced search
         translate["searching"] = "Recherche en cours…"
         translate["please_wait"] = "Cette opération va prendre un peu de temps…"
-        translate["search_ad"] = "Rechercher"
+        translate["search_ad"] = "Chercher"
         translate["operator_choice"] = "Opérateur logique"
         translate["operator_and"] = "et"
         translate["operator_or"] = "ou"
@@ -146,6 +146,7 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["column_rarity_complete"] = "Rareté"
         translate["column_nb"] = "#"
         translate["column_nb_complete"] = "Quantité"
+        translate["column_prices"] = "Prix"
         translate["cmc_only_number"] = "La recherche par Coût converti de mana ne peut se faire qu'avec des valeurs numériques."
         translate["power_only_number"] = "La recherche par Force ne peut se faire qu'avec des valeurs numériques."
         translate["toughness_only_number"] = "La recherche par Endurance ne peut se faire qu'avec des valeurs numériques."
@@ -223,13 +224,13 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["cv_add_proxies_s"] = "En tant que proxies"
         # collection
         translate["db_coll_error"] = "Impossible de lire la collection."
-        translate["coll_empty_welcome"] = "Bienvenue dans " + translate["app_name"] + " !\n\nVotre collection est vide. Vous pouvez rechercher des cartes en utilisant l'icône de recherche en haut à gauche, ou en utilisant la recherche avancée.\nLorsque vous avez trouvé une carte à ajouter, passez la souris sur son image et cliquez sur le '+'."
+        translate["coll_empty_welcome"] = "Bienvenue dans " + translate["app_name"] + " !\n\nVotre collection est vide. Vous pouvez chercher des cartes en utilisant l'icône de recherche en haut à gauche, ou en utilisant la recherche avancée.\nLorsque vous avez trouvé une carte à ajouter, passez la souris sur son image et cliquez sur le '+'."
         translate["nb_card_coll_s"] = "%%% cartes dans la collection"
         translate["nb_card_coll"] = "%%% carte dans la collection"
         translate["info_select_none_coll"] = "(aucune sélection)"
         translate["info_select_coll"] = "(1 sélection)"
         translate["info_selects_coll"] = "(%%% sélections)"
-        translate["searching_coll"] = "Rechercher dans la collection"
+        translate["searching_coll"] = "Chercher dans la collection"
         translate["condition_coll"] = "État"
         translate["lang_coll"] = "Langue"
         translate["foil_coll"] = "Foil"
@@ -238,7 +239,7 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["date_coll"] = "Date d'ajout"
         translate["quantity_card_coll"] = "Nb exemplaires"
         translate["in_deck"] = "Dans deck"
-        translate["search_coll"] = "Rechercher"
+        translate["search_coll"] = "Chercher"
         translate["back_to_coll"] = "Retour à la collection"
         translate["coll_button_search_wait"] = "Opération en cours…"
         translate["nb_card_found_coll_s"] = "%%% résultats"
@@ -292,6 +293,10 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["l_portuguese"] = "Portugais"
         translate["l_russian"] = "Russe"
         translate["l_spanish"] = "Espagnol"
+        # prices
+        translate["error_download_db_prices"] = "Erreur lors du téléchargement de la base de données des prix des cartes."
+        translate["no_internet_download_db_prices"] = "Impossible de télécharger la mise à jour de la base de données des prix des cartes : aucune connexion internet n'a été trouvée."
+        translate["prices_db_damaged"] = "La base de données des prix des cartes semble endommagée. Vous pouvez la retélécharger depuis les préférences pour corriger le problème."
         # configuration
         translate["config_display"] = "Affichage"
         translate["config_editions"] = "Éditions"
@@ -323,6 +328,10 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["config_connection"] = "Connexion"
         translate["config_not_internet_popup"] = "Afficher un avertissement quand aucune connexion internet n'est trouvée"
         translate["config_cardsprices"] = "Prix des cartes"
+        translate["config_cardsprices_download_first"] = "Téléchargez d'abord les prix des cartes en cliquant ici."
+        translate["config_cardsprices_download"] = "Télécharger les prix des cartes"
+        translate["config_cardsprices_show"] = "Afficher les prix des cartes dans le menu 'Plus d'information' du visionneur de carte"
+        translate["config_cardsprices_downloading"] = "Téléchargement des prix des cartes..."
         translate["config_need_restart"] = "Nécessite un redémarrage de " + translate["app_name"]
         #########################
         return(translate)
