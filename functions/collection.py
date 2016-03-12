@@ -55,9 +55,20 @@ def read_coll(box, coll_object):
                 toolbar_box.set_layout(Gtk.ButtonBoxStyle.START)
                 toolbar_box.set_spacing(4)
                 # the buttons
-                coll_object.button_search_coll = Gtk.ToggleButton()
+                coll_object.button_search_coll = Gtk.ToggleButton(defs.STRINGS["search_collection_button"])
                 coll_object.button_search_coll.set_tooltip_text(defs.STRINGS["search_collection_tooltip"])
-                coll_object.button_search_coll.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-find-symbolic"), Gtk.IconSize.BUTTON))
+                #coll_object.button_search_coll.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-find-symbolic"), Gtk.IconSize.BUTTON))
+                # we load a specific CSS for this widget
+                context_button_search_coll = coll_object.button_search_coll.get_style_context()
+                style_provider_button_search_coll = Gtk.CssProvider()
+                css_button_search_coll = """
+                GtkToggleButton {
+                padding: 0px 4px;
+                }
+                """
+                style_provider_button_search_coll.load_from_data(bytes(css_button_search_coll.encode()))
+                Gtk.StyleContext.add_provider(context_button_search_coll, style_provider_button_search_coll, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+                
                 coll_object.button_show_details = Gtk.MenuButton()
                 coll_object.button_show_details.set_tooltip_text(defs.STRINGS["show_details_tooltip"])
                 coll_object.button_show_details.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="text-editor-symbolic"), Gtk.IconSize.BUTTON))
@@ -106,7 +117,6 @@ def read_coll(box, coll_object):
                 
                 # this button displays the current selection, if any
                 selectinfo_button = Gtk.MenuButton(defs.STRINGS["info_select_none_coll"])
-                selectinfo_button.set_relief(Gtk.ReliefStyle.NONE)
                 popover_selectinfo = Gtk.Popover.new(selectinfo_button)
                 popover_selectinfo.set_position(Gtk.PositionType.BOTTOM)
                 selectinfo_button.set_popover(popover_selectinfo)
