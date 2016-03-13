@@ -151,6 +151,7 @@ VARCONFIGDEFAULT = {
 "show_en_name_in_card_viewer": "0",
 "cards_price": "0",
 "price_cur": "1",
+"price_autodownload": "0",
 "dark_theme": "0",
 "as_columns": as_columns,
 "coll_columns": coll_columns,
@@ -278,5 +279,6 @@ SAVEDETAILS_TIMER = None
 SAVE_COMMENT_DECK_TIMER = None
 READ_COLL_FINISH = False
 
+PRICES_DATE = None
 DB_VERSION = None
 VERSION = "0.9"

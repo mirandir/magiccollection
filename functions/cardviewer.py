@@ -34,6 +34,7 @@ import defs
 import objects.mc
 # imports functions
 import functions.various
+import functions.prices
 
 def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
         """Generates and returns a card viewer with card's data.
@@ -511,7 +512,6 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         grid.attach_next_to(widget, colors_pic, Gtk.PositionType.BOTTOM, nb_columns, 1)
                         
                         # buttonmenu "more" - other editions, open Gatherer, price
-                        # FIXME : add the prices !
                         more_button = Gtk.MenuButton()
                         more_button.set_tooltip_text(defs.STRINGS["morebutton_tooltip"])
                         more_popover = gen_more_popover(more_button, multiverseid, basename, nb_variante, edition_code, name_without_variants, foreign__name_without_variants, object_origin, id_, type_, basetext, power, toughness, basecolors)
@@ -1038,6 +1038,8 @@ def gen_more_popover(more_button, multiverseid, basename, nb_variante, edition_c
         
         link_gatherer = 0
         other_editions = 0
+        price = 0
+        
         popover = Gtk.Popover.new(more_button)
         popover_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
         
@@ -1088,10 +1090,42 @@ def gen_more_popover(more_button, multiverseid, basename, nb_variante, edition_c
                 link_gatherer = 1
                 url = "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + multiverseid
                 linkbutton_gatherer = Gtk.LinkButton(uri=url, label=defs.STRINGS["open_gatherer"])
+                linkbutton_gatherer.props.has_tooltip = False
                 linkbutton_gatherer.connect("activate-link", functions.various.open_link_in_browser, url, popover)
                 popover_box.pack_start(linkbutton_gatherer, True, True, 0)
         
-        if link_gatherer == 0 and other_editions == 0:
+        # we try to get a price
+        if functions.config.read_config("cards_price") == "1" and functions.prices.check_prices_presence():
+                tmp_price = functions.prices.get_price([current_id])
+                currency = tmp_price[1]
+                try:
+                        current_price = tmp_price[0][current_id]
+                except:
+                        current_price = ""
+                if current_price != "":
+                        price = 1
+                        
+                        tcgname_edition = functions.various.edition_tcgname(edition_code)
+                        tmp_name = name.replace("// ", "").replace("/", " ").replace("®", "r")
+                        if "<>" in tmp_name:
+                                tmp_name = name.split(" <> ")[0]
+                        if "Token" in type_:
+                                tmp_name = name.split("(")[0] + "Token"
+                        if nb_variante != "":
+                                tmp_name = name + " (Version " + nb_variante + ")"
+                        if tcgname_edition == "" or edition_code == "gat" or edition_code == "pre":
+                                url = "http://store.tcgplayer.com/magic/product/show?ProductName=" + functions.various.remove_accented_char(tmp_name.replace(" // ", " ").replace("/", " ").replace(":", "").lower()) + "&newSearch=false"
+                        else:
+                                url = "http://store.tcgplayer.com/magic/" + tcgname_edition + "/" + functions.various.remove_accented_char(tmp_name.replace(" // ", " ").replace("/", " ").replace(":", "").lower().replace(" ", "-"))
+                        
+                        
+                        label_price = defs.STRINGS["open_display_price"].replace(";;;", str(current_price)).replace("%%%", currency)
+                        linkbutton_price = Gtk.LinkButton(uri=url, label=label_price)
+                        linkbutton_price.props.has_tooltip = False
+                        linkbutton_price.connect("activate-link", functions.various.open_link_in_browser, url, popover)
+                        popover_box.pack_start(linkbutton_price, True, True, 0)
+        
+        if link_gatherer == 0 and other_editions == 0 and price == 0:
                 return(None)
         else:
                 popover_box.show_all()

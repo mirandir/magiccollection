@@ -225,6 +225,9 @@ def edition_code_to_longname(code):
 def edition_release_date(code):
         return(defs.DICT_EDITIONS[code][2])
 
+def edition_tcgname(code):
+        return(defs.DICT_EDITIONS[code][3])
+
 def open_link_in_browser(widget, url, popover):
         if popover != None:
                 popover.hide()
@@ -286,7 +289,7 @@ def gen_dict_editions():
         use_french_name = functions.config.read_config("ext_fr_name")
                 
         conn, c = functions.db.connect_db()
-        c.execute("""SELECT code, name, name_french, releasedate FROM editions""")
+        c.execute("""SELECT code, name, name_french, releasedate, tcgname FROM editions""")
         reponses = c.fetchall()
         functions.db.disconnect_db(conn)
         for info_edition in reponses:
@@ -294,7 +297,7 @@ def gen_dict_editions():
                 if use_french_name == "1":
                         if info_edition[2] != "":
                                 nom_fr_ou_en = info_edition[2]
-                defs.DICT_EDITIONS[info_edition[0]] = [nom_fr_ou_en, info_edition[1], info_edition[3]]
+                defs.DICT_EDITIONS[info_edition[0]] = [nom_fr_ou_en, info_edition[1], info_edition[3], info_edition[4]]
 
 def prepare_cards_data_for_treeview(cards):
         # we check if we must retrieve foreign names for flip / split cards
@@ -493,7 +496,7 @@ def vertical_flip_pic(gtkimage):
         gtkimage.set_from_pixbuf(pixbuf)
 
 def compare_str_and_int(model, row1, row2, user_data):
-        '''This function compare a list of strings and int. int values are sorted first.'''
+        '''This function compares a list of strings and int. int values are sorted first.'''
         sort_column, _ = model.get_sort_column_id()
         value1 = model.get_value(row1, sort_column)
         value2 = model.get_value(row2, sort_column)

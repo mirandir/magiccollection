@@ -20,11 +20,13 @@
 
 # Read & write the configuration file, generate the config window
 
-from gi.repository import Gtk, Gio
+from gi.repository import Gtk, Gio, GLib
 import os
+import threading
 
 # import global values
 import defs
+import functions.prices
 
 def read_config_file():
         '''Read the configuration file.'''
@@ -92,39 +94,39 @@ def change_config(param, value):
         else:
                 print("param is unknown !")
 
+def gen_warning_pic():
+        pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="dialog-warning-symbolic"), Gtk.icon_size_from_name("12_config_warning"))
+        pic.set_tooltip_text(defs.STRINGS["config_need_restart"])
+        pic.set_margin_left(6)
+        return(pic)
+def comboboxtext_ext_sort_as_changed(comboboxtext):
+        if comboboxtext.get_active() == 0:
+                change_config("ext_sort_as", "0")
+        elif comboboxtext.get_active() == 1:
+                change_config("ext_sort_as", "1")
+def comboboxtext_fr_language_changed(comboboxtext):
+        nb_lang = comboboxtext.get_active()
+        change_config("fr_language", defs.LOC_LANG_NAME[nb_lang][0])
+def checkbutton_toggled(checkbutton, param):
+        if checkbutton.get_active():
+                change_config(param, "1")
+        else:
+                change_config(param, "0")
+def checkbutton_dark_theme_toggled(checkbutton, param):
+        settings = Gtk.Settings.get_default()
+        if checkbutton.get_active():
+                change_config(param, "1")
+                settings.set_property("gtk-application-prefer-dark-theme", True)
+        else:
+                change_config(param, "0")
+                settings.set_property("gtk-application-prefer-dark-theme", False)
+def checkbutton_not_internet_popup_toggled(checkbutton, param):
+        if checkbutton.get_active():
+                change_config(param, "0")
+        else:
+                change_config(param, "1")
+
 def show_pref_dialog():
-        def gen_warning_pic():
-                pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="dialog-warning-symbolic"), Gtk.icon_size_from_name("12_config_warning"))
-                pic.set_tooltip_text(defs.STRINGS["config_need_restart"])
-                pic.set_margin_left(6)
-                return(pic)
-        def comboboxtext_ext_sort_as_changed(comboboxtext):
-                if comboboxtext.get_active() == 0:
-                        change_config("ext_sort_as", "0")
-                elif comboboxtext.get_active() == 1:
-                        change_config("ext_sort_as", "1")
-        def comboboxtext_fr_language_changed(comboboxtext):
-                nb_lang = comboboxtext.get_active()
-                change_config("fr_language", defs.LOC_LANG_NAME[nb_lang][0])
-        def checkbutton_toggled(checkbutton, param):
-                if checkbutton.get_active():
-                        change_config(param, "1")
-                else:
-                        change_config(param, "0")
-        def checkbutton_dark_theme_toggled(checkbutton, param):
-                settings = Gtk.Settings.get_default()
-                if checkbutton.get_active():
-                        change_config(param, "1")
-                        settings.set_property("gtk-application-prefer-dark-theme", True)
-                else:
-                        change_config(param, "0")
-                        settings.set_property("gtk-application-prefer-dark-theme", False)
-        def checkbutton_not_internet_popup_toggled(checkbutton, param):
-                if checkbutton.get_active():
-                        change_config(param, "0")
-                else:
-                        change_config(param, "1")
-        
         if defs.PREF_WINDOW_OPEN == False:
                 defs.PREF_WINDOW_OPEN = True
                 
@@ -293,6 +295,8 @@ def show_pref_dialog():
                 
                 # prices
                 box_prices = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+                gen_prices_box_content(box_prices, dict_config)
+                
                 
                 for grid in [box_display, box_columns, box_internet, box_prices]:
                         grid.props.border_width = 12
@@ -313,6 +317,46 @@ def show_pref_dialog():
                 pref_dialog.run()
                 pref_dialog.destroy()
                 defs.PREF_WINDOW_OPEN = False
+
+def down_prices_manual(button, box_prices, box_button, label, dict_config):
+        def down_in_thread(box_prices, dict_config):
+                functions.prices.check_prices("manual")
+                GLib.idle_add(gen_prices_box_content, box_prices, dict_config)
+                GLib.idle_add(box_prices.show_all)
+        
+        label.set_text(defs.STRINGS["config_cardsprices_downloading"])
+        spinner = Gtk.Spinner()
+        spinner.show()
+        spinner.start()
+        box_button.pack_start(spinner, True, True, 0)
+        button.set_sensitive(False)
+        thread = threading.Thread(target = down_in_thread, args = (box_prices, dict_config))
+        thread.daemon = True
+        thread.start()
+
+def gen_prices_box_content(box_prices, dict_config):
+        for widget in box_prices.get_children():
+                box_prices.remove(widget)
+        prices_here = functions.prices.check_prices_presence()
+        print(prices_here)
+        if prices_here == False:
+                download_prices_button = Gtk.Button()
+                box_button = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+                box_button.set_halign(Gtk.Align.CENTER)
+                download_prices_button.add(box_button)
+                label = Gtk.Label(defs.STRINGS["config_cardsprices_download_first"])
+                box_button.pack_start(label, True, True, 0)
+                download_prices_button.connect("clicked", down_prices_manual, box_prices, box_button, label, dict_config)
+                box_prices.pack_start(download_prices_button, False, True, 0)
+        else:
+                checkbutton_show_cards_prices = Gtk.CheckButton(defs.STRINGS["config_cardsprices_show"])
+                if dict_config["cards_price"] == "1":
+                                checkbutton_show_cards_prices.set_active(True)
+                checkbutton_show_cards_prices.connect("toggled", checkbutton_toggled, "cards_price")
+                box_prices.pack_start(checkbutton_show_cards_prices, False, True, 0)
+                
+                for widget in [checkbutton_show_cards_prices]:
+                        widget.set_margin_left(12)
 
 def gen_columns_choice(list_current_columns, list_all_columns, param_config, column_name):
         def cell_toggled(cellrenderertoggle, path, liststore):

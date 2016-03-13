@@ -194,6 +194,7 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["h_special"] = "speciale"
         # card viewer
         translate["open_gatherer"] = "Ouvrir le Gatherer"
+        translate["open_display_price"] = "Prix indicatif : ;;;%%%"# ;;; is replaced by the price, %%% by the currency
         translate["other_edition"] = "Autre édition"
         translate["other_editions"] = "Autres éditions"
         translate["download_card_no_internet"] = "Impossible de télécharger l'image de la carte : aucune connexion internet n'a été trouvée."
