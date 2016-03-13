@@ -1367,8 +1367,8 @@ def gen_grid_search_coll(coll_object, searchbar):
                 entry.connect("changed", update_button_search_and_reset, entry1, entry2, entry3, entry4, button_search, button_reset_search)
         
         box_search_coll_top_left = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        box_search_coll_top_left.pack_start(button_search, False, False, 0)
         box_search_coll_top_left.pack_start(button_reset_search, False, False, 0)
+        box_search_coll_top_left.pack_start(button_search, False, False, 0)
         
         box_search_coll_top_right = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         box_search_coll_top_right.pack_start(button_back_coll, False, False, 0)
