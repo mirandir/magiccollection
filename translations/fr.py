@@ -194,7 +194,7 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["h_special"] = "speciale"
         # card viewer
         translate["open_gatherer"] = "Ouvrir le Gatherer"
-        translate["open_display_price"] = "Prix indicatif : ;;;%%%"# ;;; is replaced by the price, %%% by the currency
+        translate["open_display_price"] = "Prix indicatif : ;;;%%%"# ';;;' is replaced by the price, '%%%' by the currency
         translate["other_edition"] = "Autre édition"
         translate["other_editions"] = "Autres éditions"
         translate["download_card_no_internet"] = "Impossible de télécharger l'image de la carte : aucune connexion internet n'a été trouvée."
@@ -332,8 +332,17 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["config_cardsprices"] = "Prix des cartes"
         translate["config_cardsprices_download_first"] = "Téléchargez d'abord les prix des cartes en cliquant ici."
         translate["config_cardsprices_download"] = "Télécharger les prix des cartes"
+        translate["config_prices_show"] = "Affichage des prix"
         translate["config_cardsprices_show"] = "Afficher les prix des cartes dans le menu 'Plus d'information' du visionneur de carte"
-        translate["config_cardsprices_downloading"] = "Téléchargement des prix des cartes..."
+        translate["config_price_cur"] = "Les prix sont affichés en :"
+        translate["config_price_dollars"] = "Dollars"
+        translate["config_price_euros"] = "Euros"
+        translate["config_prices_update"] = "Mise à jour des prix"
+        translate["config_prices_autoupdate"] = "Mettre automatiquement à jour les prix au lancement de " + translate["app_name"]
+        translate["config_prices_version"] = "Version de la base de données des prix : <b>%%%</b>."
+        translate["config_cardsprices_update"] = "Mettre à jour les prix des cartes"
+        translate["config_cardsprices_checking_update"] = "Vérification des mises à jour des prix des cartes…"
+        translate["config_cardsprices_downloading"] = "Téléchargement des prix des cartes…"
         translate["config_need_restart"] = "Nécessite un redémarrage de " + translate["app_name"]
         #########################
         return(translate)

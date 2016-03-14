@@ -104,6 +104,11 @@ def comboboxtext_ext_sort_as_changed(comboboxtext):
                 change_config("ext_sort_as", "0")
         elif comboboxtext.get_active() == 1:
                 change_config("ext_sort_as", "1")
+def comboboxtext_prices_cur_changed(comboboxtext):
+        if comboboxtext.get_active() == 0:
+                change_config("price_cur", "0")
+        elif comboboxtext.get_active() == 1:
+                change_config("price_cur", "1")
 def comboboxtext_fr_language_changed(comboboxtext):
         nb_lang = comboboxtext.get_active()
         change_config("fr_language", defs.LOC_LANG_NAME[nb_lang][0])
@@ -338,7 +343,6 @@ def gen_prices_box_content(box_prices, dict_config):
         for widget in box_prices.get_children():
                 box_prices.remove(widget)
         prices_here = functions.prices.check_prices_presence()
-        print(prices_here)
         if prices_here == False:
                 download_prices_button = Gtk.Button()
                 box_button = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
@@ -349,13 +353,58 @@ def gen_prices_box_content(box_prices, dict_config):
                 download_prices_button.connect("clicked", down_prices_manual, box_prices, box_button, label, dict_config)
                 box_prices.pack_start(download_prices_button, False, True, 0)
         else:
+                label_prices_show = Gtk.Label()
+                label_prices_show.set_markup("<b>" + defs.STRINGS["config_prices_show"] + "</b>")
+                box_prices.pack_start(label_prices_show, False, True, 0)
+                
                 checkbutton_show_cards_prices = Gtk.CheckButton(defs.STRINGS["config_cardsprices_show"])
                 if dict_config["cards_price"] == "1":
                                 checkbutton_show_cards_prices.set_active(True)
                 checkbutton_show_cards_prices.connect("toggled", checkbutton_toggled, "cards_price")
                 box_prices.pack_start(checkbutton_show_cards_prices, False, True, 0)
                 
-                for widget in [checkbutton_show_cards_prices]:
+                box_prices_cur = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+                label_prices_cur = Gtk.Label(defs.STRINGS["config_price_cur"])
+                comboboxtext_prices_cur = Gtk.ComboBoxText()
+                comboboxtext_prices_cur.append("dollar", defs.STRINGS["config_price_dollars"])
+                comboboxtext_prices_cur.append("euro", defs.STRINGS["config_price_euros"])
+                if dict_config["price_cur"] == "0":
+                        comboboxtext_prices_cur.set_active(0)
+                elif dict_config["price_cur"] == "1":
+                        comboboxtext_prices_cur.set_active(1)
+                comboboxtext_prices_cur.connect("changed", comboboxtext_prices_cur_changed)
+                box_prices_cur.pack_start(label_prices_cur, False, False, 0)
+                box_prices_cur.pack_start(comboboxtext_prices_cur, False, False, 0)
+                box_prices.pack_start(box_prices_cur, False, True, 0)
+                
+                label_prices_update = Gtk.Label()
+                label_prices_update.set_markup("<b>" + defs.STRINGS["config_prices_update"] + "</b>")
+                box_prices.pack_start(label_prices_update, False, True, 0)
+                
+                checkbutton_prices_autoupdate = Gtk.CheckButton(defs.STRINGS["config_prices_autoupdate"])
+                if dict_config["price_autodownload"] == "1":
+                                checkbutton_prices_autoupdate.set_active(True)
+                checkbutton_prices_autoupdate.connect("toggled", checkbutton_toggled, "price_autodownload")
+                box_prices.pack_start(checkbutton_prices_autoupdate, False, True, 0)
+                
+                label_prices_last_update = Gtk.Label()
+                label_prices_last_update.set_markup(defs.STRINGS["config_prices_version"].replace("%%%", defs.PRICES_DATE))
+                label_prices_last_update.set_margin_top(20)
+                box_prices.pack_start(label_prices_last_update, False, True, 0)
+                
+                download_prices_button = Gtk.Button()
+                box_button = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+                box_button.set_halign(Gtk.Align.CENTER)
+                download_prices_button.add(box_button)
+                label = Gtk.Label(defs.STRINGS["config_cardsprices_update"])
+                box_button.pack_start(label, True, True, 0)
+                download_prices_button.connect("clicked", down_prices_manual, box_prices, box_button, label, dict_config)
+                box_prices.pack_start(download_prices_button, False, True, 0)
+                
+                for label in [label_prices_show, label_prices_update]:
+                        label.set_alignment(0.0, 0.5)
+                
+                for widget in [checkbutton_show_cards_prices, box_prices_cur, checkbutton_prices_autoupdate]:
                         widget.set_margin_left(12)
 
 def gen_columns_choice(list_current_columns, list_all_columns, param_config, column_name):

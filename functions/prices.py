@@ -26,6 +26,7 @@ from socket import timeout
 import tarfile
 from distutils.version import StrictVersion
 import sqlite3
+from gi.repository import GLib
 
 import defs
 import functions.various
@@ -90,7 +91,8 @@ def download_prices(orig):
         defs.DB_DOWNLOAD_PROGRESS = 0
         go = 1
         if functions.various.check_internet():
-                #GLib.idle_add(defs.MAINWINDOW.widget_overlay.get_child().set_markup, "<b><big>" + defs.STRINGS["downloading_db"] + "</big></b>")
+                if orig == "auto":
+                        GLib.idle_add(defs.MAINWINDOW.widget_overlay.get_child().set_markup, "<b><big>" + defs.STRINGS["config_cardsprices_downloading"] + "</big></b>")
                 
                 if os.path.isfile(os.path.join(defs.CACHEMCPR, "dateprices_newtmp")) == False:
                         try:
@@ -106,8 +108,7 @@ def download_prices(orig):
                                 os.remove(os.path.join(defs.CACHEMCPR, "prices_" + datedbprices_new + ".sqlite.tar.xz_newtmp"))
                         
                         try:
-                                if orig == "manual":
-                                        urllib.request.urlretrieve(defs.SITEMC + "files/prices_" + datedbprices_new + ".sqlite.tar.xz", os.path.join(defs.CACHEMCPR, "prices_" + datedbprices_new + ".sqlite.tar.xz_newtmp"))
+                                urllib.request.urlretrieve(defs.SITEMC + "files/prices_" + datedbprices_new + ".sqlite.tar.xz", os.path.join(defs.CACHEMCPR, "prices_" + datedbprices_new + ".sqlite.tar.xz_newtmp"))
                                 #urllib.request.urlretrieve(defs.SITEMC + "files/prices_" + datedbprices_new + ".sqlite.tar.xz", os.path.join(defs.CACHEMCPR, "prices_" + datedbprices_new + ".sqlite.tar.xz_newtmp"), functions.various.reporthook)# changer ça en fonction de orig
                                 if os.path.isfile(os.path.join(defs.CACHEMCPR, "dateprices")):
                                         filepricesdb_old = open(os.path.join(defs.CACHEMCPR, "dateprices"), "r", encoding="UTF-8")
@@ -134,7 +135,8 @@ def check_update_prices(orig):
         datedbprices = filedateprices.read(8)
         filedateprices.close()
         
-        #GLib.idle_add(defs.MAINWINDOW.widget_overlay.get_child().set_markup, "<b><big>" + defs.STRINGS["checking_db_update"] + "</big></b>")
+        if orig == "auto":
+                GLib.idle_add(defs.MAINWINDOW.widget_overlay.get_child().set_markup, "<b><big>" + defs.STRINGS["config_cardsprices_checking_update"] + "</big></b>")
         
         if functions.various.check_internet():
                 try:
