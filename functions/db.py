@@ -703,7 +703,7 @@ def download_db():
                 if os.path.isfile(os.path.join(defs.CACHEMC, "datedb_newtmp")) == False:
                         try:
                                 urllib.request.urlretrieve(defs.SITEMC + "files/datedb", os.path.join(defs.CACHEMC, "datedb_newtmp"))
-                        except (urllib.error.HTTPError, urllib.request.URLError, timeout, UnicodeEncodeError):
+                        except:
                                 GLib.idle_add(functions.various.message_dialog, defs.STRINGS["error_download_db"], 0)
                                 go = 0
                 if go == 1:
@@ -728,7 +728,7 @@ def download_db():
                                 os.rename(os.path.join(defs.CACHEMC, "datedb_newtmp"), os.path.join(defs.CACHEMC, "datedb"))
                                 os.rename(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_new + ".sqlite.tar.xz_newtmp"), os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_new + ".sqlite.tar.xz"))
                                 
-                        except (urllib.error.HTTPError, urllib.request.URLError, timeout, UnicodeEncodeError):
+                        except:
                                 GLib.idle_add(functions.various.message_dialog, defs.STRINGS["error_download_db"], 0)
                                 #functions.various.message_dialog(defs.STRINGS["error_download_db"], 0)
         else:
@@ -748,7 +748,7 @@ def check_update_db():
         if functions.various.check_internet():
                 try:
                         urllib.request.urlretrieve(defs.SITEMC + "files/datedb", os.path.join(defs.CACHEMC, "datedb_newtmp"))
-                except (urllib.error.HTTPError, urllib.request.URLError, timeout, UnicodeEncodeError):
+                except:
                         pass
                 else:
                         fichierdatedb_tmp = open(os.path.join(defs.CACHEMC, "datedb_newtmp"), "r", encoding="UTF-8")
