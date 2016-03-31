@@ -676,10 +676,13 @@ def check_db2():
                 datebddcartes = fichierdatedb.read(8)
                 fichierdatedb.close()
                 if os.path.isfile(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes + ".sqlite.tar.xz")):
-                        tar = tarfile.open(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes + ".sqlite.tar.xz"))
-                        tar.extractall(defs.CACHEMC)
-                        tar.close()
-                        os.remove(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes + ".sqlite.tar.xz"))
+                        try:
+                                tar = tarfile.open(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes + ".sqlite.tar.xz"))
+                                tar.extractall(defs.CACHEMC)
+                                tar.close()
+                                os.remove(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes + ".sqlite.tar.xz"))
+                        except:
+                                pass
                 if os.path.isfile(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes + ".sqlite")):
                         defs.DB_VERSION = datebddcartes
                 else:
@@ -688,7 +691,8 @@ def check_db2():
                 defs.DB_VERSION = None
         
         # when downloading the new database is over, we download symbols editions
-        functions.various.download_symbols()
+        if defs.DB_VERSION != None:
+                functions.various.download_symbols()
         GLib.idle_add(show_loading)
         GLib.idle_add(defs.MAINWINDOW.app.load_mc)
 

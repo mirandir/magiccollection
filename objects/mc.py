@@ -74,6 +74,7 @@ class MagicCollection(Gtk.Application):
                         self.mainwindow.create_gui()
                 else:
                         self.mainwindow.widget_overlay.destroy()
+                        functions.various.message_dialog(defs.STRINGS["problem_db"], 0)
 
         def do_startup(self):
                 # start the application
