@@ -24,7 +24,7 @@ def translate():
         translate = {}
         #########################
         translate["app_name"] = "Magic Collection"
-        translate["language_name"] = "Français"
+        translate["language_name"] = "Français" # the current language name for this file
         # Gmenu
         translate["preferences"] = "Préférences"
         translate["preferences_of_mc"] = "Préférences de " + translate["app_name"]
@@ -54,7 +54,7 @@ Vous devez avoir reçu une copie de la Licence Publique Générale GNU 3 en mêm
 Logo de ''' + translate["app_name"] + ''' par mirandir, sous licence CC BY-NC-ND 3.0 : <https://creativecommons.org/licenses/by-nc-nd/3.0/deed.fr/>
 
 Images d'indicateurs de couleur par BaconCatBug (voir <http://www.mtgsalvation.com/forums/creativity/artwork/494438-baconcatbugs-set-and-mana-symbol-megapack/>)
-Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
+Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         
         # mainwindow
         translate["loading"] = "Chargement…"
@@ -302,6 +302,13 @@ Icônes mathématiques réalisées par Freepik (<http://www.flaticon.com/packs/m
         translate["error_download_db_prices"] = "Erreur lors du téléchargement de la base de données des prix des cartes."
         translate["no_internet_download_db_prices"] = "Impossible de télécharger la mise à jour de la base de données des prix des cartes : aucune connexion internet n'a été trouvée."
         translate["prices_db_damaged"] = "La base de données des prix des cartes semble endommagée. Vous pouvez la retélécharger depuis les préférences pour corriger le problème."
+        translate["estimate_dialog_title"] = "Estimation"
+        translate["estimate_dialog_select"] = "La sélection est estimée à %%%."
+        translate["estimate_dialog_collection"] = "La collection est estimée à %%%."
+        translate["estimate_dialog_deck"] = "Le deck ;;; est estimé à %%%."
+        translate["estimate_ok"] = "Valider"
+        translate["estimate_x_cards_without_price"] = "1 carte non-estimée"
+        translate["estimate_x_cards_without_price_s"] = "%%% cartes non-estimées"
         # configuration
         translate["config_display"] = "Affichage"
         translate["config_editions"] = "Éditions"

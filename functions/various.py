@@ -42,11 +42,11 @@ def check_internet():
         try:
                 urllib.request.urlopen("http://perdu.com", timeout=2)
                 return(True)
-        except (urllib.error.HTTPError, urllib.request.URLError, timeout):
+        except:
                 try:
                         urllib.request.urlopen("http://www.google.com", timeout=2)
                         return(True)
-                except (urllib.error.HTTPError, urllib.request.URLError, timeout):
+                except:
                         return(False)
 
 def download_symbols():
@@ -58,7 +58,7 @@ def download_symbols():
                         GLib.idle_add(functions.various.force_update_gui, 0)
                         try:
                                 urllib.request.urlretrieve("https://dl.dropboxusercontent.com/u/70787217/mc/symboles_editions/all.tar", os.path.join(defs.CACHEMCPIC, "icons", "all.tar"))
-                        except (urllib.error.HTTPError, urllib.request.URLError, timeout, UnicodeEncodeError):
+                        except:
                                 pass
                         else:
                                 tar = tarfile.open(os.path.join(defs.CACHEMCPIC, "icons", "all.tar"))
@@ -85,7 +85,7 @@ def download_symbols():
                                         url_icon = "https://dl.dropboxusercontent.com/u/70787217/mc/symboles_editions/" + edition[0] + ".png"
                                         try:
                                                 urllib.request.urlretrieve(url_icon, os.path.join(defs.CACHEMCPIC, "icons", valid_filename_os(edition[0]) + ".png"))
-                                        except (urllib.error.HTTPError, urllib.request.URLError, timeout, UnicodeEncodeError):
+                                        except:
                                                 pass
                         i += 1
 
@@ -128,7 +128,7 @@ def check_folders_config():
                 if check_internet():
                         try:
                                 urllib.request.urlretrieve("https://dl.dropboxusercontent.com/u/70787217/mc/cardback.png", os.path.join(defs.CACHEMCPIC, "cardback.png"))
-                        except (urllib.error.HTTPError, urllib.request.URLError, timeout, UnicodeEncodeError):
+                        except:
                                 pass
 
 def card_pic_size():
@@ -154,11 +154,7 @@ def message_dialog(message, typ):
 
 def message_exit(message):
         '''Display a message for the user, then exit MC'''
-        dialogdivers = Gtk.MessageDialog(None, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, message)
-        if defs.MAINWINDOW != None:
-                dialogdivers.set_transient_for(defs.MAINWINDOW)
-        dialogdivers.run()
-        dialogdivers.destroy()
+        message_dialog(message, 0)
         sys.exit()
 
 def reporthook(block_no, block_size, file_size):
@@ -191,14 +187,14 @@ def downloadPicture(multiverseid, imageurl, name, edition_code):
                 
                 try:
                         urllib.request.urlretrieve(URL, path)
-                except (urllib.error.HTTPError, urllib.request.URLError, timeout, UnicodeEncodeError):
+                except:
                         pass
                 
                 if check_card_pic(edition_code, name):
                         try:
                                 pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
                                 return(True)
-                        except GLib.GError:
+                        except:
                                 os.remove(path)
                                 return(False)
                 else:

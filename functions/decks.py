@@ -52,7 +52,6 @@ def gen_decks_display(decks_object, box):
                 tmp_box.set_halign(Gtk.Align.CENTER)
                 
                 button_new_deck = Gtk.MenuButton()
-                button_new_deck.set_relief(Gtk.ReliefStyle.NONE)
                 button_new_deck.set_vexpand(True)
                 button_new_deck.set_margin_left(100)
                 button_new_deck.set_margin_right(100)
@@ -105,8 +104,9 @@ def gen_decks_display(decks_object, box):
                 button_new_deck = Gtk.MenuButton(defs.STRINGS["create_new_deck"])
                 button_new_deck.set_popover(gen_new_deck_popover(button_new_deck, decks_object))
                 
-                button_estimate_deck = Gtk.Button(defs.STRINGS["estimate_deck"])
-                button_estimate_deck.set_sensitive(False)
+                decks_object.button_estimate_deck = Gtk.Button(defs.STRINGS["estimate_deck"])
+                decks_object.button_estimate_deck.set_sensitive(False)
+                decks_object.button_estimate_deck.connect("clicked", prepare_estimate_deck, decks_object.select_list_decks)
                 
                 button_delete_deck = Gtk.Button(defs.STRINGS["delete_deck"])
                 button_delete_deck.set_sensitive(False)
@@ -114,7 +114,7 @@ def gen_decks_display(decks_object, box):
                 
                 box_buttons = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
                 box_buttons.set_valign(Gtk.Align.CENTER)
-                for button in [button_new_deck, button_estimate_deck, button_delete_deck]:
+                for button in [button_new_deck, decks_object.button_estimate_deck, button_delete_deck]:
                         box_buttons.pack_start(button, False, True, 0)
                 right_content_top.pack_start(box_buttons, False, True, 0)
                 
@@ -154,6 +154,21 @@ def gen_decks_display(decks_object, box):
                 
                 decks_object.update_nb_decks()
                 decks_object.mainbox.show_all()
+
+def prepare_estimate_deck(button, select_list_decks):
+        model_deck, pathlist_deck = select_list_decks.get_selected_rows()
+        deck_name = model_deck[pathlist_deck][1]
+        request = """SELECT DISTINCT id_card FROM collection WHERE deck = \"""" + deck_name + """\""""
+        conn, c = functions.collection.connect_db()
+        c.execute(request)
+        responses_db = c.fetchall()
+        functions.collection.disconnect_db(conn)
+        ids_db_list = ""
+        for id_card in responses_db:
+                ids_db_list = ids_db_list + "\"" + id_card[0] + "\", "
+        ids_db_list = ids_db_list[:-2]
+        
+        GLib.idle_add(functions.prices.show_estimate_dialog, "deck", ids_db_list, deck_name)
 
 def prepare_delete_deck(button, select_list_decks, decks_object):
         def real_work(decks_object, deck_name):
@@ -239,6 +254,11 @@ def gen_deck_content(deck_name, box, decks_object, textview_comm):
         toolbar_box.set_layout(Gtk.ButtonBoxStyle.START)
         toolbar_box.set_spacing(4)
         # the buttons
+        if functions.prices.check_prices_presence():
+                decks_object.button_estimate_deck.set_sensitive(True)
+        else:
+                decks_object.button_estimate_deck.set_sensitive(False)
+        
         decks_object.button_show_details = Gtk.MenuButton()
         decks_object.button_show_details.set_tooltip_text(defs.STRINGS["show_details_tooltip"])
         decks_object.button_show_details.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="text-editor-symbolic"), Gtk.IconSize.BUTTON))

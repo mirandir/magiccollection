@@ -90,7 +90,7 @@ def read_coll(box, coll_object):
                         toolbar_box.add(button)
                 coll_object.button_search_coll.set_sensitive(True)
                 coll_object.button_delete.set_sensitive(True)
-                #coll_object.button_estimate.set_sensitive(True)
+                coll_object.button_estimate.set_sensitive(True)
                 toolbar_box.show_all()
                 toolbar_box.set_child_secondary(coll_object.button_estimate, True)
                 toolbar_box.set_child_secondary(coll_object.button_delete, True)
@@ -191,7 +191,11 @@ def read_coll(box, coll_object):
                 coll_object.mainselect = select
                 scrolledwindow.add(tree_coll)
                 
+                coll_object.button_estimate.set_popover(functions.collection.gen_estimate_popover(coll_object.button_estimate, select))
+                if functions.prices.check_prices_presence() == False:
+                        coll_object.button_estimate.set_sensitive(False)
                 coll_object.button_delete.set_popover(functions.collection.gen_delete_popover(coll_object.button_delete, select))
+                
                 tree_coll.connect("row-activated", coll_object.show_details, select, coll_object.button_show_details)
                 tree_coll.connect("key-press-event", delete_from_treeview, select)
                 tree_coll.show_all()
@@ -534,6 +538,71 @@ def gen_delete_popover(button_delete, selection):
         
         popover.connect("show", popover_show, selection, delete_box)
         popover.add(delete_box)
+        return(popover)
+
+def gen_estimate_popover(button_estimate, selection):
+        def popover_show(popover, selection, estimate_box):
+                for widget in estimate_box.get_children():
+                        estimate_box.remove(widget)
+                
+                button_estimate_select = Gtk.Button(defs.STRINGS["estimate_select"])
+                button_estimate_select.connect("clicked", button_estimate_select_clicked, popover, selection)
+                button_estimate_all = Gtk.Button(defs.STRINGS["estimate_all"])
+                button_estimate_all.connect("clicked", button_estimate_all_clicked, popover)
+                
+                estimate_box.pack_start(button_estimate_all, True, True, 0)
+                estimate_box.pack_start(button_estimate_select, True, True, 0)
+                
+                estimate_box.show_all()
+                
+                model, pathlist = selection.get_selected_rows()
+                if len(pathlist) > 0:
+                        button_estimate_select.set_sensitive(True)
+                else:
+                        button_estimate_select.set_sensitive(False)
+        
+        def button_estimate_all_clicked(button, popover):
+                def prepare_estimate_all():
+                        request = """SELECT DISTINCT id_card FROM collection"""
+                        conn, c = connect_db()
+                        c.execute(request)
+                        responses_db = c.fetchall()
+                        disconnect_db(conn)
+                        ids_db_list = ""
+                        for id_card in responses_db:
+                                ids_db_list = ids_db_list + "\"" + id_card[0] + "\", "
+                        ids_db_list = ids_db_list[:-2]
+                        
+                        GLib.idle_add(functions.prices.show_estimate_dialog, "collection", ids_db_list, None)
+                popover.hide()
+                thread = threading.Thread(target = prepare_estimate_all)
+                thread.daemon = True
+                thread.start()
+        
+        def button_estimate_select_clicked(button, popover, selection):
+                def prepare_estimate_from_selection(selection):
+                        model, pathlist = selection.get_selected_rows()
+                        ids_db_list = ""
+                        for row in pathlist:
+                                ids_db_list = ids_db_list + "\"" + model[row][0] + "\", "
+                        ids_db_list = ids_db_list[:-2]
+                        
+                        GLib.idle_add(functions.prices.show_estimate_dialog, "select", ids_db_list, None)
+                
+                popover.hide()
+                thread = threading.Thread(target = prepare_estimate_from_selection, args = [selection])
+                thread.daemon = True
+                thread.start()
+        
+        estimate_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        estimate_box.set_margin_top(5)
+        estimate_box.set_margin_bottom(5)
+        estimate_box.set_margin_left(5)
+        estimate_box.set_margin_right(5)
+        popover = Gtk.Popover.new(button_estimate)
+        
+        popover.connect("show", popover_show, selection, estimate_box)
+        popover.add(estimate_box)
         return(popover)
 
 def gen_quantity_popover(button_change_quantity, selection):
