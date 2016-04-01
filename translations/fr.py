@@ -28,6 +28,9 @@ def translate():
         # Gmenu
         translate["preferences"] = "Préférences"
         translate["preferences_of_mc"] = "Préférences de " + translate["app_name"]
+        translate["importexport"] = "Importer / Exporter"
+        translate["import"] = "Importer collection & decks"
+        translate["export"] = "Exporter vos données"
         translate["help"] = "Aide"
         translate["doc"] = "Documentation"
         translate["website"] = "Site internet"
@@ -354,5 +357,15 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["config_cardsprices_checking_update"] = "Vérification des mises à jour des prix des cartes…"
         translate["config_cardsprices_downloading"] = "Téléchargement des prix des cartes…"
         translate["config_need_restart"] = "Nécessite un redémarrage de " + translate["app_name"]
+        # export
+        translate["exportimport_filetype"] = "Fichiers " + translate["app_name"]
+        translate["export_collection_busy"] = "Impossible d'exporter vos données maintenant, la collection est en cours d'utilisation."
+        translate["export_filename"] = "Collection Magic de %user% (%date%)"
+        translate["export_write_impossible"] = "Impossible d'enregistrer le fichier.\nVous n’avez peut-être pas les permissions nécessaires. Vérifiez que vous avez saisi l’emplacement correctement et réessayez."
+        # import
+        translate["import_collection_busy"] = "Impossible d'importer des données maintenant, la collection est en cours d'utilisation."
+        translate["import_areyousure"] = "Votre collection et vos decks actuels vont être remplacés.\nÊtes-vous sûr(e) de vouloir continuer ?"
+        translate["import_error"] = "Erreur lors de l'importation du fichier."
+        translate["import_success"] = "L'importation a réussi. " + translate["app_name"] + " va maintenant redémarrer."
         #########################
         return(translate)

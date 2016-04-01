@@ -35,6 +35,7 @@ import objects.AdvancedSearch
 import functions.db
 import functions.various
 import functions.config
+import functions.importexport
 
 class MagicCollection(Gtk.Application):
         '''App creation'''
@@ -83,6 +84,14 @@ class MagicCollection(Gtk.Application):
                 # create a Gmenu
                 menu = Gio.Menu()
                 
+                # the import/export submenu
+                section_importexport = Gio.Menu()
+                submenu_eximp = Gio.Menu()
+                section_importexport.append_submenu(defs.STRINGS["importexport"], submenu_eximp)
+                submenu_eximp.append(defs.STRINGS["import"], "app.importdata")
+                submenu_eximp.append(defs.STRINGS["export"], "app.exportdata")
+                menu.append_section(None, section_importexport)
+                
                 # preferences
                 section_pref = Gio.Menu()
                 section_pref.append(defs.STRINGS["preferences"], "app.preferences")
@@ -109,6 +118,14 @@ class MagicCollection(Gtk.Application):
                 preferences_action = Gio.SimpleAction.new("preferences", None)
                 preferences_action.connect("activate", self.preferences)
                 self.add_action(preferences_action)
+                # option "importdata"
+                importdata_action = Gio.SimpleAction.new("importdata", None)
+                importdata_action.connect("activate", self.importdata)
+                self.add_action(importdata_action)
+                # option "exportdata"
+                exportdata_action = Gio.SimpleAction.new("exportdata", None)
+                exportdata_action.connect("activate", self.exportdata)
+                self.add_action(exportdata_action)
                 # option "doc"
                 doc_action = Gio.SimpleAction.new("doc", None)
                 doc_action.connect("activate", self.doc)
@@ -128,6 +145,12 @@ class MagicCollection(Gtk.Application):
                 
         def preferences(self, action, param):
                 functions.config.show_pref_dialog()
+        
+        def importdata(self, action, param):
+                GLib.idle_add(functions.importexport.import_data)
+        
+        def exportdata(self, action, param):
+                GLib.idle_add(functions.importexport.export_data)
         
         def doc(self, action, param):
                 functions.various.open_link_in_browser(None, defs.SITEMC + "magiccollection/utilisation.html", None)
