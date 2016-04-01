@@ -167,6 +167,8 @@ def reporthook(block_no, block_size, file_size):
         pourcentage = (defs.DB_DOWNLOAD_PROGRESS / file_size) * 100
         if pourcentage > 100:
                 pourcentage = 100
+        if pourcentage < 0:
+                pourcentage = 0
         GLib.idle_add(defs.MAINWINDOW.widget_overlay.get_child().set_markup, "<b><big>" + defs.STRINGS["downloading_db"] + " " + str(round(pourcentage)) + "%</big></b>")
 
 def downloadPicture(multiverseid, imageurl, name, edition_code):
