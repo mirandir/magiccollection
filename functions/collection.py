@@ -37,6 +37,10 @@ def read_coll(box, coll_object):
                 box.remove(widget)
         
         conn, c = connect_db()
+        
+        # we are doing a vacuum here, to keep the size of the db under control
+        conn.execute("VACUUM")
+        
         c.execute("""SELECT id_coll, id_card, comment, deck FROM collection""")
         reponses_coll = c.fetchall()
         disconnect_db(conn)
