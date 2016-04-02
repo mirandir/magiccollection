@@ -69,6 +69,9 @@ class MagicCollection(Gtk.Application):
         def load_mc(self):
                 if defs.DB_VERSION != None:
                         functions.various.gen_dict_editions()
+                        # checks for old format
+                        if functions.importexport.test_oldformat():
+                                functions.importexport.import_oldformat()
                         # do we need to autoupdate the prices?
                         if functions.config.read_config("price_autodownload") == "1":
                                 functions.prices.check_prices("auto")

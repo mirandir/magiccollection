@@ -635,3 +635,21 @@ def gen_new_deck_popover(button_new_deck, decks_object):
         popover.connect("show", popover_show, decks_object, new_deck_box)
         popover.add(new_deck_box)
         return(popover)
+
+def write_new_deck_to_db(name_new_deck):
+        '''Write the new deck to the collection database.'''
+        conn_coll, c_coll = functions.collection.connect_db()
+        functions.various.lock_db(True, None)
+        
+        c_coll.execute("""INSERT INTO decks VALUES(null, ?, ?, ?)""", (name_new_deck, "", "",))
+        
+        functions.collection.disconnect_db(conn_coll)
+        functions.various.lock_db(False, None)
+
+def update_comment_deck_to_db(deck_name, new_comment):
+        '''Write the new comment of the deck to the collection database.'''
+        conn_coll, c_coll = functions.collection.connect_db()
+        functions.various.lock_db(True, None)
+        c_coll.execute("""UPDATE decks SET comment = ? WHERE name = ?""", (new_comment, deck_name,))
+        functions.collection.disconnect_db(conn_coll)
+        functions.various.lock_db(False, None)

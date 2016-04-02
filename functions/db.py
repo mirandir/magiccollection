@@ -31,6 +31,7 @@ import tarfile
 # imports def.py
 import defs
 import functions.various
+import functions.importexport
 
 def connect_db():
         '''Return the connection to the DB and the cursor'''
@@ -668,6 +669,10 @@ def check_db2():
                 defs.MAINWINDOW.widget_overlay.get_child().set_markup("<b><big>" + defs.STRINGS["loading"] + "</big></b>")
                 functions.various.force_update_gui(0)
         
+        def show_loading_oldformat():
+                defs.MAINWINDOW.widget_overlay.get_child().set_markup("<b><big>" + defs.STRINGS["import_oldformat"] + "</big></b>")
+                functions.various.force_update_gui(0)
+        
         if os.path.isfile(os.path.join(defs.CACHEMC, "datedb_newtmp")):
                 os.remove(os.path.join(defs.CACHEMC, "datedb_newtmp"))
         
@@ -693,7 +698,10 @@ def check_db2():
         # when downloading the new database is over, we download symbols editions
         if defs.DB_VERSION != None:
                 functions.various.download_symbols()
-        GLib.idle_add(show_loading)
+        if functions.importexport.test_oldformat():
+                GLib.idle_add(show_loading_oldformat)
+        else:
+                GLib.idle_add(show_loading)
         GLib.idle_add(defs.MAINWINDOW.app.load_mc)
 
 def download_db():

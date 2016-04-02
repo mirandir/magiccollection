@@ -71,13 +71,7 @@ class Decks:
         
         def create_new_deck(self, name_new_deck):
                 '''Create the new deck.'''
-                conn_coll, c_coll = functions.collection.connect_db()
-                functions.various.lock_db(True, None)
-                
-                c_coll.execute("""INSERT INTO decks VALUES(null, ?, ?, ?)""", (name_new_deck, "", "",))
-                
-                functions.collection.disconnect_db(conn_coll)
-                functions.various.lock_db(False, None)
+                functions.decks.write_new_deck_to_db(name_new_deck)
                 
                 if self.store_list_decks == None:
                         functions.decks.gen_decks_display(self, self.right_content)
@@ -86,11 +80,7 @@ class Decks:
         
         def update_deck_comment(self, deck_name, new_comment):
                 '''Write a new comment to the deck 'deck_name'.'''
-                conn_coll, c_coll = functions.collection.connect_db()
-                functions.various.lock_db(True, None)
-                c_coll.execute("""UPDATE decks SET comment = ? WHERE name = ?""", (new_comment, deck_name,))
-                functions.collection.disconnect_db(conn_coll)
-                functions.various.lock_db(False, None)
+                functions.decks.update_comment_deck_to_db(deck_name, new_comment)
         
         def display_deck_content(self, selection, integer, TreeViewColumn, tree_editions, button_delete_deck, textview_comm):
                 '''Displays the content of the deck 'deck_name' in self.right_content_bot.'''
