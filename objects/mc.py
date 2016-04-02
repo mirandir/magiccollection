@@ -87,6 +87,11 @@ class MagicCollection(Gtk.Application):
                 # create a Gmenu
                 menu = Gio.Menu()
                 
+                # preferences
+                section_pref = Gio.Menu()
+                section_pref.append(defs.STRINGS["preferences"], "app.preferences")
+                menu.append_section(None, section_pref)
+                
                 # the import/export submenu
                 section_importexport = Gio.Menu()
                 submenu_eximp = Gio.Menu()
@@ -94,11 +99,6 @@ class MagicCollection(Gtk.Application):
                 submenu_eximp.append(defs.STRINGS["import"], "app.importdata")
                 submenu_eximp.append(defs.STRINGS["export"], "app.exportdata")
                 menu.append_section(None, section_importexport)
-                
-                # preferences
-                section_pref = Gio.Menu()
-                section_pref.append(defs.STRINGS["preferences"], "app.preferences")
-                menu.append_section(None, section_pref)
                 
                 section_oth = Gio.Menu()
                 # the Help submenu
