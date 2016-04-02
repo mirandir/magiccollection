@@ -105,6 +105,7 @@ if OS == "windows":
 
 # MC dirs
 HOMEMC = os.path.join(DATA, "magiccollection")
+BACKUPMC = os.path.join(HOMEMC, "backup")
 CONFIGMC = os.path.join(CONFIG, "magiccollection")
 CACHEMC = os.path.join(CACHE, "magiccollection")
 CACHEMCPIC = os.path.join(CACHEMC, "downloadedPics")

@@ -113,7 +113,7 @@ def valid_filename_os(name):
 
 def check_folders_config():
         '''Checks if needed folders and config files are here'''
-        folders = [defs.HOMEMC, defs.CONFIGMC, defs.CACHEMC, defs.CACHEMCPIC, defs.CACHEMCPR]
+        folders = [defs.HOMEMC, defs.CONFIGMC, defs.CACHEMC, defs.CACHEMCPIC, defs.CACHEMCPR, defs.BACKUPMC]
         for folder in folders:
                 if (os.path.isdir(folder)) == False:
                         os.mkdir(folder)

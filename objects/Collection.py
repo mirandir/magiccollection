@@ -222,16 +222,8 @@ class Collection:
         def del_all_collection_decks(self):
                 '''Delete all decks and all cards in the collection (caution).'''
                 # we are not monsters, we make a backup
-                today = date.today()
-                m = '%02d' % today.month
-                d = '%02d' % today.day
-                date_today = str(today.year) + str(m) + str(d)
-                
-                back_folder = os.path.join(defs.HOMEMC, "backup")
-                if (os.path.isdir(back_folder)) == False:
-                        os.mkdir(back_folder)
-                os.rename(os.path.join(defs.HOMEMC, "collection.sqlite"), os.path.join(back_folder, "collection_" + date_today + ".sql"))
-                
+                functions.collection.backup_coll("forced")
+                os.remove(os.path.join(defs.HOMEMC, "collection.sqlite"))
                 python = sys.executable
                 os.execl(python, python, os.path.join(defs.PATH_MC, "magic_collection.py"))
         

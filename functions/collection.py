@@ -25,6 +25,8 @@ import os
 import sqlite3
 import threading
 import time
+import datetime
+import shutil
 
 # imports def.py
 import defs
@@ -40,6 +42,8 @@ def read_coll(box, coll_object):
         
         # we are doing a vacuum here, to keep the size of the db under control
         conn.execute("VACUUM")
+        
+        backup_coll(None)
         
         c.execute("""SELECT id_coll, id_card, comment, deck FROM collection""")
         reponses_coll = c.fetchall()
@@ -1506,3 +1510,57 @@ def create_db_coll():
         """)
         
         disconnect_db(conn)
+
+def backup_coll(type_of_backup):
+        '''Creates a backup of the collection, only one per day unless "type_of_backup" is "forced".'''
+        # we get the list of all backups, and we sort them by date
+        allfiles = os.listdir(defs.BACKUPMC)
+        allbackups = []
+        for afile in allfiles:
+                if os.path.isdir(os.path.join(defs.BACKUPMC, afile)) == False:
+                        if afile[:18] == "collection.sqlite-" and functions.various.isSQLite3(os.path.join(defs.BACKUPMC, afile)) == True:
+                                allbackups.append(afile)
+        allbackups = sorted(allbackups)
+        # we don't want more than 10 backups, so we delete the oldest
+        if len(allbackups) > 10:
+                os.remove(os.path.join(defs.BACKUPMC, allbackups[0]))
+        
+        now = datetime.datetime.now()
+        month = '%02d' % now.month
+        day = '%02d' % now.day
+        '''hour = '%02d' % now.hour
+        minute = '%02d' % now.minute
+        second = '%02d' % now.second'''
+        rtoday = str(now.year) + "_" + str(month) + "_" + str(day)
+        
+        if type_of_backup == "forced":
+                nbtry = 1
+                tmpfilename = "collection.sqlite-" + rtoday + "-" + str(nbtry) + ".mcollection"
+                filenameok = 0
+                while filenameok == 0:
+                        if tmpfilename in allbackups:
+                                nbtry += 1
+                                tmpfilename = "collection.sqlite-" + rtoday + "-" + str(nbtry) + ".mcollection"
+                        else:
+                                filenameok = 1
+                shutil.copy(os.path.join(defs.HOMEMC, "collection.sqlite"), os.path.join(defs.BACKUPMC, tmpfilename))
+                return(tmpfilename)
+        else:
+                tmpfilename = "collection.sqlite-" + rtoday + ".mcollection"
+                try:
+                        allbackups[-1]
+                except IndexError:
+                        shutil.copy(os.path.join(defs.HOMEMC, "collection.sqlite"), os.path.join(defs.BACKUPMC, tmpfilename))
+                        return(tmpfilename)
+                else:
+                        if allbackups[-1] != tmpfilename:
+                                shutil.copy(os.path.join(defs.HOMEMC, "collection.sqlite"), os.path.join(defs.BACKUPMC, tmpfilename))
+                                return(tmpfilename)
+
+def restore_backup(filename):
+        '''Restore a backup file.'''
+        if os.path.isfile(os.path.join(defs.BACKUPMC, filename)):
+                if functions.various.isSQLite3(os.path.join(defs.BACKUPMC, filename)):
+                        if os.path.isfile(os.path.join(defs.HOMEMC, "collection.sqlite")):
+                                os.remove(os.path.join(defs.HOMEMC, "collection.sqlite"))
+                        shutil.copy(os.path.join(defs.BACKUPMC, filename), os.path.join(defs.HOMEMC, "collection.sqlite"))

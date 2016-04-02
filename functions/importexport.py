@@ -31,6 +31,7 @@ import defs
 
 # imports functions
 import functions.various
+import functions.collection
 
 def import_data():
         '''This function imports the collection and the decks from a SQLite file.'''
@@ -42,7 +43,7 @@ def import_data():
                 responseconfirm = dialogconfirm.run()
                 dialogconfirm.destroy()
                 if responseconfirm == -8:
-                        #TODO: backup the collection here !
+                        lastsave = functions.collection.backup_coll("forced")
                         dialog = Gtk.FileChooserDialog(defs.STRINGS["import"], defs.MAINWINDOW, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
                         filefilter = Gtk.FileFilter()
                         filefilter.set_name(defs.STRINGS["exportimport_filetype"])
@@ -56,7 +57,7 @@ def import_data():
                                         shutil.copy(filename, os.path.join(defs.HOMEMC, "collection.sqlite"))
                                 except:
                                         functions.various.message_dialog(defs.STRINGS["import_error"], 0)
-                                        #TODO: restore the last save here
+                                        functions.collection.restore_backup(lastsave)
                                 else:
                                         functions.various.message_dialog(defs.STRINGS["import_success"], 0)
                                         restart = 1
