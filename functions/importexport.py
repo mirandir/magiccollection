@@ -229,7 +229,7 @@ def cards_finder_oldcollection(Collection):
                                         cards_not_found.append([card_name, ex_code, id_data])
                                 else:
                                         # we can write this card to the collection
-                                        c_coll.execute("""INSERT INTO collection VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?)""", (id_card, id_data["date"], id_data["condition"], id_data["lang"], id_data["foil"], id_data["loaned"], id_data["comment"], id_data["deck"]))
+                                        c_coll.execute("""INSERT INTO collection VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?)""", (id_card, id_data["date"], id_data["condition"].lower(), id_data["lang"], id_data["foil"], id_data["loaned"], id_data["comment"], id_data["deck"]))
         functions.db.disconnect_db(conn_db)
         functions.collection.disconnect_db(conn_coll)
         
@@ -338,9 +338,7 @@ def read_oldcollection(filepath, Decks):
                                                                         foil = info.replace("foil__", "")
                                                                 elif "pret__" in info:
                                                                         tmploa = info.replace("pret__", "")
-                                                                        tmploa0 = int(tmppret[0])
-                                                                        tmploa1 = tmppret[4:]
-                                                                        loaned = tmppret1
+                                                                        loaned = tmploa[4:]
                                                                 elif "comm__" in info:
                                                                         comment = info.replace("comm__", "")
                                                         
