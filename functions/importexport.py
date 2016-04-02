@@ -127,6 +127,26 @@ def import_oldformat():
                         shutil.rmtree(os.path.join(defs.CACHEMCPR))
                         os.mkdir(os.path.join(defs.CACHEMCPR))
                 
+                # we delete old pictures in CACHEMCPIC
+                for folder in os.listdir(os.path.join(defs.CACHEMCPIC)):
+                        if os.path.isdir(os.path.join(defs.CACHEMCPIC, folder)):
+                                for pic in os.listdir(os.path.join(defs.CACHEMCPIC, folder)):
+                                        if "(" in pic and ")" in pic:
+                                                os.remove(os.path.join(defs.CACHEMCPIC, folder, pic))
+                                                nbvariant = ""
+                                                if pic[-11].isdigit():
+                                                        nbvariant = pic[-11]
+                                                        if nbvariant == "0":
+                                                                nbvariant = "10"
+                                                if nbvariant != "":
+                                                        name_without_variant = pic.replace(" (" + nbvariant + ")", "")
+                                                        try:
+                                                                os.remove(os.path.join(defs.CACHEMCPIC, folder, name_without_variant))
+                                                        except:
+                                                                pass
+                                        elif ".full.hd" in pic:
+                                                os.remove(os.path.join(defs.CACHEMCPIC, folder, pic))
+                
                 # we create the database
                 functions.collection.create_db_coll()
                 
