@@ -95,7 +95,7 @@ def gen_decks_display(decks_object, box):
                 tree_decks.append_column(column_name_decks)
                 
                 decks_object.select_list_decks = tree_decks.get_selection()
-                decks_object.gen_list_decks()
+                decks_object.gen_list_decks(None)
                 
                 scrolledwindow_decks.add(tree_decks)
                 right_content_top.pack_start(scrolledwindow_decks, False, True, 0)
@@ -390,6 +390,7 @@ def gen_deck_content(deck_name, box, decks_object, textview_comm):
                 decks_object.mainstore.set_sort_column_id(3, Gtk.SortType.ASCENDING)
         else:
                 decks_object.mainstore.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+        decks_object.displaying_deck = 0
 
 def prepare_move_cards(select_list_decks, selection, old_deck, decks_object):
         model_deck, pathlist_deck = select_list_decks.get_selected_rows()
@@ -593,17 +594,17 @@ def gen_move_deck_popover(button_move, selection, decks_object):
 
 def gen_new_deck_popover(button_new_deck, decks_object):
         '''Create the popover which create deck.'''
-        def create_deck(button, entry_name_deck, decks_object, popover):
-                popover.hide()
-                decks_object.create_new_deck(entry_name_deck.get_text())
-        
-        def entry_changed(entry, ok_button, list_decks_names):
-                if defs.COLL_LOCK == False and entry.get_text() != "" and entry.get_text().lower() not in list_decks_names:
-                        ok_button.set_sensitive(True)
-                else:
-                        ok_button.set_sensitive(False)
-        
         def popover_show(popover, decks_object, new_deck_box):
+                def create_deck(button, entry_name_deck, decks_object, popover):
+                        popover.hide()
+                        decks_object.create_new_deck(entry_name_deck.get_text())
+                
+                def entry_changed(entry, ok_button, list_decks_names):
+                        if defs.COLL_LOCK == False and entry.get_text() != "" and entry.get_text().lower() not in list_decks_names:
+                                ok_button.set_sensitive(True)
+                        else:
+                                ok_button.set_sensitive(False)
+                
                 conn_coll, c_coll = functions.collection.connect_db()
                 c_coll.execute("""SELECT name FROM decks""")
                 responses = c_coll.fetchall()

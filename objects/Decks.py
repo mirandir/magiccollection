@@ -46,6 +46,8 @@ class Decks:
                 self.label_nb_cards = None
                 self.button_show_details = None
                 
+                self.displaying_deck = 0
+                
                 self.mainbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=1)
                 self.mainbox.set_margin_top(5)
                 self.mainbox.set_margin_bottom(5)
@@ -76,7 +78,7 @@ class Decks:
                 if self.store_list_decks == None:
                         functions.decks.gen_decks_display(self, self.right_content)
                 else:
-                        self.gen_list_decks()
+                        self.gen_list_decks(name_new_deck)
         
         def update_deck_comment(self, deck_name, new_comment):
                 '''Write a new comment to the deck 'deck_name'.'''
@@ -84,13 +86,15 @@ class Decks:
         
         def display_deck_content(self, selection, integer, TreeViewColumn, tree_editions, button_delete_deck, textview_comm):
                 '''Displays the content of the deck 'deck_name' in self.right_content_bot.'''
-                model, treeiter = selection.get_selected()
-                if treeiter != None:
-                        button_delete_deck.set_sensitive(True)
-                        deck_name = model[treeiter][1]
-                        GLib.idle_add(functions.decks.gen_deck_content, deck_name, self.right_content_bot, self, textview_comm)
-                else:
-                        selection.select_path(0)
+                if self.displaying_deck == 0:
+                        model, treeiter = selection.get_selected()
+                        if treeiter != None:
+                                self.displaying_deck = 1
+                                button_delete_deck.set_sensitive(True)
+                                deck_name = model[treeiter][1]
+                                GLib.idle_add(functions.decks.gen_deck_content, deck_name, self.right_content_bot, self, textview_comm)
+                        else:
+                                selection.select_path(0)
         
         def add_cards_to_deck(self, deck_name, ids_coll_dict):
                 '''Add the cards in 'ids_coll_dict' to the deck 'deck_name'.
@@ -203,24 +207,25 @@ class Decks:
                         current_deck_name = ""
                 if current_deck_name != "":
                         if current_deck_name == deck_name:
-                                for i, card_data_deck in enumerate(self.mainstore):
-                                        for card_in_coll_dict in ids_coll_dict.values():
-                                                if card_data_deck[0] == card_in_coll_dict and card_data_deck[16] == 0:
-                                                        # we need to -1 the quantity
-                                                        self.mainstore[i][15] = self.mainstore[i][15] - 1
-                                                        if self.mainstore[i][15] < 1:
-                                                                if i not in row_to_delete:
-                                                                        row_to_delete.append(i)
-                                for id_to_delete in reversed(row_to_delete):
-                                        del(self.mainstore[id_to_delete])
-                                # we update the nb of cards
-                                nb_cards = 0
-                                for card_data_deck in self.mainstore:
-                                        nb_cards = nb_cards + card_data_deck[15]
-                                if nb_cards < 2:
-                                        self.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck"].replace("%%%", str(nb_cards)))
-                                else:
-                                        self.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck_s"].replace("%%%", str(nb_cards)))
+                                if self.mainstore != None:
+                                        for i, card_data_deck in enumerate(self.mainstore):
+                                                for card_in_coll_dict in ids_coll_dict.values():
+                                                        if card_data_deck[0] == card_in_coll_dict and card_data_deck[16] == 0:
+                                                                # we need to -1 the quantity
+                                                                self.mainstore[i][15] = self.mainstore[i][15] - 1
+                                                                if self.mainstore[i][15] < 1:
+                                                                        if i not in row_to_delete:
+                                                                                row_to_delete.append(i)
+                                        for id_to_delete in reversed(row_to_delete):
+                                                del(self.mainstore[id_to_delete])
+                                        # we update the nb of cards
+                                        nb_cards = 0
+                                        for card_data_deck in self.mainstore:
+                                                nb_cards = nb_cards + card_data_deck[15]
+                                        if nb_cards < 2:
+                                                self.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck"].replace("%%%", str(nb_cards)))
+                                        else:
+                                                self.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck_s"].replace("%%%", str(nb_cards)))
                 
                 # we need to un-italic the cards deleted from the deck, if needed
                 dict_responses_coll = {}
@@ -451,20 +456,21 @@ class Decks:
                                         tmp_id_dict[id_card] = in_deck
                 
                 coll_object = defs.MAINWINDOW.collection
-                for i, row in enumerate(coll_object.mainstore):
-                        if row[0] in tmp_id_dict.keys():
-                                if tmp_id_dict[row[0]]:
-                                        coll_object.mainstore[i][13] = Pango.Style.ITALIC
-                                else:
-                                        coll_object.mainstore[i][13] = Pango.Style.NORMAL
-                
-                if coll_object.tree_coll.get_model() == coll_object.searchstore:
-                        for i, row in enumerate(coll_object.searchstore):
+                if coll_object.mainstore != None:
+                        for i, row in enumerate(coll_object.mainstore):
                                 if row[0] in tmp_id_dict.keys():
                                         if tmp_id_dict[row[0]]:
-                                                coll_object.searchstore[i][13] = Pango.Style.ITALIC
+                                                coll_object.mainstore[i][13] = Pango.Style.ITALIC
                                         else:
-                                                coll_object.searchstore[i][13] = Pango.Style.NORMAL
+                                                coll_object.mainstore[i][13] = Pango.Style.NORMAL
+                if coll_object.searchstore != None:
+                        if coll_object.tree_coll.get_model() == coll_object.searchstore:
+                                for i, row in enumerate(coll_object.searchstore):
+                                        if row[0] in tmp_id_dict.keys():
+                                                if tmp_id_dict[row[0]]:
+                                                        coll_object.searchstore[i][13] = Pango.Style.ITALIC
+                                                else:
+                                                        coll_object.searchstore[i][13] = Pango.Style.NORMAL
                 
         def update_nb_decks(self):
                 '''Update the label which displays the number of decks.'''
@@ -478,7 +484,7 @@ class Decks:
                 else:
                         return(None)
         
-        def gen_list_decks(self):
+        def gen_list_decks(self, deck_to_select):
                 if self.store_list_decks != None:
                         self.store_list_decks.clear()
                         conn_coll, c_coll = functions.collection.connect_db()
@@ -489,6 +495,15 @@ class Decks:
                         for id_deck, name in responses:
                                 self.store_list_decks.append([str(id_deck), name])
                         self.update_nb_decks()
+                        
+                        if self.select_list_decks != None:
+                                if deck_to_select == None:
+                                        pass
+                                else:
+                                        for i, decks_data in enumerate(self.store_list_decks):
+                                                if decks_data[1] == deck_to_select:
+                                                        break
+                                        self.select_list_decks.select_path(i)
         
         def show_details(self, treeview, treepath, column, selection, button_show_details, button_change_quantity):
                 model, pathlist = selection.get_selected_rows()

@@ -232,16 +232,17 @@ def add_deck_test_avail(selection):
         cards_avail = {}
         nb_avail = 0
         details_store = gen_details_store(selection)
-        for card in details_store:
-                #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
-                if card[10] == "":
-                        try:
-                                cards_avail[card[13]]
-                        except KeyError:
-                                cards_avail[card[13]] = [card[0]]
-                        else:
-                                cards_avail[card[13]].append(card[0])
-                        nb_avail += 1
+        if details_store != None:
+                for card in details_store:
+                        #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+                        if card[10] == "":
+                                try:
+                                        cards_avail[card[13]]
+                                except KeyError:
+                                        cards_avail[card[13]] = [card[0]]
+                                else:
+                                        cards_avail[card[13]].append(card[0])
+                                nb_avail += 1
         return(nb_avail)
 
 def prepare_update_details(selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store, copy_details):
