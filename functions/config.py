@@ -220,6 +220,8 @@ def show_pref_dialog():
                                         checkbutton_dark_theme.set_active(True)
                         checkbutton_dark_theme.connect("toggled", checkbutton_dark_theme_toggled, "dark_theme")
                         box_display.pack_start(checkbutton_dark_theme, False, True, 0)
+                        label_general_aspect.set_alignment(0.0, 0.5)
+                        checkbutton_dark_theme.set_margin_left(12)
                 
                 # columns
                 box_columns = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
@@ -305,9 +307,9 @@ def show_pref_dialog():
                 
                 for grid in [box_display, box_columns, box_internet, box_prices]:
                         grid.props.border_width = 12
-                for label in [label_editions, label_ext_sort_as, label_searches, label_collection, label_general_aspect, label_pics_cards, label_connection, label_nonenglish_names, label_columns_order_disp, label_columns_order_disp_helper]:
+                for label in [label_editions, label_ext_sort_as, label_searches, label_collection, label_pics_cards, label_connection, label_nonenglish_names, label_columns_order_disp, label_columns_order_disp_helper]:
                         label.set_alignment(0.0, 0.5)
-                for widget in [label_ext_sort_as, checkbutton_no_reprints, checkbutton_add_collection_show_details, checkbutton_dark_theme, checkbutton_download_pic_collection_decks, checkbutton_download_pic_as, checkbutton_not_internet_popup, label_fr_language, label_columns_order_disp_helper, box_columns_coll_decks, scrolledwindow_columns_as]:
+                for widget in [label_ext_sort_as, checkbutton_no_reprints, checkbutton_add_collection_show_details, checkbutton_download_pic_collection_decks, checkbutton_download_pic_as, checkbutton_not_internet_popup, label_fr_language, label_columns_order_disp_helper, box_columns_coll_decks, scrolledwindow_columns_as]:
                         widget.set_margin_left(12)
                 
                 notebook.append_page(box_display, Gtk.Label(defs.STRINGS["config_display"]))
