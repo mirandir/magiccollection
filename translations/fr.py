@@ -235,6 +235,7 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["info_select_none_coll"] = "(aucune sélection)"
         translate["info_select_coll"] = "(1 sélection)"
         translate["info_selects_coll"] = "(%%% sélections)"
+        translate["coll_updated"] = "La collection a été modifiée depuis cette recherche. Les résultats affichés sont peut-être obsolètes"
         translate["searching_coll"] = "Chercher dans la collection"
         translate["condition_coll"] = "État"
         translate["lang_coll"] = "Langue"

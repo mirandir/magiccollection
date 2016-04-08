@@ -43,6 +43,7 @@ class Collection:
                 self.mainselect = None
                 
                 self.searchstore = None
+                self.pic_search_coll_updated = Gtk.Image()
                 
                 self.mainbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=1)
                 self.mainbox.set_margin_top(5)
@@ -216,6 +217,8 @@ class Collection:
                 functions.collection.disconnect_db(conn_coll)
                 functions.various.lock_db(False, None)
                 
+                GLib.idle_add(functions.collection.set_coll_updated_pic, self)
+                
                 if spinner_labels != None:
                         GLib.idle_add(spinner_labels.destroy)
         
@@ -318,6 +321,8 @@ class Collection:
                 
                 functions.collection.disconnect_db(conn_coll)
                 functions.various.lock_db(False, None)
+                
+                GLib.idle_add(functions.collection.set_coll_updated_pic, self)
         
         def update_details(self, cards_to_update, new_id_db_to_bold, new_id_db_to_unbold):
                 '''We update the details of the cards in 'cards_to_update'. 'new_id_db_to_bold' and 'new_id_db_to_unbold' can be lists of ids or "auto".'''
@@ -331,6 +336,7 @@ class Collection:
                 
                 functions.collection.disconnect_db(conn_coll)
                 functions.various.lock_db(False, None)
+                GLib.idle_add(functions.collection.set_coll_updated_pic, self)
                 
                 # we need to update the treeview of the collection and of the search
                 if new_id_db_to_bold == "auto" and new_id_db_to_unbold == "auto":

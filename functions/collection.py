@@ -1294,6 +1294,7 @@ def gen_grid_search_coll(coll_object, searchbar):
                         else:
                                 coll_object.label_nb_card_coll.set_label(defs.STRINGS["nb_card_coll_s"].replace("%%%", str(nb_coll)))
                         coll_object.button_search_coll.set_label(defs.STRINGS["search_collection_button"])
+                        coll_object.pic_search_coll_updated.hide()
                         
                 coll_object.tree_coll.set_model(coll_object.mainstore)
                 button.set_sensitive(False)
@@ -1419,6 +1420,10 @@ def gen_grid_search_coll(coll_object, searchbar):
         comboboxtext4.set_active(3)
         comboboxtext4.connect("changed", comboboxtext_changed, entry4)
         
+        coll_object.pic_search_coll_updated = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="dialog-warning-symbolic"), Gtk.IconSize.BUTTON)
+        coll_object.pic_search_coll_updated.set_tooltip_text(defs.STRINGS["coll_updated"])
+        coll_object.pic_search_coll_updated.set_no_show_all(True)
+        
         button_reset_search = Gtk.Button()
         button_reset_search.set_sensitive(False)
         button_reset_search.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-clear-all-symbolic"), Gtk.IconSize.BUTTON))
@@ -1452,6 +1457,7 @@ def gen_grid_search_coll(coll_object, searchbar):
         box_search_coll_top_right.pack_start(button_back_coll, False, False, 0)
         
         box_search_coll_top.pack_start(box_search_coll_top_left, False, False, 0)
+        box_search_coll_top.pack_start(coll_object.pic_search_coll_updated, False, False, 0)
         box_search_coll_top.pack_start(box_search_coll_top_right, False, False, 0)
         box_search_coll.pack_start(box_search_coll_top, False, False, 0)
         
@@ -1468,6 +1474,11 @@ def gen_grid_search_coll(coll_object, searchbar):
         box_search_coll.show_all()
         
         return(box_search_coll)
+
+def set_coll_updated_pic(coll_object):
+        '''Shows the updated picture if the user is searching in the collection.'''
+        if coll_object.tree_coll.get_model() == coll_object.searchstore:
+                coll_object.pic_search_coll_updated.show()
 
 def connect_db():
         '''Return the connection to the collection'DB and the cursor'''
