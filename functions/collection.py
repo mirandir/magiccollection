@@ -59,9 +59,8 @@ def read_coll(box, coll_object):
                 box.pack_start(label_welcome, True, True, 0)
         else:
                 # we create the toolbar
-                toolbar_box = Gtk.ButtonBox(Gtk.Orientation.HORIZONTAL)
-                toolbar_box.set_layout(Gtk.ButtonBoxStyle.START)
-                toolbar_box.set_spacing(4)
+                toolbar_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+                toolbar_box.set_homogeneous(True)
                 # the buttons
                 coll_object.button_search_coll = Gtk.ToggleButton(defs.STRINGS["search_collection_button"])
                 coll_object.button_search_coll.set_tooltip_text(defs.STRINGS["search_collection_tooltip"])
@@ -69,8 +68,12 @@ def read_coll(box, coll_object):
                 # we load a specific CSS for this widget
                 context_button_search_coll = coll_object.button_search_coll.get_style_context()
                 style_provider_button_search_coll = Gtk.CssProvider()
+                if defs.GTK_MINOR_VERSION >= 20:
+                        widget_name = "button"
+                else:
+                        widget_name = "GtkToggleButton"
                 css_button_search_coll = """
-                GtkToggleButton {
+                """ + widget_name + """ {
                 padding: 0px 4px;
                 }
                 """
@@ -93,20 +96,43 @@ def read_coll(box, coll_object):
                 coll_object.button_delete.set_tooltip_text(defs.STRINGS["delete_cards_tooltip"])
                 coll_object.button_delete.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="user-trash-symbolic"), Gtk.IconSize.BUTTON))
                 
-                for button in [coll_object.button_search_coll, coll_object.button_show_details, coll_object.button_change_quantity, coll_object.button_add_deck, coll_object.button_estimate, coll_object.button_delete]:
+                toolbar_box1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+                toolbar_box2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+                toolbar_box2.props.halign = Gtk.Align.END
+                toolbar_box.add(toolbar_box1)
+                toolbar_box.add(toolbar_box2)
+                
+                for button in [coll_object.button_search_coll, coll_object.button_show_details, coll_object.button_change_quantity, coll_object.button_add_deck]:
                         button.set_sensitive(False)
-                        toolbar_box.add(button)
+                        toolbar_box1.add(button)
+                for button in [coll_object.button_estimate, coll_object.button_delete]:
+                        button.set_sensitive(False)
+                        toolbar_box2.add(button)
                 coll_object.button_search_coll.set_sensitive(True)
                 coll_object.button_delete.set_sensitive(True)
                 coll_object.button_estimate.set_sensitive(True)
                 toolbar_box.show_all()
-                toolbar_box.set_child_secondary(coll_object.button_estimate, True)
-                toolbar_box.set_child_secondary(coll_object.button_delete, True)
                 box.pack_end(toolbar_box, False, True, 0)
                 
                 # we create the SearchBar for searching in the collection
                 searchbar = Gtk.SearchBar()
-                searchbar.get_style_context().remove_class("search-bar")
+                
+                # we load a specific CSS for this widget
+                context_searchbar = searchbar.get_style_context()
+                style_provider_searchbar = Gtk.CssProvider()
+                if defs.GTK_MINOR_VERSION >= 20:
+                        widget_name = "searchbar"
+                else:
+                        widget_name = "GtkSearchBar"
+                css_searchbar = """
+                """ + widget_name + """ {
+                background-color: transparent;
+                border-bottom-width: 0px;
+                }
+                """
+                style_provider_searchbar.load_from_data(bytes(css_searchbar.encode()))
+                Gtk.StyleContext.add_provider(context_searchbar, style_provider_searchbar, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+                
                 coll_object.button_search_coll.connect("toggled", show_hide_searchbar, searchbar)
                 searchbar.add(gen_grid_search_coll(coll_object, searchbar))
                 box.pack_end(searchbar, False, True, 0)
@@ -128,11 +154,22 @@ def read_coll(box, coll_object):
                 popover_selectinfo = Gtk.Popover.new(selectinfo_button)
                 popover_selectinfo.set_position(Gtk.PositionType.BOTTOM)
                 selectinfo_button.set_popover(popover_selectinfo)
+                
                 # we load a specific CSS for this widget
                 context_selectinfo_button = selectinfo_button.get_style_context()
                 style_provider = Gtk.CssProvider()
-                style_provider.load_from_path(os.path.join(defs.PATH_MC, "css", "infoselect_button.css"))
+                if defs.GTK_MINOR_VERSION >= 20:
+                        widget_name = "button"
+                else:
+                        widget_name = "GtkMenuButton"
+                css_selectinfo_button = """
+                """ + widget_name + """ {
+                padding: 0px 4px;
+                }
+                """
+                style_provider.load_from_data(bytes(css_selectinfo_button.encode()))
                 Gtk.StyleContext.add_provider(context_selectinfo_button, style_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+                
                 selectinfo_button.show()
                 box_top.pack_start(selectinfo_button, False, False, 0)
                 selectinfo_button.set_sensitive(False)
@@ -1250,12 +1287,10 @@ def gen_details_popover(button_show_details, selection):
 def show_hide_searchbar(togglebutton, searchbar):
         '''Show / hide the searchbar'''
         if togglebutton.get_active():
-                searchbar.get_style_context().add_class("search-bar")
                 searchbar.show()
                 searchbar.set_search_mode(True)
         else:
                 searchbar.set_search_mode(False)
-                searchbar.get_style_context().remove_class("search-bar")
 
 def gen_grid_search_coll(coll_object, searchbar):
         '''Return a GtkGrid with all widgets for searching in the collection.'''

@@ -54,7 +54,6 @@ if OS == "windows":
         if locale.windows_locale[windll.GetUserDefaultUILanguage()][:2] != "":
                 LANGUAGE = locale.windows_locale[windll.GetUserDefaultUILanguage()][:2]
 else:
-        # FIXME: needs testing for Apple OS !
         locale.setlocale(locale.LC_ALL, '')
         if locale.getlocale()[0][:2] != "":
                 LANGUAGE = locale.getlocale()[0][:2]
@@ -279,6 +278,8 @@ CURRENT_SAVE_COMMENT_DECK_THREAD = None
 SAVEDETAILS_TIMER = None
 SAVE_COMMENT_DECK_TIMER = None
 READ_COLL_FINISH = False
+
+GTK_MINOR_VERSION = Gtk.get_minor_version()
 
 PRICES_DATE = None
 DB_VERSION = None

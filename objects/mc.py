@@ -201,14 +201,15 @@ class MC_Window(Gtk.ApplicationWindow):
                 self.connect("delete-event", self.delete_main_window)
                 self.connect("key-press-event", self.change_mode)
                 
+                #print(self.get_preferred_size())
                 if defs.DISPLAY_WIDTH > 1279:
                         if defs.OS == "gnome":
-                                self.resize(1200, 670)
+                                self.resize(1170, 570)
                         else:
-                                self.resize(1000, 600)
+                                self.resize(1000, 500)
                 else:
                         if defs.OS == "gnome":
-                                self.resize(1020, 570)
+                                self.resize(1020, 500)
                         else:
                                 self.resize(920, 500)
                 
@@ -265,9 +266,24 @@ class MC_Window(Gtk.ApplicationWindow):
                         # we load a specific CSS
                         style_provider = Gtk.CssProvider()
                         if defs.OS == "windows":
-                                style_provider.load_from_path(os.path.join(defs.PATH_MC, "css", "windows_css.css"))
+                                css = """
+                                * {
+                                        font-family: 'Segoe UI';
+                                        font-size:9.5px;
+                                }
+                                GtkHeaderBar {
+                                        border-radius: 0;
+                                }
+                                """
                         else:
-                                style_provider.load_from_path(os.path.join(defs.PATH_MC, "css", "non_gnome_css.css"))
+                                css = """
+                                GtkHeaderBar {
+                                        border-radius: 0;
+                                }
+                                """
+                        if defs.GTK_MINOR_VERSION >= 20:
+                                css = css.replace("GtkHeaderBar", "headerbar")
+                        style_provider.load_from_data(bytes(css.encode()))
                         Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), style_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
                 else:
                         self.overlay.add(self.main_stack)
