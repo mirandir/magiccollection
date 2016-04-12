@@ -59,26 +59,12 @@ def read_coll(box, coll_object):
                 box.pack_start(label_welcome, True, True, 0)
         else:
                 # we create the toolbar
-                toolbar_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-                toolbar_box.set_homogeneous(True)
+                toolbar_box = Gtk.ButtonBox(Gtk.Orientation.HORIZONTAL)
+                toolbar_box.set_layout(Gtk.ButtonBoxStyle.START)
+                toolbar_box.set_spacing(4)
                 # the buttons
                 coll_object.button_search_coll = Gtk.ToggleButton(defs.STRINGS["search_collection_button"])
                 coll_object.button_search_coll.set_tooltip_text(defs.STRINGS["search_collection_tooltip"])
-                #coll_object.button_search_coll.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-find-symbolic"), Gtk.IconSize.BUTTON))
-                # we load a specific CSS for this widget
-                context_button_search_coll = coll_object.button_search_coll.get_style_context()
-                style_provider_button_search_coll = Gtk.CssProvider()
-                if defs.GTK_MINOR_VERSION >= 20:
-                        widget_name = "button"
-                else:
-                        widget_name = "GtkToggleButton"
-                css_button_search_coll = """
-                """ + widget_name + """ {
-                padding: 0px 4px;
-                }
-                """
-                style_provider_button_search_coll.load_from_data(bytes(css_button_search_coll.encode()))
-                Gtk.StyleContext.add_provider(context_button_search_coll, style_provider_button_search_coll, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
                 
                 coll_object.button_show_details = Gtk.MenuButton()
                 coll_object.button_show_details.set_tooltip_text(defs.STRINGS["show_details_tooltip"])
@@ -96,22 +82,15 @@ def read_coll(box, coll_object):
                 coll_object.button_delete.set_tooltip_text(defs.STRINGS["delete_cards_tooltip"])
                 coll_object.button_delete.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="user-trash-symbolic"), Gtk.IconSize.BUTTON))
                 
-                toolbar_box1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-                toolbar_box2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-                toolbar_box2.props.halign = Gtk.Align.END
-                toolbar_box.add(toolbar_box1)
-                toolbar_box.add(toolbar_box2)
-                
-                for button in [coll_object.button_search_coll, coll_object.button_show_details, coll_object.button_change_quantity, coll_object.button_add_deck]:
+                for button in [coll_object.button_search_coll, coll_object.button_show_details, coll_object.button_change_quantity, coll_object.button_add_deck, coll_object.button_estimate, coll_object.button_delete]:
                         button.set_sensitive(False)
-                        toolbar_box1.add(button)
-                for button in [coll_object.button_estimate, coll_object.button_delete]:
-                        button.set_sensitive(False)
-                        toolbar_box2.add(button)
+                        toolbar_box.add(button)
                 coll_object.button_search_coll.set_sensitive(True)
                 coll_object.button_delete.set_sensitive(True)
                 coll_object.button_estimate.set_sensitive(True)
                 toolbar_box.show_all()
+                toolbar_box.set_child_secondary(coll_object.button_estimate, True)
+                toolbar_box.set_child_secondary(coll_object.button_delete, True)
                 box.pack_end(toolbar_box, False, True, 0)
                 
                 # we create the SearchBar for searching in the collection
@@ -154,21 +133,6 @@ def read_coll(box, coll_object):
                 popover_selectinfo = Gtk.Popover.new(selectinfo_button)
                 popover_selectinfo.set_position(Gtk.PositionType.BOTTOM)
                 selectinfo_button.set_popover(popover_selectinfo)
-                
-                # we load a specific CSS for this widget
-                context_selectinfo_button = selectinfo_button.get_style_context()
-                style_provider = Gtk.CssProvider()
-                if defs.GTK_MINOR_VERSION >= 20:
-                        widget_name = "button"
-                else:
-                        widget_name = "GtkMenuButton"
-                css_selectinfo_button = """
-                """ + widget_name + """ {
-                padding: 0px 4px;
-                }
-                """
-                style_provider.load_from_data(bytes(css_selectinfo_button.encode()))
-                Gtk.StyleContext.add_provider(context_selectinfo_button, style_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
                 
                 selectinfo_button.show()
                 box_top.pack_start(selectinfo_button, False, False, 0)

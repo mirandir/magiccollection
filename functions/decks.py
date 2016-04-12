@@ -250,7 +250,9 @@ def gen_deck_content(deck_name, box, decks_object, textview_comm):
         nb_cards = len(responses)
         
         # we create the toolbar
-        toolbar_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        toolbar_box = Gtk.ButtonBox(Gtk.Orientation.HORIZONTAL)
+        toolbar_box.set_layout(Gtk.ButtonBoxStyle.START)
+        toolbar_box.set_spacing(4)
         # the buttons
         if functions.prices.check_prices_presence():
                 decks_object.button_estimate_deck.set_sensitive(True)

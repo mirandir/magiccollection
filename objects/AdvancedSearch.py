@@ -58,8 +58,10 @@ class AdvancedSearch:
                 self.mainbox.pack_start(right_content, True, True, 0)
                 
                 right_content_top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-                right_content_mid = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-                right_content_mid.set_homogeneous(True)
+                right_content_mid = Gtk.ButtonBox(Gtk.Orientation.HORIZONTAL)
+                right_content_mid.set_layout(Gtk.ButtonBoxStyle.START)
+                right_content_mid.set_spacing(4)
+                
                 overlay_right_content_bot = Gtk.Overlay()
                 right_content_bot = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
                 overlay_right_content_bot.add(right_content_bot)
@@ -102,11 +104,8 @@ class AdvancedSearch:
                 
                 select = tree_editions.get_selection()
                 
-                edition_nb_cards_symbol = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
                 self.label_nb_cards = Gtk.Label()
                 self.icon_edition = Gtk.Image()
-                edition_nb_cards_symbol.pack_start(self.label_nb_cards, False, False, 0)
-                edition_nb_cards_symbol.pack_start(self.icon_edition, False, False, 0)
                 
                 self.button_show_details = Gtk.MenuButton()
                 self.button_show_details.set_tooltip_text(defs.STRINGS["show_details_tooltip"])
@@ -182,22 +181,26 @@ class AdvancedSearch:
                 right_content_top_right.pack_start(grid, False, False, 0)
                 
                 # the label for the number of cards found
-                right_content_mid.pack_start(edition_nb_cards_symbol, False, False, 0)
+                right_content_mid.add(self.icon_edition)
+                right_content_mid.add(self.label_nb_cards)
+                right_content_mid.set_child_non_homogeneous(self.icon_edition, True)
+                right_content_mid.set_child_non_homogeneous(self.label_nb_cards, True)
                 
-                right_content_mid_right = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-                right_content_mid.pack_start(right_content_mid_right, False, False, 0)
-                
-                right_content_mid_right.pack_start(self.button_show_details, False, False, 0)
+                right_content_mid.add(self.button_show_details)
                 
                 self.button_reset_search.set_sensitive(False)
                 button_reset_search_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="edit-clear-all-symbolic"), Gtk.IconSize.BUTTON)
                 self.button_reset_search.add(button_reset_search_pic)
                 self.button_reset_search.connect("clicked", self.reset_search, entry1, entry2, entry3, entry4)
-                right_content_mid_right.pack_start(self.button_reset_search, False, False, 0)
+                right_content_mid.add(self.button_reset_search)
                 
                 self.button_search.set_sensitive(False)
                 self.button_search.connect("clicked", self.prepare_request, [[entry1, comboboxtext1], [entry2, comboboxtext2], [entry3, comboboxtext3], [entry4, comboboxtext4]], overlay_right_content_bot, select)
-                right_content_mid_right.pack_start(self.button_search, False, False, 0)
+                right_content_mid.add(self.button_search)
+                
+                right_content_mid.set_child_secondary(self.button_show_details, True)
+                right_content_mid.set_child_secondary(self.button_reset_search, True)
+                right_content_mid.set_child_secondary(self.button_search, True)
                 
                 self.sens_widgets = [entry1, entry2, entry3, entry4, scrolledwindow, self.button_search]
                 
@@ -434,7 +437,7 @@ class AdvancedSearch:
                         if request != None:
                                 select.unselect_all()
                                 functions.various.lock_db(None, True)
-                                GLib.idle_add(self.icon_edition.hide)
+                                GLib.idle_add(self.icon_edition.set_from_gicon, Gio.ThemedIcon(name="edit-find-symbolic"), Gtk.IconSize.BUTTON)
                                 GLib.idle_add(self.empty_box_results)
                                 
                                 wait_button = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
