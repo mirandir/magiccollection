@@ -307,6 +307,19 @@ class Collection:
                                                         self.searchstore[i][12] = 400
                                                 self.searchstore[i][15] = q
                 
+                # we update the store of the ad. search
+                try:
+                        for i, row in enumerate(defs.MAINWINDOW.advancedsearch.mainstore):
+                                try:
+                                        q, bold = dict_responses_coll[row[0]]
+                                except KeyError:
+                                        pass
+                                else:
+                                        if q == 0:
+                                                defs.MAINWINDOW.advancedsearch.mainstore[i][12] = 400
+                except TypeError:
+                        pass
+                
                 for nb_row in reversed(rows_to_delete):
                         del(self.mainstore[nb_row])
                 for nb_row in reversed(rows_to_delete_search):
