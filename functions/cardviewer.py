@@ -237,6 +237,21 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         df_button = Gtk.Button()
                         df_button.set_relief(Gtk.ReliefStyle.NONE)
                         df_pic = Gtk.Image()
+                        # we load a specific CSS for this widget
+                        context_df_button = df_button.get_style_context()
+                        style_provider_df_button = Gtk.CssProvider()
+                        if defs.GTK_MINOR_VERSION >= 20:
+                                widget_name = "button"
+                        else:
+                                widget_name = "GtkButton"
+                        css = """
+                        """ + widget_name + """ {
+                        padding-left: 0px;
+                        padding-right: 0px;
+                        }
+                        """
+                        style_provider_df_button.load_from_data(bytes(css.encode()))
+                        
                         if layout == "double-faced":
                                 # we get the id of the other face
                                 for tmp_name in names.split("|"):
@@ -254,12 +269,14 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                         df_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="weather-clear-symbolic"), Gtk.IconSize.LARGE_TOOLBAR)
                                 df_button.connect("clicked", object_origin.load_card_from_outside, str(id_otherface), [], simple_search)
                                 df_button.set_tooltip_text(defs.STRINGS["dfbutton_seeotherside_tooltip"])
+                                Gtk.StyleContext.add_provider(context_df_button, style_provider_df_button, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
                         elif layout == "flip" or basename == "Curse of the Fire Penguin":
                                 df_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="object-flip-vertical-symbolic"), Gtk.IconSize.SMALL_TOOLBAR)
                                 df_button.connect("clicked", vertical_flip_pic, card_pic)
                                 df_button.set_tooltip_text(defs.STRINGS["dfbutton_returncard_tooltip"])
+                                Gtk.StyleContext.add_provider(context_df_button, style_provider_df_button, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
                         else:
-                                df_pic.set_from_file(os.path.join(defs.PATH_MC, "images", "nothing.png"))
+                                #df_pic.set_from_file(os.path.join(defs.PATH_MC, "images", "nothing.png"))
                                 df_button.set_sensitive(False)
                                 df_button.set_tooltip_text("")
                         df_button.add(df_pic)
@@ -324,13 +341,13 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         if manacost == "" and cmc == "0":
                                 cmc_button = Gtk.MenuButton()
                                 empty_pic = Gtk.Image()
-                                empty_pic.set_from_file(os.path.join(defs.PATH_MC, "images", "nothing.png"))
+                                #empty_pic.set_from_file(os.path.join(defs.PATH_MC, "images", "nothing.png"))
                                 cmc_button.add(empty_pic)
                                 cmc_button.set_sensitive(False)
                         else:
                                 cmc_button = Gtk.MenuButton("")
                                 if cmc == "1000000":
-                                        cmc_button.get_child().set_markup("<small>...</small>") # workaround for 'Gleemax'
+                                        cmc_button.get_child().set_markup("<small>..</small>") # workaround for 'Gleemax'
                                 elif len(cmc) > 1:
                                         cmc_button.get_child().set_markup("<small>" + cmc + "</small>")
                                 else:
@@ -339,6 +356,22 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                         manacost_popover = gen_manacost_popover(cmc_button, manacost)
                                         cmc_button.set_popover(manacost_popover)
                                         cmc_button.set_sensitive(True)
+                                # we load a specific CSS for this widget
+                                context_cmc_button = cmc_button.get_style_context()
+                                style_provider_cmc_button = Gtk.CssProvider()
+                                if defs.GTK_MINOR_VERSION >= 20:
+                                        widget_name = "button"
+                                else:
+                                        widget_name = "GtkMenuButton"
+                                css = """
+                                """ + widget_name + """ {
+                                padding-left: 8px;
+                                padding-right: 8px;
+                                }
+                                """
+                                style_provider_cmc_button.load_from_data(bytes(css.encode()))
+                                Gtk.StyleContext.add_provider(context_cmc_button, style_provider_cmc_button, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+                                
                         cmc_button.set_relief(Gtk.ReliefStyle.NONE)
                         grid.attach_next_to(cmc_button, label_name_1, Gtk.PositionType.RIGHT, 1, 1)
                         nb_columns += 1
