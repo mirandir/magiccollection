@@ -156,7 +156,9 @@ VARCONFIGDEFAULT = {
 "as_columns": as_columns,
 "coll_columns": coll_columns,
 "decks_columns": decks_columns,
-"no_reprints": "0"
+"no_reprints": "0",
+"last_width": "0",
+"last_height": "0"
 }
 
 # column names available for the configuration window

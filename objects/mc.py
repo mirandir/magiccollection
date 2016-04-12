@@ -202,16 +202,21 @@ class MC_Window(Gtk.ApplicationWindow):
                 self.connect("key-press-event", self.change_mode)
                 
                 #print(self.get_preferred_size())
-                if defs.DISPLAY_WIDTH > 1279:
-                        if defs.OS == "gnome":
-                                self.resize(1170, 570)
-                        else:
-                                self.resize(1000, 500)
+                last_width = int(functions.config.read_config("last_width"))
+                last_height = int(functions.config.read_config("last_height"))
+                if last_width > 99 and last_height > 99:
+                        self.set_default_size(last_width, last_height)
                 else:
-                        if defs.OS == "gnome":
-                                self.resize(1020, 500)
+                        if defs.DISPLAY_WIDTH > 1279:
+                                if defs.OS == "gnome":
+                                        self.set_default_size(1170, 570)
+                                else:
+                                        self.set_default_size(1000, 500)
                         else:
-                                self.resize(920, 500)
+                                if defs.OS == "gnome":
+                                        self.set_default_size(1020, 500)
+                                else:
+                                        self.set_default_size(920, 500)
                 
                 self.main_stack = Gtk.Stack()
                 
@@ -311,6 +316,10 @@ class MC_Window(Gtk.ApplicationWindow):
                         functions.various.message_dialog(defs.STRINGS["coll_busy"], 0)
                         return(True)
                 else:
+                        # we remember the size of the window
+                        width, height = self.get_size()
+                        functions.config.change_config("last_width", str(width))
+                        functions.config.change_config("last_height", str(height))
                         # close
                         return(False)
         
