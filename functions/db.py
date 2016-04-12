@@ -794,8 +794,8 @@ def dialog_confimr_db(dialogconfirm):
         dialogconfirm.destroy()
         # -8 yes, -9 no
         if responseconfirm == -8:
-                GLib.idle_add(defs.MAINWINDOW.widget_overlay.get_child().set_markup, "<b><big>" + defs.STRINGS["downloading_db"] + "</big></b>")
-                GLib.idle_add(functions.various.force_update_gui, 0)
+                defs.MAINWINDOW.widget_overlay.get_child().set_markup("<b><big>" + defs.STRINGS["downloading_db"] + "</big></b>")
+                functions.various.force_update_gui(0)
                 GLib.idle_add(download_db)
         else:
                 check_db2()
