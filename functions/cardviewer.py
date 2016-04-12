@@ -321,7 +321,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         nb_columns += 1
                         
                         # cmc / manacost button
-                        if manacost == "":
+                        if manacost == "" and cmc == "0":
                                 cmc_button = Gtk.MenuButton()
                                 empty_pic = Gtk.Image()
                                 empty_pic.set_from_file(os.path.join(defs.PATH_MC, "images", "nothing.png"))
