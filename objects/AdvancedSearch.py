@@ -193,6 +193,7 @@ class AdvancedSearch:
                 self.button_reset_search.add(button_reset_search_pic)
                 self.button_reset_search.connect("clicked", self.reset_search, entry1, entry2, entry3, entry4)
                 right_content_mid.add(self.button_reset_search)
+                right_content_mid.set_child_non_homogeneous(self.button_reset_search, True)
                 
                 self.button_search.set_sensitive(False)
                 self.button_search.connect("clicked", self.prepare_request, [[entry1, comboboxtext1], [entry2, comboboxtext2], [entry3, comboboxtext3], [entry4, comboboxtext4]], overlay_right_content_bot, select)
