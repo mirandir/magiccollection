@@ -186,6 +186,10 @@ class MagicCollection(Gtk.Application):
                         functions.various.message_dialog(defs.STRINGS["coll_busy"], 0)
                 else:
                         # quit
+                        # we remember the size of the window
+                        width, height = self.get_size()
+                        functions.config.change_config("last_width", str(width))
+                        functions.config.change_config("last_height", str(height))
                         self.quit()
 
 class MC_Window(Gtk.ApplicationWindow):
