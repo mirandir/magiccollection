@@ -93,6 +93,7 @@ def read_coll(box, coll_object):
                 toolbar_box.set_child_secondary(coll_object.button_delete, True)
                 box.pack_end(toolbar_box, False, True, 0)
                 
+                overlay_coll = Gtk.Overlay()
                 # we create the SearchBar for searching in the collection
                 searchbar = Gtk.SearchBar()
                 
@@ -113,7 +114,7 @@ def read_coll(box, coll_object):
                 Gtk.StyleContext.add_provider(context_searchbar, style_provider_searchbar, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
                 
                 coll_object.button_search_coll.connect("toggled", show_hide_searchbar, searchbar)
-                searchbar.add(gen_grid_search_coll(coll_object, searchbar))
+                searchbar.add(gen_grid_search_coll(coll_object, searchbar, overlay_coll))
                 box.pack_end(searchbar, False, True, 0)
                 
                 box_top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
@@ -210,7 +211,8 @@ def read_coll(box, coll_object):
                 tree_coll.show_all()
                 scrolledwindow.show_all()
                 
-                box.pack_start(scrolledwindow, True, True, 0)
+                overlay_coll.add(scrolledwindow)
+                box.pack_start(overlay_coll, True, True, 0)
                 
                 cards = functions.various.prepare_cards_data_for_treeview(reponses_db)
                 
@@ -1256,7 +1258,7 @@ def show_hide_searchbar(togglebutton, searchbar):
         else:
                 searchbar.set_search_mode(False)
 
-def gen_grid_search_coll(coll_object, searchbar):
+def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
         '''Return a GtkGrid with all widgets for searching in the collection.'''
         def comboboxtext_changed(comboboxtext, entry):
                 defs.MAINWINDOW.advancedsearch.comboboxtext_changed(comboboxtext, entry)
@@ -1302,7 +1304,7 @@ def gen_grid_search_coll(coll_object, searchbar):
         def reset_search(button, entry1, entry2, entry3, entry4):
                 defs.MAINWINDOW.advancedsearch.reset_search(button, entry1, entry2, entry3, entry4)
         
-        def launch_request(request, dict_rowcards_in_coll, quantity_card_req):
+        def launch_request(request, dict_rowcards_in_coll, quantity_card_req, wait_button):
                 conn, c = functions.db.connect_db()
                 c.execute("ATTACH DATABASE ? AS db_coll", (os.path.join(defs.HOMEMC, "collection.sqlite"),))
                 c.execute(request)
@@ -1339,13 +1341,28 @@ def gen_grid_search_coll(coll_object, searchbar):
                         coll_object.label_nb_card_coll.set_label(defs.STRINGS["nb_card_found_coll"].replace("%%%", str(nb_results)))
                 else:
                         coll_object.label_nb_card_coll.set_label(defs.STRINGS["nb_card_found_coll_s"].replace("%%%", str(nb_results)))
+                coll_object.tree_coll.show()
+                if wait_button != None:
+                        wait_button.destroy()
         
-        def prepare_request(widget, search_widgets_list, overlay_right_content):
+        def prepare_request(widget, search_widgets_list, overlay_coll):
+                def prepare_wait_button(wait_button, overlay_coll):
+                        wait_button.props.valign = Gtk.Align.CENTER
+                        as_spinner = Gtk.Spinner()
+                        as_spinner.set_size_request(30, 30)
+                        wait_button.pack_start(as_spinner, True, True, 0)
+                        as_spinner.start()
+                        wait_button.show_all()
+                        overlay_coll.add_overlay(wait_button)
                 if defs.AS_LOCK == False:
                         request_list = functions.db.prepare_request(search_widgets_list, "coll")
                         request = request_list[0]
                         quantity_card_req = request_list[1]
                         if request != None:
+                                GLib.idle_add(coll_object.tree_coll.hide)
+                                wait_button = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+                                GLib.idle_add(prepare_wait_button, wait_button, overlay_coll)
+                                
                                 conn, c = connect_db()
                                 c.execute("""SELECT * FROM collection""")
                                 reponses_coll = c.fetchall()
@@ -1384,7 +1401,7 @@ def gen_grid_search_coll(coll_object, searchbar):
                                 if quantity_card_req != None:
                                         request = request + """ GROUP BY coll.id_card """ + quantity_card_req
                                 
-                                GLib.idle_add(launch_request, request, dict_rowcards_in_coll, quantity_card_req)                                
+                                GLib.idle_add(launch_request, request, dict_rowcards_in_coll, quantity_card_req, wait_button)                                
         
         box_search_coll = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         box_search_coll_top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
@@ -1431,7 +1448,7 @@ def gen_grid_search_coll(coll_object, searchbar):
         button_search = Gtk.Button(defs.STRINGS["search_coll"])
         coll_object.button_search = button_search
         button_search.set_sensitive(False)
-        button_search.connect("clicked", prepare_request, [[entry1, comboboxtext1], [entry2, comboboxtext2], [entry3, comboboxtext3], [entry4, comboboxtext4]], coll_object.overlay_right_content)
+        button_search.connect("clicked", prepare_request, [[entry1, comboboxtext1], [entry2, comboboxtext2], [entry3, comboboxtext3], [entry4, comboboxtext4]], overlay_coll)
         
         button_back_coll = Gtk.Button(defs.STRINGS["back_to_coll"])
         coll_object.button_back_coll = button_back_coll
@@ -1445,7 +1462,7 @@ def gen_grid_search_coll(coll_object, searchbar):
                 if defs.DISPLAY_WIDTH > 1024:
                         entry.set_size_request(230, -1)
                 entry.connect("icon-press", entry_operator_choice)
-                entry.connect("activate", prepare_request, [[entry1, comboboxtext1], [entry2, comboboxtext2], [entry3, comboboxtext3], [entry4, comboboxtext4]], coll_object.overlay_right_content)
+                entry.connect("activate", prepare_request, [[entry1, comboboxtext1], [entry2, comboboxtext2], [entry3, comboboxtext3], [entry4, comboboxtext4]], overlay_coll)
                 entry.connect("changed", update_button_search_and_reset, entry1, entry2, entry3, entry4, button_search, button_reset_search)
         
         box_search_coll_top_left = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
