@@ -213,6 +213,7 @@ def read_coll(box, coll_object):
                 
                 overlay_coll.add(scrolledwindow)
                 box.pack_start(overlay_coll, True, True, 0)
+                overlay_coll.show_all()
                 
                 cards = functions.various.prepare_cards_data_for_treeview(reponses_db)
                 
