@@ -268,6 +268,7 @@ class AdvancedSearch:
                 
                 def _start(AS_object, store_results, scrolledwindow):
                         AS_object.label_nb_cards.set_text("")
+                        AS_object.button_show_details.set_sensitive(False)
                         # we create the treeview for displaying results
                         scrolledwindow.set_min_content_width(560)
                         scrolledwindow.set_min_content_height(180)
