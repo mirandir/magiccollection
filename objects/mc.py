@@ -187,7 +187,7 @@ class MagicCollection(Gtk.Application):
                 else:
                         # quit
                         # we remember the size of the window
-                        width, height = self.get_size()
+                        width, height = defs.MAINWINDOW.get_size()
                         functions.config.change_config("last_width", str(width))
                         functions.config.change_config("last_height", str(height))
                         self.quit()
