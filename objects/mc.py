@@ -101,14 +101,6 @@ class MagicCollection(Gtk.Application):
                 menu.append_section(None, section_importexport)
                 
                 section_oth = Gio.Menu()
-                # the Help submenu
-                submenu_help = Gio.Menu()
-                section_oth.append_submenu(defs.STRINGS["help"], submenu_help)
-                # doc
-                submenu_help.append(defs.STRINGS["doc"], "app.doc")
-                # website
-                submenu_help.append(defs.STRINGS["website"], "app.website")
-                
                 # others menu entries
                 section_oth.append(defs.STRINGS["about"], "app.about")
                 section_oth.append(defs.STRINGS["quit"], "app.quit")
@@ -129,14 +121,6 @@ class MagicCollection(Gtk.Application):
                 exportdata_action = Gio.SimpleAction.new("exportdata", None)
                 exportdata_action.connect("activate", self.exportdata)
                 self.add_action(exportdata_action)
-                # option "doc"
-                doc_action = Gio.SimpleAction.new("doc", None)
-                doc_action.connect("activate", self.doc)
-                self.add_action(doc_action)
-                # option "website"
-                website_action = Gio.SimpleAction.new("website", None)
-                website_action.connect("activate", self.website)
-                self.add_action(website_action)
                 # option "about"
                 about_action = Gio.SimpleAction.new("about", None)
                 about_action.connect("activate", self.about_cb, self)
@@ -155,12 +139,6 @@ class MagicCollection(Gtk.Application):
         def exportdata(self, action, param):
                 GLib.idle_add(functions.importexport.export_data)
         
-        def doc(self, action, param):
-                functions.various.open_link_in_browser(None, defs.SITEMC + "magiccollection/utilisation.html", None)
-        
-        def website(self, action, param):
-                functions.various.open_link_in_browser(None, defs.SITEMC + "magiccollection/", None)
-        
         def about_cb(self, action, parameters, app):
                 aboutdialog = Gtk.AboutDialog("")
                 aboutdialog.set_transient_for(app.mainwindow)
@@ -170,6 +148,8 @@ class MagicCollection(Gtk.Application):
                         aboutdialog.set_version(defs.VERSION + " - " + defs.STRINGS["aboutdialog_db"] + " " + defs.DB_VERSION)
                 else:
                         aboutdialog.set_version(defs.VERSION)
+                aboutdialog.set_website(defs.SITEMC + "magiccollection/")
+                aboutdialog.set_website_label(defs.STRINGS["website"])
                 aboutdialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "mclogo_min.png")))
                 aboutdialog.set_copyright(defs.STRINGS["about_copyright"])
                 aboutdialog.set_comments(defs.STRINGS["about_comment"])
