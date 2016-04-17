@@ -258,7 +258,17 @@ class MC_Window(Gtk.ApplicationWindow):
                                 css = """
                                 * {
                                         font-family: 'Segoe UI';
-                                        font-size:9.5px;
+                                        font-size: 9.5px;
+                                }
+                                GtkHeaderBar {
+                                        border-radius: 0;
+                                }
+                                """
+                        elif defs.OS == "mac":
+                                css = """
+                                * {
+                                        font-family: 'San Francisco';
+                                        font-size: 13px;
                                 }
                                 GtkHeaderBar {
                                         border-radius: 0;

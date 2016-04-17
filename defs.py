@@ -101,6 +101,11 @@ DATA = GLib.get_user_data_dir()
 CACHE = GLib.get_user_cache_dir()
 if OS == "windows":
         CACHE = GLib.get_user_data_dir() # we use data dir for cache on Windows, because some tools empty the default GLib cache location
+# we respect the Apple guidelines(see https://developer.apple.com/library/mac/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/MacOSXDirectories/MacOSXDirectories.html#//apple_ref/doc/uid/TP40010672-CH10-SW1)
+if OS == "mac":
+        CONFIG = os.path.join(HOME, "Library", "Application Support")
+        DATA = os.path.join(HOME, "Library", "Application Support")
+        CACHE = os.path.join(HOME, "Library", "Caches")
 
 # MC dirs
 HOMEMC = os.path.join(DATA, "magiccollection")
