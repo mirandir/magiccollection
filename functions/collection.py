@@ -1332,6 +1332,9 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
                 else:
                         coll_object.searchstore.set_sort_column_id(1, Gtk.SortType.ASCENDING)
                 
+                coll_object.searchstore.set_sort_func(9, functions.various.compare_str_and_int, None)
+                coll_object.searchstore.set_sort_func(10, functions.various.compare_str_and_int, None)
+                
                 coll_object.tree_coll.set_model(coll_object.searchstore)
                 coll_object.button_back_coll.set_sensitive(True)
                 coll_object.button_search_coll.set_label("● " + defs.STRINGS["search_collection_button"])

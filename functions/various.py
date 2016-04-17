@@ -495,6 +495,13 @@ def vertical_flip_pic(gtkimage):
 
 def compare_str_and_int(model, row1, row2, user_data):
         '''This function compares a list of strings and int. int values are sorted first.'''
+        def isFloat(string):
+                try:
+                        float(string)
+                        return(True)
+                except ValueError:
+                        return(False)
+        
         sort_column, _ = model.get_sort_column_id()
         value1 = model.get_value(row1, sort_column)
         value2 = model.get_value(row2, sort_column)
@@ -505,15 +512,15 @@ def compare_str_and_int(model, row1, row2, user_data):
         if value1 != "" and value2 == "":
                 return(-1)
         
-        if value1.isnumeric() == True and value2.isnumeric() == True:
-                if int(value1) < int(value2):
+        if isFloat(value1) == True and isFloat(value2) == True:
+                if float(value1) < float(value2):
                         return(1)
-                elif int(value1) == int(value2):
+                elif float(value1) == float(value2):
                         return(0)
                 else:
                         return(-1)
         
-        if value1.isnumeric() == False and value2.isnumeric() == False:
+        if isFloat(value1) == False and isFloat(value2) == False:
                 if value1 < value2:
                         return(-1)
                 elif value1 == value2:
@@ -521,10 +528,10 @@ def compare_str_and_int(model, row1, row2, user_data):
                 else:
                         return(1)
         
-        if value1.isnumeric() == True and value2.isnumeric() == False:
-                return(-1)
-        if value1.isnumeric() == False and value2.isnumeric() == True:
+        if isFloat(value1) == True and isFloat(value2) == False:
                 return(1)
+        if isFloat(value1) == False and isFloat(value2) == True:
+                return(-1)
 
 def gen_treeview_columns(columns_to_display, treeview):
         '''Generate the columns for a treeview which displays cards data'''               
