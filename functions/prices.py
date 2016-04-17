@@ -344,6 +344,10 @@ def show_estimate_dialog(orig, ids_db_list, deckname):
                 est_dialog.set_modal(True)
         
         box_display = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        box_display.set_margin_top(5)
+        box_display.set_margin_bottom(5)
+        box_display.set_margin_left(5)
+        box_display.set_margin_right(5)
         
         spinner = Gtk.Spinner()
         box_display.pack_start(spinner, True, True, 0)
