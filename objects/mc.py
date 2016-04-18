@@ -42,8 +42,8 @@ class MagicCollection(Gtk.Application):
         def __init__(self):
                 Gtk.Application.__init__(self)
                 self.mainwindow = None
-                GLib.set_application_name(defs.STRINGS["app_name"])
-                GLib.set_prgname(defs.STRINGS["app_name"])
+                GLib.set_application_name("magic_collection")
+                GLib.set_prgname("magic_collection")
                 if functions.config.read_config("dark_theme") == "1":
                         settings = Gtk.Settings.get_default()
                         settings.set_property("gtk-application-prefer-dark-theme", True)
@@ -150,7 +150,7 @@ class MagicCollection(Gtk.Application):
                         aboutdialog.set_version(defs.VERSION)
                 aboutdialog.set_website(defs.SITEMC + "magiccollection/")
                 aboutdialog.set_website_label(defs.STRINGS["website"])
-                aboutdialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "mclogo_min.png")))
+                aboutdialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "icons", "mclogo_min.png")))
                 aboutdialog.set_copyright(defs.STRINGS["about_copyright"])
                 aboutdialog.set_comments(defs.STRINGS["about_comment"])
                 aboutdialog.set_authors(["mirandir [mirandir@orange.fr]"])
@@ -176,8 +176,8 @@ class MC_Window(Gtk.ApplicationWindow):
         '''Mainwindow creation'''
         def __init__(self, app):
                 Gtk.Window.__init__(self, title=defs.STRINGS["app_name"], application=app)
-                self.set_wmclass(defs.STRINGS["app_name"], defs.STRINGS["app_name"])
-                self.set_icon_from_file(os.path.join(defs.PATH_MC, "images", "mclogo.png"))
+                self.set_wmclass("magic_collection", "magic_collection")
+                #self.set_icon_from_file(os.path.join(defs.PATH_MC, "images", "mclogo.png"))
                 self.app = app
                 defs.MAINWINDOW = self
                 self.accelgroup = Gtk.AccelGroup()
