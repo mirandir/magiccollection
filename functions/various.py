@@ -31,6 +31,9 @@ import time
 import tarfile
 import sys
 
+# imports def.py
+import defs
+
 if defs.OS == "mac":
         #FIXME: this is bad, bad, bad, bad, very BAD. How to simply solve the SSL: CERTIFICATE_VERIFY_FAILED error with Python on OS X ? (see http://stackoverflow.com/questions/27835619/ssl-certificate-verify-failed-error)
         import ssl
