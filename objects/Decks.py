@@ -41,6 +41,7 @@ class Decks:
                 self.mainselect = None
                 self.store_list_decks = None
                 self.select_list_decks = None
+                self.treeview_list_decks = None
                 
                 self.label_nb_decks = None
                 self.label_nb_cards = None
@@ -80,19 +81,43 @@ class Decks:
                 else:
                         self.gen_list_decks(name_new_deck)
         
+        def rename_deck(self, name_old, name_new):
+                '''Rename a deck.'''
+                conn_coll, c_coll = functions.collection.connect_db()
+                functions.various.lock_db(True, None)
+                
+                c_coll.execute("""UPDATE decks SET name = ? WHERE name = ?""", (name_new, name_old,))
+                c_coll.execute("""UPDATE collection SET deck = ? WHERE deck = ?""", (name_new, name_old,))
+                
+                functions.collection.disconnect_db(conn_coll)
+                functions.various.lock_db(False, None)
+                
+                if self.store_list_decks == None:
+                        functions.decks.gen_decks_display(self, self.right_content)
+                else:
+                        for i, elm in enumerate(self.store_list_decks):
+                                if elm[1] == name_old:
+                                        self.store_list_decks[i][1] = name_new
+                                        break
+                        for i, elm in enumerate(self.store_list_decks):
+                                if elm[1] == name_new:
+                                        self.treeview_list_decks.set_cursor(i)
+                                        break
+        
         def update_deck_comment(self, deck_name, new_comment):
                 '''Write a new comment to the deck 'deck_name'.'''
-                functions.decks.update_comment_deck_to_db(deck_name, new_comment)
+                functions.decks.update_comment_deck_to_db(self, deck_name, new_comment)
         
-        def display_deck_content(self, selection, integer, TreeViewColumn, tree_editions, button_delete_deck, textview_comm):
+        def display_deck_content(self, selection, integer, TreeViewColumn, tree_editions, button_delete_deck):
                 '''Displays the content of the deck 'deck_name' in self.right_content_bot.'''
                 if self.displaying_deck == 0:
                         model, treeiter = selection.get_selected()
                         if treeiter != None:
                                 self.displaying_deck = 1
+                                self.button_change_comm_deck.set_sensitive(True)
                                 button_delete_deck.set_sensitive(True)
                                 deck_name = model[treeiter][1]
-                                GLib.idle_add(functions.decks.gen_deck_content, deck_name, self.right_content_bot, self, textview_comm)
+                                GLib.idle_add(functions.decks.gen_deck_content, deck_name, self.right_content_bot, self)
                         else:
                                 selection.select_path(0)
         
@@ -486,15 +511,17 @@ class Decks:
         
         def gen_list_decks(self, deck_to_select):
                 if self.store_list_decks != None:
+                        self.displaying_deck = 1
                         self.store_list_decks.clear()
                         conn_coll, c_coll = functions.collection.connect_db()
-                        c_coll.execute("""SELECT id_deck, name FROM decks""")
+                        c_coll.execute("""SELECT id_deck, name, comment FROM decks""")
                         responses = c_coll.fetchall()
                         functions.collection.disconnect_db(conn_coll)
                         
-                        for id_deck, name in responses:
-                                self.store_list_decks.append([str(id_deck), name])
+                        for id_deck, name, comment in responses:
+                                self.store_list_decks.append([str(id_deck), name, comment.replace("\n", " ")])
                         self.update_nb_decks()
+                        self.displaying_deck = 0
                         
                         if self.select_list_decks != None:
                                 if deck_to_select == None:
@@ -504,6 +531,10 @@ class Decks:
                                                 if decks_data[1] == deck_to_select:
                                                         break
                                         self.select_list_decks.select_path(i)
+                                        for i, elm in enumerate(self.store_list_decks):
+                                                if elm[1] == deck_to_select:
+                                                        self.treeview_list_decks.set_cursor(i)
+                                                        break
         
         def show_details(self, treeview, treepath, column, selection, button_show_details, button_change_quantity):
                 model, pathlist = selection.get_selected_rows()

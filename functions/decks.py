@@ -68,74 +68,78 @@ def gen_decks_display(decks_object, box):
                 decks_object.button_show_details.set_sensitive(False)
                 
                 ###### the content of right_content_top ######
-                right_content_top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+                right_content_top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
                 box.pack_start(right_content_top, False, True, 0)
+                
+                right_content_top_left = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+                right_content_top.pack_start(right_content_top_left, False, True, 0)
                 
                 # we create the scrolledwindow which will display the decks
                 scrolledwindow_decks = Gtk.ScrolledWindow()
-                scrolledwindow_decks.set_min_content_width(150)
-                scrolledwindow_decks.set_min_content_height(150)
+                scrolledwindow_decks.set_min_content_width(100)
+                scrolledwindow_decks.set_min_content_height(100)
                 scrolledwindow_decks.set_hexpand(True)
                 scrolledwindow_decks.set_shadow_type(Gtk.ShadowType.IN)
                 
                 # id_deck, name
-                decks_object.store_list_decks = Gtk.ListStore(str, str)
+                decks_object.store_list_decks = Gtk.ListStore(str, str, str)
                 
                 tree_decks = Gtk.TreeView(decks_object.store_list_decks)
+                decks_object.treeview_list_decks = tree_decks
                 tree_decks.set_enable_search(False)
+                
                 renderer_decks = Gtk.CellRendererText()
                 column_name_decks = Gtk.TreeViewColumn(defs.STRINGS["list_decks_nb"], renderer_decks, text=1)
-                
                 decks_object.label_nb_decks = Gtk.Label(defs.STRINGS["list_decks_nb"])
                 decks_object.label_nb_decks.show()
-                
                 column_name_decks.set_widget(decks_object.label_nb_decks)
                 column_name_decks.set_sort_column_id(1)
                 decks_object.store_list_decks.set_sort_column_id(1, Gtk.SortType.ASCENDING)
                 tree_decks.append_column(column_name_decks)
                 
+                renderer_comment = Gtk.CellRendererText()
+                column_comment_decks = Gtk.TreeViewColumn(defs.STRINGS["comment_deck"], renderer_comment, text=2)
+                column_comment_decks.set_sort_column_id(2)
+                tree_decks.append_column(column_comment_decks)
+                
                 decks_object.select_list_decks = tree_decks.get_selection()
                 decks_object.gen_list_decks(None)
                 
                 scrolledwindow_decks.add(tree_decks)
-                right_content_top.pack_start(scrolledwindow_decks, False, True, 0)
+                right_content_top_left.pack_start(scrolledwindow_decks, False, True, 0)
                 
-                # the buttons for managing decks
-                button_new_deck = Gtk.MenuButton(defs.STRINGS["create_new_deck"])
+                # we create the toolbar and his buttons for managing decks
+                button_new_deck = Gtk.MenuButton()
                 button_new_deck.set_popover(gen_new_deck_popover(button_new_deck, decks_object))
+                button_new_deck.set_tooltip_text(defs.STRINGS["create_new_deck"])
+                button_new_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="document-new-symbolic"), Gtk.IconSize.BUTTON))
                 
-                decks_object.button_estimate_deck = Gtk.Button(defs.STRINGS["estimate_deck"])
+                decks_object.button_change_comm_deck = Gtk.MenuButton()
+                decks_object.button_change_comm_deck.set_popover(gen_edit_comm_name_deck_popover(decks_object.button_change_comm_deck, decks_object, decks_object.select_list_decks))
+                decks_object.button_change_comm_deck.set_tooltip_text(defs.STRINGS["edit_comment_name_deck"])
+                decks_object.button_change_comm_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="document-edit-symbolic"), Gtk.IconSize.BUTTON))
+                decks_object.button_change_comm_deck.set_sensitive(False)
+                
+                decks_object.button_estimate_deck = Gtk.Button()
                 decks_object.button_estimate_deck.set_sensitive(False)
                 decks_object.button_estimate_deck.connect("clicked", prepare_estimate_deck, decks_object.select_list_decks)
+                decks_object.button_estimate_deck.set_tooltip_text(defs.STRINGS["estimate_deck"])
+                decks_object.button_estimate_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="accessories-calculator-symbolic"), Gtk.IconSize.BUTTON))
                 
-                button_delete_deck = Gtk.Button(defs.STRINGS["delete_deck"])
+                button_delete_deck = Gtk.Button()
                 button_delete_deck.set_sensitive(False)
                 button_delete_deck.connect("clicked", prepare_delete_deck, decks_object.select_list_decks, decks_object)
+                button_delete_deck.set_tooltip_text(defs.STRINGS["delete_deck"])
+                button_delete_deck.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="user-trash-symbolic"), Gtk.IconSize.BUTTON))
                 
-                box_buttons = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
-                box_buttons.set_valign(Gtk.Align.CENTER)
-                for button in [button_new_deck, decks_object.button_estimate_deck, button_delete_deck]:
+                box_buttons = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+                for button in [button_new_deck, decks_object.button_change_comm_deck, decks_object.button_estimate_deck, button_delete_deck]:
                         box_buttons.pack_start(button, False, True, 0)
-                right_content_top.pack_start(box_buttons, False, True, 0)
+                right_content_top_left.pack_start(box_buttons, False, True, 0)
+                                
+                decks_object.select_list_decks.connect("changed", decks_object.display_deck_content, "blip", "blop", tree_decks, button_delete_deck)
                 
-                label_comm = Gtk.Label(defs.STRINGS["comment_deck"])
-                scrolledwindow_comm = Gtk.ScrolledWindow()
-                scrolledwindow_comm.set_hexpand(True)
-                scrolledwindow_comm.set_min_content_height(150)
-                scrolledwindow_comm.set_shadow_type(Gtk.ShadowType.IN)
-                textview_comm = Gtk.TextView()
-                textview_comm.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
-                textview_comm.set_sensitive(False)
-                textbuffer = textview_comm.get_buffer()
-                textbuffer.connect("changed", textview_comment_save, decks_object, textview_comm)
-                scrolledwindow_comm.add(textview_comm)
-                
-                box_comm = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-                box_comm.pack_start(label_comm, False, True, 0)
-                box_comm.pack_start(scrolledwindow_comm, False, True, 0)
-                right_content_top.pack_start(box_comm, False, True, 0)
-                
-                decks_object.select_list_decks.connect("changed", decks_object.display_deck_content, "blip", "blop", tree_decks, button_delete_deck, textview_comm)
+                tree_decks.connect("row-activated", show_change_name_comment_deck, decks_object.button_change_comm_deck)
                 
                 ###### the content of right_content_mid ######
                 decks_object.label_nb_cards = Gtk.Label()
@@ -154,6 +158,9 @@ def gen_decks_display(decks_object, box):
                 
                 decks_object.update_nb_decks()
                 decks_object.mainbox.show_all()
+
+def show_change_name_comment_deck(treeview, treepath, column, button_change_comm_deck):
+        button_change_comm_deck.emit("clicked")
 
 def prepare_estimate_deck(button, select_list_decks):
         model_deck, pathlist_deck = select_list_decks.get_selected_rows()
@@ -236,7 +243,7 @@ def textview_comment_save(textbuffer, decks_object, textview_comm):
                 thread.daemon = True
                 thread.start()
 
-def gen_deck_content(deck_name, box, decks_object, textview_comm):
+def gen_deck_content(deck_name, box, decks_object):
         '''Displays the cards of the deck.'''
         for widget in box.get_children():
                 box.remove(widget)
@@ -277,13 +284,6 @@ def gen_deck_content(deck_name, box, decks_object, textview_comm):
                 toolbar_box.add(button)
         toolbar_box.show_all()
         box.pack_end(toolbar_box, False, True, 0)  
-        
-        # the comment
-        comment = responses_datadeck[1]
-        textview_comm.set_sensitive(False)
-        textbuffer = textview_comm.get_buffer()
-        textbuffer.set_text(comment, -1)
-        textview_comm.set_sensitive(True)
         
         # the real cards in the deck
         dict_cards_in_deck = {}
@@ -592,49 +592,141 @@ def gen_move_deck_popover(button_move, selection, decks_object):
         popover.add(move_deck_box)
         return(popover)
 
+def gen_edit_comm_name_deck_popover(button_change_comm_deck, decks_object, select_list_decks):
+        '''Create the popover which let the user to edit the comment of the deck.'''
+        def popover_show(popover, decks_object, select_list_decks):
+                def real_show(popover, decks_object, select_list_decks):
+                        def rename_deck(button, entry_name_deck, decks_object, popover, current_deck_name):
+                                def real_rename_deck(button, entry_name_deck, decks_object, popover, current_deck_name):
+                                        popover.hide()
+                                        decks_object.rename_deck(current_deck_name, entry_name_deck.get_text())
+                                GLib.idle_add(real_rename_deck, button, entry_name_deck, decks_object, popover, current_deck_name)
+                        
+                        def entry_changed(entry, ok_button, list_decks_names):
+                                def real_entry_changed(entry, ok_button, list_decks_names):
+                                        if defs.COLL_LOCK == False and entry.get_text() != "" and entry.get_text().lower() not in list_decks_names:
+                                                ok_button.set_sensitive(True)
+                                        else:
+                                                ok_button.set_sensitive(False)
+                                GLib.idle_add(real_entry_changed, entry, ok_button, list_decks_names)
+                        
+                        for widget in popover.get_children():
+                                popover.remove(widget)
+                        
+                        model_deck, pathlist_deck = select_list_decks.get_selected_rows()
+                        deck_name = model_deck[pathlist_deck][1]
+                        
+                        conn_coll, c_coll = functions.collection.connect_db()
+                        c_coll.execute("""SELECT name FROM decks""")
+                        responses = c_coll.fetchall()
+                        list_decks_names = []
+                        for tmp_deck_name in responses:
+                                list_decks_names.append(tmp_deck_name[0].lower())
+                        
+                        c_coll.execute("""SELECT comment FROM decks WHERE name = \"""" + deck_name + """\"""")
+                        response = c_coll.fetchone()
+                        functions.collection.disconnect_db(conn_coll)
+                        
+                        box_comm = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+                        box_comm.set_margin_top(5)
+                        box_comm.set_margin_bottom(5)
+                        box_comm.set_margin_left(5)
+                        box_comm.set_margin_right(5)
+                        popover.add(box_comm)
+                        
+                        box_comm_name = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+                        box_comm.pack_start(box_comm_name, True, True, 0)
+                        label_name_deck = Gtk.Label(defs.STRINGS["edit_name_deck"])
+                        entry_name_deck = Gtk.Entry()
+                        entry_name_deck.set_text(deck_name)
+                        ok_button = Gtk.Button(defs.STRINGS["create_new_deck_ok"])
+                        entry_name_deck.connect("changed", entry_changed, ok_button, list_decks_names)
+                        ok_button.set_sensitive(False)
+                        ok_button.connect("clicked", rename_deck, entry_name_deck, decks_object, popover, deck_name)
+                        for widget in [label_name_deck, entry_name_deck, ok_button]:
+                                box_comm_name.pack_start(widget, True, True, 0)
+                        
+                        box_comm_comment = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+                        box_comm.pack_start(box_comm_comment, True, True, 0)
+                        label_comm = Gtk.Label(defs.STRINGS["comment_deck"])
+                        scrolledwindow_comm = Gtk.ScrolledWindow()
+                        scrolledwindow_comm.set_hexpand(True)
+                        scrolledwindow_comm.set_min_content_height(150)
+                        scrolledwindow_comm.set_shadow_type(Gtk.ShadowType.IN)
+                        textview_comm = Gtk.TextView()
+                        textview_comm.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
+                        textview_comm.set_sensitive(False)
+                        textbuffer = textview_comm.get_buffer()
+                        textbuffer.connect("changed", textview_comment_save, decks_object, textview_comm)
+                        scrolledwindow_comm.add(textview_comm)
+                        
+                        textbuffer.set_text(response[0], -1)
+                        if defs.COLL_LOCK == False:
+                                textview_comm.set_sensitive(True)
+                        
+                        box_comm_comment.pack_start(label_comm, False, True, 0)
+                        box_comm_comment.pack_start(scrolledwindow_comm, False, True, 0)
+                        box_comm.show_all()
+                
+                GLib.idle_add(real_show, popover, decks_object, select_list_decks)
+        
+        popover = Gtk.Popover.new(button_change_comm_deck)
+        popover.props.width_request = 300
+        popover.connect("show", popover_show, decks_object, select_list_decks)
+        return(popover)
+
 def gen_new_deck_popover(button_new_deck, decks_object):
         '''Create the popover which create deck.'''
-        def popover_show(popover, decks_object, new_deck_box):
+        def popover_show(popover, decks_object):
                 def create_deck(button, entry_name_deck, decks_object, popover):
-                        popover.hide()
-                        decks_object.create_new_deck(entry_name_deck.get_text())
+                        def real_create_deck(button, entry_name_deck, decks_object, popover):
+                                popover.hide()
+                                decks_object.create_new_deck(entry_name_deck.get_text())
+                        GLib.idle_add(real_create_deck, button, entry_name_deck, decks_object, popover)
                 
                 def entry_changed(entry, ok_button, list_decks_names):
-                        if defs.COLL_LOCK == False and entry.get_text() != "" and entry.get_text().lower() not in list_decks_names:
-                                ok_button.set_sensitive(True)
-                        else:
-                                ok_button.set_sensitive(False)
+                        def real_entry_changed(entry, ok_button, list_decks_names):
+                                if defs.COLL_LOCK == False and entry.get_text() != "" and entry.get_text().lower() not in list_decks_names:
+                                        ok_button.set_sensitive(True)
+                                else:
+                                        ok_button.set_sensitive(False)
+                        GLib.idle_add(real_entry_changed, entry, ok_button, list_decks_names)
                 
-                conn_coll, c_coll = functions.collection.connect_db()
-                c_coll.execute("""SELECT name FROM decks""")
-                responses = c_coll.fetchall()
-                functions.collection.disconnect_db(conn_coll)
-                list_decks_names = []
-                for deck_name in responses:
-                        list_decks_names.append(deck_name[0].lower())
+                def real_show(popover, decks_object):
+                        for widget in popover.get_children():
+                                popover.remove(widget)
+                        
+                        new_deck_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+                        new_deck_box.set_margin_top(5)
+                        new_deck_box.set_margin_bottom(5)
+                        new_deck_box.set_margin_left(5)
+                        new_deck_box.set_margin_right(5)
+                        popover.add(new_deck_box)
+                        
+                        conn_coll, c_coll = functions.collection.connect_db()
+                        c_coll.execute("""SELECT name FROM decks""")
+                        responses = c_coll.fetchall()
+                        functions.collection.disconnect_db(conn_coll)
+                        list_decks_names = []
+                        for deck_name in responses:
+                                list_decks_names.append(deck_name[0].lower())
+                        
+                        label_name_deck = Gtk.Label(defs.STRINGS["create_new_deck_name"])
+                        entry_name_deck = Gtk.Entry()
+                        ok_button = Gtk.Button(defs.STRINGS["create_new_deck_ok"])
+                        entry_name_deck.connect("changed", entry_changed, ok_button, list_decks_names)
+                        ok_button.set_sensitive(False)
+                        ok_button.connect("clicked", create_deck, entry_name_deck, decks_object, popover)
+                        for widget in [label_name_deck, entry_name_deck, ok_button]:
+                                new_deck_box.pack_start(widget, True, True, 0)
+                        new_deck_box.show_all()
+                        entry_name_deck.grab_focus()
                 
-                for widget in new_deck_box.get_children():
-                        new_deck_box.remove(widget)
-                label_name_deck = Gtk.Label(defs.STRINGS["create_new_deck_name"])
-                entry_name_deck = Gtk.Entry()
-                ok_button = Gtk.Button(defs.STRINGS["create_new_deck_ok"])
-                entry_name_deck.connect("changed", entry_changed, ok_button, list_decks_names)
-                ok_button.set_sensitive(False)
-                ok_button.connect("clicked", create_deck, entry_name_deck, decks_object, popover)
-                for widget in [label_name_deck, entry_name_deck, ok_button]:
-                        new_deck_box.pack_start(widget, True, True, 0)
-                new_deck_box.show_all()
-                entry_name_deck.grab_focus()
+                GLib.idle_add(real_show, popover, decks_object)
         
-        new_deck_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        new_deck_box.set_margin_top(5)
-        new_deck_box.set_margin_bottom(5)
-        new_deck_box.set_margin_left(5)
-        new_deck_box.set_margin_right(5)
         popover = Gtk.Popover.new(button_new_deck)
         popover.props.width_request = 300
-        popover.connect("show", popover_show, decks_object, new_deck_box)
-        popover.add(new_deck_box)
+        popover.connect("show", popover_show, decks_object)
         return(popover)
 
 def write_new_deck_to_db(name_new_deck):
@@ -647,10 +739,21 @@ def write_new_deck_to_db(name_new_deck):
         functions.collection.disconnect_db(conn_coll)
         functions.various.lock_db(False, None)
 
-def update_comment_deck_to_db(deck_name, new_comment):
-        '''Write the new comment of the deck to the collection database.'''
+def update_comment_deck_to_db(decks_object, deck_name, new_comment):
+        '''Write the new comment of the deck to the collection database and update the list.'''
+        def update_comment_in_decks_list(deck_name, decks_object):
+                try:
+                        for i, elm in enumerate(decks_object.store_list_decks):
+                                if elm[1] == deck_name:
+                                        decks_object.store_list_decks[i][2] = new_comment.replace("\n", " ")
+                                        break
+                except:
+                        pass
+        
         conn_coll, c_coll = functions.collection.connect_db()
         functions.various.lock_db(True, None)
         c_coll.execute("""UPDATE decks SET comment = ? WHERE name = ?""", (new_comment, deck_name,))
         functions.collection.disconnect_db(conn_coll)
         functions.various.lock_db(False, None)
+        
+        GLib.idle_add(update_comment_in_decks_list, deck_name, decks_object)
