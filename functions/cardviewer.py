@@ -407,7 +407,13 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         else:
                                 name_for_add_popover = name.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                         
-                        eventbox_card_pic.connect("enter-notify-event", mouse_on_pic, overlay_card_pic, card_pic, object_origin, simple_search, name_for_add_popover, edition_longname, id_, split_flip_df_data)
+                        #eventbox_card_pic.connect("enter-notify-event", mouse_on_pic, overlay_card_pic, card_pic, object_origin, simple_search, name_for_add_popover, edition_longname, id_, split_flip_df_data)
+                        add_pic = Gtk.Image.new_from_file(os.path.join(defs.PATH_MC, "images", "add.png"))
+                        eventbox = Gtk.EventBox()
+                        eventbox.connect("button-press-event", add_button_clicked, eventbox_card_pic, overlay_card_pic, object_origin, simple_search, name_for_add_popover, edition_longname, id_, split_flip_df_data)
+                        overlay_card_pic.add_overlay(eventbox)
+                        eventbox.add(add_pic)
+                        eventbox.show_all()
                         
                         eventbox_card_pic.add(card_pic)
                         overlay_card_pic.add(eventbox_card_pic)
@@ -876,7 +882,6 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         expander.set_label_widget(label_expander)
         expander.set_spacing(4)
         popover_box.pack_start(expander, True, True, 0)
-        eventbox.destroy()
         popover.add(popover_box)
         
         if nb_decks > 0:
@@ -900,11 +905,12 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         defs.BUTTON_COLL_LOCK = button_add
         popover_box.pack_start(button_add, True, True, 0)
         
+        eventbox.remove(eventbox.get_child())
         add_pic = Gtk.Image.new_from_file(os.path.join(defs.PATH_MC, "images", "add_push.png"))
-        overlay.add_overlay(add_pic)
+        eventbox.add(add_pic)
         add_pic.show()
         
-        popover.connect("closed", popover_add_close, add_pic)
+        popover.connect("closed", popover_add_close, eventbox)
         popover.set_position(Gtk.PositionType.RIGHT)
         popover.show_all()
 
@@ -974,22 +980,12 @@ def button_add_clicked(button_add, popover, spinbutton, comboboxtext_condition, 
                 thread.daemon = True
                 thread.start()
 
-def popover_add_close(popover, add_pic):
-        add_pic.destroy()
-        defs.BUTTON_COLL_LOCK = None
-
-def mouse_on_pic(eventbox_pic_card, event, overlay, card_pic, object_origin, simple_search, name_for_add_popover, edition_longname, id_, split_flip_df_data):
+def popover_add_close(popover, eventbox):
+        eventbox.remove(eventbox.get_child())
         add_pic = Gtk.Image.new_from_file(os.path.join(defs.PATH_MC, "images", "add.png"))
-        eventbox = Gtk.EventBox()
-        eventbox.connect("button-press-event", add_button_clicked, eventbox_pic_card, overlay, object_origin, simple_search, name_for_add_popover, edition_longname, id_, split_flip_df_data)
-        eventbox.connect("leave-notify-event", mouse_no_more_on_pic, add_pic)
-        overlay.add_overlay(eventbox)
         eventbox.add(add_pic)
-        eventbox.show_all()
-
-def mouse_no_more_on_pic(eventbox, event, add_pic):
-        add_pic.destroy()
-        eventbox.destroy()
+        add_pic.show()
+        defs.BUTTON_COLL_LOCK = None
 
 def load_card_picture(path, pixbuf, card_pic, gg_pic, layout, radius, flip_pic):
         size = functions.various.card_pic_size()
