@@ -234,7 +234,6 @@ class MC_Window(Gtk.ApplicationWindow):
                 
                 self.headerbar.pack_start(search_revealer)
                 
-                
                 self.overlay = Gtk.Overlay()
                 
                 button = Gtk.Button("")

@@ -402,10 +402,10 @@ class AdvancedSearch:
                                                 if type_s == "edition":
                                                         add = False
                                 
-                                if card["layout"] == "split":
+                                '''if card["layout"] == "split":
                                         names = card["names"].split("|")
                                         if card["real_name"] != names[0]:
-                                                add = False
+                                                add = False'''
                                 
                                 if card["name"] + "-" + card["edition_ln"] in cards_added:
                                         add = False
