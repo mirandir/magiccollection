@@ -8,6 +8,11 @@ GNU/GPL v3
 
 #Dependencies
 
+* Python >= 3.4i
+* GTK+ >= 3.18
+* Python-GObject
+
+In Ubuntu:
 * python3 >= 3.4
 * python3-gi
 * libgtk-3-0 >= 3.18
