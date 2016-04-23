@@ -2,7 +2,7 @@
 # -*-coding:Utf-8 -*
 #
 
-# Copyright 2013-2015 mirandir
+# Copyright 2013-2016 mirandir
 
 # This file is part of Magic Collection.
 #
@@ -44,7 +44,7 @@ def translate():
 ''' + translate["app_name"] + ''' utilise mtgjson.com pour une partie
 de sa base de données.
 Merci à Sembiance et AndarilhoMTG pour l'extraordinaire travail réalisé sur ce site !
-Les informations de prix sont founies par TCGplayer.com.
+Les informations de prix sont fournies par TCGplayer.com.
 Elles sont affichées uniquement dans un but d'information, et elles
 n'engagent ni ''' + translate["app_name"] + ''' ni son auteur.'''
         
@@ -281,9 +281,11 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["estimate_deck"] = "Estimer la valeur du deck"
         translate["delete_deck"] = "Supprimer le deck"
         translate["decks_empty_welcome"] = "Vous n'avez pas encore saisi de deck dans " + translate["app_name"] + ".\nCliquez ici pour en saisir un."
-        translate["create_new_deck_name"] = "Nom du deck"
+        translate["create_new_deck_name"] = "Nom du deck à ajouter"
         translate["create_new_deck_ok"] = "Valider"
         translate["comment_deck"] = "Commentaire du deck"
+        translate["edit_name_deck"] = "Nom du deck"
+        translate["edit_comment_name_deck"] = "Modifier les informations du deck"
         translate["decks_click_deck"] = "Cliquez sur un deck pour afficher les cartes qu'il contient."
         translate["nb_cards_in_deck"] = "%%% carte"
         translate["nb_cards_in_deck_s"] = "%%% cartes"
