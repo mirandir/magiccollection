@@ -213,9 +213,9 @@ def get_price(ids_card_list):
         
         for data_prices in reponses_db:
                 id_card = data_prices[0]
-                phigh = data_prices[1]
-                pmid = data_prices[2]
-                pmin = data_prices[3]
+                phigh = data_prices[1].replace(",", "")
+                pmid = data_prices[2].replace(",", "")
+                pmin = data_prices[3].replace(",", "")
         
                 if pmid != "" and pmid != None:
                         price = float(pmid)
