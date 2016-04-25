@@ -42,7 +42,7 @@ class MagicCollection(Gtk.Application):
         def __init__(self):
                 Gtk.Application.__init__(self)
                 self.mainwindow = None
-                GLib.set_application_name("magic_collection")
+                GLib.set_application_name(defs.STRINGS["app_name"])
                 GLib.set_prgname("magic_collection")
                 if functions.config.read_config("dark_theme") == "1":
                         settings = Gtk.Settings.get_default()
