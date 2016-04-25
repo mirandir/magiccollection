@@ -144,8 +144,11 @@ def import_oldformat():
                                                                 os.remove(os.path.join(defs.CACHEMCPIC, folder, name_without_variant))
                                                         except:
                                                                 pass
-                                        elif ".full.hd" in pic:
-                                                os.remove(os.path.join(defs.CACHEMCPIC, folder, pic))
+                                        elif ".full.hd" in pic or "Forest" in pic or "Island" in pic or "Mountain" in pic or "Plains" in pic or "Swamp" in pic:
+                                                try:
+                                                        os.remove(os.path.join(defs.CACHEMCPIC, folder, pic))
+                                                except:
+                                                        pass
                 
                 # we create the database
                 functions.collection.create_db_coll()
