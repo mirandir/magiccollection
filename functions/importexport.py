@@ -169,10 +169,11 @@ def import_oldformat():
                                         Decks[deck[:-5]] = read_olddeck(os.path.join(defs.HOMEMC, "oldmc", "decks", deck))
                                         functions.decks.write_new_deck_to_db(deck[:-5])
                                         if Decks[deck[:-5]]["comm"] != "":
-                                                functions.decks.update_comment_deck_to_db(deck[:-5], Decks[deck[:-5]]["comm"])
+                                                functions.decks.update_comment_deck_to_db(None, deck[:-5], Decks[deck[:-5]]["comm"])
                 
                 if os.path.isfile(os.path.join(defs.HOMEMC, "collection.txt")):
                         shutil.move(os.path.join(defs.HOMEMC, "collection.txt"), os.path.join(defs.HOMEMC, "oldmc"))
+                        Collection = read_oldcollection(os.path.join(defs.HOMEMC, "oldmc", "collection.txt"), Decks)
                         try:
                                 Collection = read_oldcollection(os.path.join(defs.HOMEMC, "oldmc", "collection.txt"), Decks)
                         except:
@@ -252,7 +253,7 @@ def cards_finder_oldcollection(Collection):
                                         cards_not_found.append([card_name, ex_code, id_data])
                                 else:
                                         # we can write this card to the collection
-                                        c_coll.execute("""INSERT INTO collection VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?)""", (id_card, id_data["date"], id_data["condition"].lower(), id_data["lang"], id_data["foil"], id_data["loaned"], id_data["comment"], id_data["deck"]))
+                                        c_coll.execute("""INSERT INTO collection VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (id_card, id_data["date"], id_data["condition"].lower(), id_data["lang"], id_data["foil"], id_data["loaned"], id_data["comment"], id_data["deck"], ""))
         functions.db.disconnect_db(conn_db)
         functions.collection.disconnect_db(conn_coll)
         

@@ -45,7 +45,7 @@ def read_coll(box, coll_object):
         
         backup_coll(None)
         
-        c.execute("""SELECT id_coll, id_card, comment, deck FROM collection""")
+        c.execute("""SELECT id_coll, id_card, comment, deck, deck_side FROM collection""")
         reponses_coll = c.fetchall()
         disconnect_db(conn)
         nb_coll = len(reponses_coll)
@@ -142,11 +142,11 @@ def read_coll(box, coll_object):
                 
                 dict_rowcards_in_coll = {}
                 for card_coll in reponses_coll:
-                        id_coll, id_card, comment, deck = card_coll
+                        id_coll, id_card, comment, deck, deck_side = card_coll
                         
                         bold = 400
                         italic = Pango.Style.NORMAL
-                        if deck != "":
+                        if deck != "" or deck_side != "":
                                 italic = Pango.Style.ITALIC
                         if comment != "":
                                 bold = 700
@@ -238,8 +238,8 @@ def add_deck_test_avail(selection):
         details_store = gen_details_store(selection)
         if details_store != None:
                 for card in details_store:
-                        #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
-                        if card[10] == "":
+                        #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db, deck_side
+                        if card[10] == "" and card[14] == "":
                                 try:
                                         cards_avail[card[13]]
                                 except KeyError:
@@ -413,6 +413,7 @@ def prepare_delete_from_deck_details(selection, details_store):
                 for i, row in enumerate(details_store):
                         if row[0] in ids_coll_dict.keys():
                                 details_store[i][10] = ""
+                                details_store[i][14] = ""
                                 details_store[i][12] = Pango.Style.NORMAL
                 model, pathlist = selection.get_selected_rows()
                 if len(pathlist) == 1:
@@ -432,14 +433,18 @@ def prepare_delete_from_deck_details(selection, details_store):
                         coll_object.button_add_deck.set_sensitive(False)
         model, pathlist = selection.get_selected_rows()
         ids_coll_dict = {}
-        #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+        #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db, deck_side
         for row in pathlist:
-                ids_coll_dict[model[row][0]] = model[row][13]
+                side = 0
                 deck_name = model[row][10]
+                if model[row][14] != "":
+                        side = 1
+                        deck_name = model[row][14]
+                ids_coll_dict[model[row][0]] = [model[row][13], side]
         GLib.idle_add(defs.MAINWINDOW.decks.delete_cards_from_deck, deck_name, ids_coll_dict)
         GLib.idle_add(update, details_store, ids_coll_dict, deck_name, selection)
 
-def prepare_add_to_deck(popover, select_list_decks, ids_coll_dict, selection):
+def prepare_add_to_deck(popover, select_list_decks, ids_coll_dict, selection, side):
         def update(selection):
                 model, pathlist = selection.get_selected_rows()
                 if len(pathlist) == 1:
@@ -451,14 +456,17 @@ def prepare_add_to_deck(popover, select_list_decks, ids_coll_dict, selection):
                                         break
         model_deck, pathlist_deck = select_list_decks.get_selected_rows()
         deck_name = model_deck[pathlist_deck][1]
-        GLib.idle_add(defs.MAINWINDOW.decks.add_cards_to_deck, deck_name, ids_coll_dict)
+        GLib.idle_add(defs.MAINWINDOW.decks.add_cards_to_deck, deck_name, ids_coll_dict, side)
         GLib.idle_add(update, selection)
 
-def prepare_add_to_deck_details(popover, selection, select_list_decks, details_store):
-        def update(details_store, ids_coll_dict, deck_name, selection):
+def prepare_add_to_deck_details(popover, selection, select_list_decks, details_store, side_checkbutton, button_add_deck):
+        def update(details_store, ids_coll_dict, deck_name, selection, side, button_add_deck_pop):
                 for i, row in enumerate(details_store):
                         if row[0] in ids_coll_dict.keys():
-                                details_store[i][10] = deck_name
+                                if side == 0:
+                                        details_store[i][10] = deck_name
+                                elif side == 1:
+                                        details_store[i][14] = deck_name
                                 details_store[i][12] = Pango.Style.ITALIC
                 model, pathlist = selection.get_selected_rows()
                 if len(pathlist) == 1:
@@ -476,15 +484,20 @@ def prepare_add_to_deck_details(popover, selection, select_list_decks, details_s
                         coll_object.button_add_deck.set_popover(gen_add_deck_popover(coll_object.button_add_deck, coll_object.mainselect))
                 else:
                         coll_object.button_add_deck.set_sensitive(False)
+                button_add_deck_pop.set_sensitive(False)
         model, pathlist = selection.get_selected_rows()
         ids_coll_dict = {}
-        #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+        #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db, deck_side
         for row in pathlist:
                 ids_coll_dict[model[row][0]] = model[row][13]
         model_deck, pathlist_deck = select_list_decks.get_selected_rows()
         deck_name = model_deck[pathlist_deck][1]
-        GLib.idle_add(defs.MAINWINDOW.decks.add_cards_to_deck, deck_name, ids_coll_dict)
-        GLib.idle_add(update, details_store, ids_coll_dict, deck_name, selection)
+        if side_checkbutton.get_active():
+                side = 1
+        else:
+                side = 0
+        GLib.idle_add(defs.MAINWINDOW.decks.add_cards_to_deck, deck_name, ids_coll_dict, side)
+        GLib.idle_add(update, details_store, ids_coll_dict, deck_name, selection, side, button_add_deck)
 
 def delete_from_deck_details(button, selection, details_store, popover):
         thread = threading.Thread(target = prepare_delete_from_deck_details, args = (selection, details_store))
@@ -662,7 +675,7 @@ def gen_quantity_popover(button_change_quantity, selection):
                 ids_coll_list = []
                 cards_in_deck = 0
                 for card in details_store:
-                        if card[10] == "":
+                        if card[10] == "" and card[14] == "":
                                 ids_coll_list.append(card[0])
                         else:
                                 cards_in_deck += 1
@@ -773,6 +786,8 @@ def gen_add_deck_popover(button_add_deck, selection):
                 ok_button = Gtk.Button(defs.STRINGS["create_new_deck_ok"])
                 ok_button.set_sensitive(False)
                 
+                side_checkbutton = Gtk.CheckButton(label=defs.STRINGS["decks_add_to_sideboard"])
+                
                 spinbuttons_dict = {}
                 
                 select_list_decks.connect("changed", select_changed, ok_button, spinbuttons_dict)
@@ -788,9 +803,9 @@ def gen_add_deck_popover(button_add_deck, selection):
                 
                         nb_avail = 0
                         for card in details_store:
-                                #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+                                #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db, deck_side
                                 if card[13] == id_db_row:
-                                        if card[10] == "":
+                                        if card[10] == "" and card[14] == "":
                                                 try:
                                                         cards_avail[card[13]]
                                                 except KeyError:
@@ -819,14 +834,15 @@ def gen_add_deck_popover(button_add_deck, selection):
                         scrolledwindow_cards.set_min_content_height(120)
                 else:
                         scrolledwindow_cards.set_min_content_height(150)
-                ok_button.connect("clicked", add_deck, popover, select_list_decks, cards_avail, spinbuttons_dict, selection)
+                ok_button.connect("clicked", add_deck, popover, select_list_decks, cards_avail, spinbuttons_dict, selection, side_checkbutton)
                 tree_decks.connect("row-activated", row_activated, popover, select_list_decks, cards_avail, spinbuttons_dict, selection)
                 add_deck_box.pack_start(scrolledwindow_decks, True, True, 0)
                 add_deck_box.pack_start(scrolledwindow_cards, True, True, 0)
+                add_deck_box.pack_start(side_checkbutton, True, True, 0)
                 add_deck_box.pack_start(ok_button, True, True, 0)
                 add_deck_box.show_all()
         
-        def add_deck(button, popover, select_list_decks, cards_avail, spinbuttons_dict, selection):
+        def add_deck(button, popover, select_list_decks, cards_avail, spinbuttons_dict, selection, side_checkbutton):
                 ids_coll_dict = {}
                 for id_db_spin, spinbutton in spinbuttons_dict.items():
                         nb = spinbutton.get_value_as_int()
@@ -839,7 +855,11 @@ def gen_add_deck_popover(button_add_deck, selection):
                                                         ids_coll_dict[id_coll] = id_db
                                                         z += 1
                 
-                thread = threading.Thread(target = prepare_add_to_deck, args = (popover, select_list_decks, ids_coll_dict, selection))
+                if side_checkbutton.get_active():
+                        side = 1
+                else:
+                        side = 0
+                thread = threading.Thread(target = prepare_add_to_deck, args = (popover, select_list_decks, ids_coll_dict, selection, side))
                 thread.daemon = True
                 thread.start()
                 popover.hide()
@@ -867,7 +887,7 @@ def gen_add_deck_details_popover(button_add_deck, selection, details_store):
         def row_activated(a, b, c, popover, selection, select_list_decks, details_store):
                 add_deck(None, popover, selection, select_list_decks, details_store)
         
-        def popover_show(popover, selection, add_deck_box, details_store):
+        def popover_show(popover, selection, add_deck_box, details_store, button_add_deck):
                 for widget in add_deck_box.get_children():
                         add_deck_box.remove(widget)
                 
@@ -893,6 +913,8 @@ def gen_add_deck_details_popover(button_add_deck, selection, details_store):
                 select_list_decks = tree_decks.get_selection()
                 select_list_decks.connect("changed", select_changed, ok_button)
                 
+                side_checkbutton = Gtk.CheckButton(label=defs.STRINGS["decks_add_to_sideboard"])
+                
                 conn_coll, c_coll = connect_db()
                 c_coll.execute("""SELECT id_deck, name FROM decks""")
                 responses = c_coll.fetchall()
@@ -904,14 +926,15 @@ def gen_add_deck_details_popover(button_add_deck, selection, details_store):
                 scrolledwindow_decks.add(tree_decks)
                 ok_button.set_sensitive(False)
                 tree_decks.connect("row-activated", row_activated, popover, selection, select_list_decks, details_store)
-                ok_button.connect("clicked", add_deck, popover, selection, select_list_decks, details_store)
+                ok_button.connect("clicked", add_deck, popover, selection, select_list_decks, details_store, side_checkbutton, button_add_deck)
                 
                 add_deck_box.pack_start(scrolledwindow_decks, True, True, 0)
+                add_deck_box.pack_start(side_checkbutton, True, True, 0)
                 add_deck_box.pack_start(ok_button, True, True, 0)
                 add_deck_box.show_all()
         
-        def add_deck(button, popover, selection, select_list_decks, details_store):
-                thread = threading.Thread(target = prepare_add_to_deck_details, args = (popover, selection, select_list_decks, details_store))
+        def add_deck(button, popover, selection, select_list_decks, details_store, side_checkbutton, button_add_deck):
+                thread = threading.Thread(target = prepare_add_to_deck_details, args = (popover, selection, select_list_decks, details_store, side_checkbutton, button_add_deck))
                 thread.daemon = True
                 thread.start()
                 popover.hide()
@@ -923,7 +946,7 @@ def gen_add_deck_details_popover(button_add_deck, selection, details_store):
         add_deck_box.set_margin_right(5)
         popover = Gtk.Popover.new(button_add_deck)
         popover.props.width_request = 250
-        popover.connect("show", popover_show, selection, add_deck_box, details_store)
+        popover.connect("show", popover_show, selection, add_deck_box, details_store, button_add_deck)
         popover.add(add_deck_box)
         return(popover)
 
@@ -944,32 +967,41 @@ def gen_details_store(selection):
         # we create a (cleaner) dict with reponses_coll
         dict_responses_coll = {}
         for card_coll in reponses_coll:
-                id_coll, id_card, date, condition, lang, foil, loaned_to, comment, deck = card_coll
+                id_coll, id_card, date, condition, lang, foil, loaned_to, comment, deck, deck_side = card_coll
                 try:
                         dict_responses_coll[id_card]
                 except KeyError:
-                        dict_responses_coll[id_card] = [[id_coll, date, condition, lang, foil, loaned_to, comment, deck]]
+                        dict_responses_coll[id_card] = [[id_coll, date, condition, lang, foil, loaned_to, comment, deck, deck_side]]
                 else:
-                        dict_responses_coll[id_card].append([id_coll, date, condition, lang, foil, loaned_to, comment, deck])
+                        dict_responses_coll[id_card].append([id_coll, date, condition, lang, foil, loaned_to, comment, deck, deck_side])
         if len(dict_responses_coll) > 0:
-                details_store = Gtk.ListStore(str, str, str, str, str, str, str, str, str, str, str, int, Pango.Style, str)
+                # id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db, deck_side
+                details_store = Gtk.ListStore(str, str, str, str, str, str, str, str, str, str, str, int, Pango.Style, str, str)
+                list_idscoll_added = []
                 for row in pathlist:
                         card_id = model[row][0]
                         card_name = model[row][1]
+                        if card_name[0] == "|" and card_name[-1] == "|":
+                                # sideboard detected
+                                card_name = card_name[:-1].replace("|" + defs.STRINGS["decks_sideboard"], "")
                         card_editionln = model[row][2]
                         card_nameforeign = model[row][3]
+                        if card_nameforeign[0] == "|" and card_nameforeign[-1] == "|":
+                                # sideboard detected
+                                card_nameforeign = card_nameforeign[:-1].replace("|" + defs.STRINGS["decks_sideboard"], "")
                         
-                        # id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
                         for card in dict_responses_coll[card_id]:
-                                id_coll, date, condition, lang, foil, loaned_to, comment, deck = card
+                                id_coll, date, condition, lang, foil, loaned_to, comment, deck, deck_side = card
                                 bold = 400
                                 if comment != "":
                                         bold = 700
                                 italic = Pango.Style.NORMAL
-                                if deck != "":
+                                if deck != "" or deck_side != "":
                                         italic = Pango.Style.ITALIC
                                 
-                                details_store.insert_with_valuesv(-1, range(15), [str(id_coll), card_name, card_editionln, card_nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, card_id])
+                                if str(id_coll) not in list_idscoll_added:
+                                        details_store.append([str(id_coll), card_name, card_editionln, card_nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, card_id, deck_side])
+                                        list_idscoll_added.append(str(id_coll))
                         
                 if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
                         details_store.set_sort_column_id(3, Gtk.SortType.ASCENDING)
@@ -995,7 +1027,7 @@ def gen_details_popover(button_show_details, selection):
                         if len(pathlist) == 1:
                                 button_copy_details.set_sensitive(True)
                                 
-                                id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db = model[pathlist]
+                                id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db, deck_side = model[pathlist]
                                 
                                 y = date[:4]
                                 m = date[5:7]
@@ -1003,6 +1035,8 @@ def gen_details_popover(button_show_details, selection):
                                 text_state = defs.STRINGS["state_card_coll_date"].replace("{d}", d).replace("{m}", m).replace("{y}", y)
                                 if deck != "":
                                         text_state = text_state + "\n" + defs.STRINGS["state_card_coll_deck"].replace("{deck}", deck.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+                                if deck_side != "":
+                                        text_state = text_state + "\n" + defs.STRINGS["state_card_coll_deck_side"].replace("{deck}", deck_side.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
                                 label_state.set_markup(text_state)
                                 
                                 if condition == "mint":
@@ -1093,7 +1127,7 @@ def gen_details_popover(button_show_details, selection):
                 cards_to_delete = {}
                 rows_to_delete = []
                 for row in pathlist:
-                        #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db
+                        #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db, deck_side
                         cards_to_delete[model[row][0]] = model[row][13]
                         rows_to_delete.append(row)
                 
@@ -1374,7 +1408,7 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
                                 
                                 dict_rowcards_in_coll = {}
                                 for card_coll in reponses_coll:
-                                        id_coll, id_card, date, condition, lang, foil, loaned_to, comment, deck = card_coll
+                                        id_coll, id_card, date, condition, lang, foil, loaned_to, comment, deck, deck_side = card_coll
                                         
                                         bold = 400
                                         italic = Pango.Style.NORMAL
@@ -1527,7 +1561,8 @@ def create_db_coll():
              foil TEXT,
              loaned_to TEXT,
              comment TEXT,
-             deck TEXT
+             deck TEXT,
+             deck_side TEXT
         )
         """)
         
@@ -1537,7 +1572,8 @@ def create_db_coll():
              id_deck INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
              name TEXT,
              comment TEXT,
-             proxies TEXT
+             proxies TEXT,
+             proxies_side TEXT
         )
         """)
         

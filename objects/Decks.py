@@ -88,6 +88,7 @@ class Decks:
                 
                 c_coll.execute("""UPDATE decks SET name = ? WHERE name = ?""", (name_new, name_old,))
                 c_coll.execute("""UPDATE collection SET deck = ? WHERE deck = ?""", (name_new, name_old,))
+                c_coll.execute("""UPDATE collection SET deck_side = ? WHERE deck_side = ?""", (name_new, name_old,))
                 
                 functions.collection.disconnect_db(conn_coll)
                 functions.various.lock_db(False, None)
@@ -121,14 +122,19 @@ class Decks:
                         else:
                                 selection.select_path(0)
         
-        def add_cards_to_deck(self, deck_name, ids_coll_dict):
+        def add_cards_to_deck(self, deck_name, ids_coll_dict, side):
                 '''Add the cards in 'ids_coll_dict' to the deck 'deck_name'.
                 ids_coll_dict[id_coll] = id_db
+                side: 1 -> add to the sideboard, 0 -> add to the deck
                 '''
                 conn_coll, c_coll = functions.collection.connect_db()
                 functions.various.lock_db(True, None)
+                
+                col_name = "deck"
+                if side == 1:
+                        col_name = "deck_side"
                 for id_coll in ids_coll_dict.keys():
-                        c_coll.execute("""UPDATE collection SET deck = ? WHERE id_coll = ?""", (deck_name, id_coll,))
+                        c_coll.execute("""UPDATE collection SET """ + col_name + """ = ? WHERE id_coll = ?""", (deck_name, id_coll,))
                 
                 functions.collection.disconnect_db(conn_coll)
                 functions.various.lock_db(False, None)
@@ -144,7 +150,7 @@ class Decks:
                         if current_deck_name == deck_name:
                                 for i, card_data_deck in enumerate(self.mainstore):
                                         for card_in_coll_dict in ids_coll_dict.values():
-                                                if card_data_deck[0] == card_in_coll_dict and card_data_deck[16] == 0:
+                                                if card_data_deck[0] == card_in_coll_dict and card_data_deck[16] == 0 and card_data_deck[17] == side:
                                                         # we need to +1 the quantity
                                                         self.mainstore[i][15] = self.mainstore[i][15] + 1
                                                         if card_data_deck[0] not in c_added:
@@ -173,18 +179,20 @@ class Decks:
                                         
                                         cards = functions.various.prepare_cards_data_for_treeview(reponse_all)
                                         for card in cards.values():
-                                                italic = Pango.Style.NORMAL
                                                 bold = 400
                                                 nb = c_to_add[card["id_"]]
-                                                self.mainstore.insert_with_valuesv(-1, range(17), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic, card["nb_variant"], nb, 0])
+                                                if side == 0:
+                                                        name = card["name"]
+                                                        nameforeign = card["nameforeign"]
+                                                        italic = Pango.Style.NORMAL
+                                                elif side == 1:
+                                                        name = "|" + defs.STRINGS["decks_sideboard"] + card["name"] + "|"
+                                                        nameforeign = "|" + defs.STRINGS["decks_sideboard"] + card["nameforeign"] + "|"
+                                                        italic = Pango.Style.ITALIC
+                                                
+                                                self.mainstore.insert_with_valuesv(-1, range(18), [card["id_"], name, card["edition_ln"], nameforeign, card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic, card["nb_variant"], nb, 0, side])
                                 # we update the nb of cards
-                                nb_cards = 0
-                                for card_data_deck in self.mainstore:
-                                        nb_cards = nb_cards + card_data_deck[15]
-                                if nb_cards < 2:
-                                        self.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck"].replace("%%%", str(nb_cards)))
-                                else:
-                                        self.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck_s"].replace("%%%", str(nb_cards)))
+                                functions.decks.update_nb_cards_current_deck(self)
                 
                 # we need to italic the cards added in the deck
                 new_id_db_to_italic = []
@@ -204,20 +212,24 @@ class Decks:
         
         def delete_cards_from_deck(self, deck_name, ids_coll_dict):
                 '''Deletes the cards in 'ids_coll_dict' from the deck 'deck_name'.
-                ids_coll_dict[id_coll] = id_db
+                ids_coll_dict[id_coll] = [id_db, side]
                 '''
                 conn_coll, c_coll = functions.collection.connect_db()
                 functions.various.lock_db(True, None)
-                for id_coll in ids_coll_dict.keys():
-                        c_coll.execute("""UPDATE collection SET deck = ? WHERE id_coll = ?""", ("", id_coll,))
+                for id_coll, data in ids_coll_dict.items():
+                        if data[1] == 0:
+                                c_coll.execute("""UPDATE collection SET deck = ? WHERE id_coll = ?""", ("", id_coll,))
+                        else:
+                                c_coll.execute("""UPDATE collection SET deck_side = ? WHERE id_coll = ?""", ("", id_coll,))
                 conn_coll.commit()
                 
-                # we need the list of all cards in 'ids_coll_dict' which are still in a deck
+                # we need the list of all the cards like the cards in 'ids_coll_dict' which are still in a deck
                 ids_list = ""
-                for id_ in ids_coll_dict.values():
+                for data in ids_coll_dict.values():
+                        id_, side = data
                         ids_list = ids_list + "\"" + id_ + "\", "
                 ids_list = ids_list[:-2]
-                c_coll.execute("""SELECT id_coll, id_card, deck FROM collection WHERE id_card IN (""" + ids_list + """) AND deck != \"\"""")
+                c_coll.execute("""SELECT id_coll, id_card, deck, deck_side FROM collection WHERE id_card IN (""" + ids_list + """) AND (deck != \"\" OR deck_side != \"\")""")
                 responses_coll_in_deck = c_coll.fetchall()
                 
                 functions.collection.disconnect_db(conn_coll)
@@ -234,8 +246,9 @@ class Decks:
                         if current_deck_name == deck_name:
                                 if self.mainstore != None:
                                         for i, card_data_deck in enumerate(self.mainstore):
-                                                for card_in_coll_dict in ids_coll_dict.values():
-                                                        if card_data_deck[0] == card_in_coll_dict and card_data_deck[16] == 0:
+                                                for data in ids_coll_dict.values():
+                                                        card_in_coll_dict, side = data
+                                                        if card_data_deck[0] == card_in_coll_dict and card_data_deck[16] == 0 and card_data_deck[17] == side:
                                                                 # we need to -1 the quantity
                                                                 self.mainstore[i][15] = self.mainstore[i][15] - 1
                                                                 if self.mainstore[i][15] < 1:
@@ -244,66 +257,117 @@ class Decks:
                                         for id_to_delete in reversed(row_to_delete):
                                                 del(self.mainstore[id_to_delete])
                                         # we update the nb of cards
-                                        nb_cards = 0
-                                        for card_data_deck in self.mainstore:
-                                                nb_cards = nb_cards + card_data_deck[15]
-                                        if nb_cards < 2:
-                                                self.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck"].replace("%%%", str(nb_cards)))
-                                        else:
-                                                self.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck_s"].replace("%%%", str(nb_cards)))
+                                        functions.decks.update_nb_cards_current_deck(self)
                 
                 # we need to un-italic the cards deleted from the deck, if needed
                 dict_responses_coll = {}
                 for card_coll in responses_coll_in_deck:
-                        id_coll, id_card, deck = card_coll
+                        id_coll, id_card, deck, deck_side = card_coll
                         try:
                                 dict_responses_coll[id_card]
                         except KeyError:
                                 dict_responses_coll[id_card] = id_coll
                 
+                ids_coll_dict_ids_card_list = []
+                for id_coll, data in ids_coll_dict.items():
+                        id_db, side = data
+                        ids_coll_dict_ids_card_list.append(id_db)
+                
                 coll_object = defs.MAINWINDOW.collection
                 for i, row in enumerate(coll_object.mainstore):
-                        if row[0] not in dict_responses_coll.keys() and row[0] in ids_coll_dict.values():
+                        if row[0] not in dict_responses_coll.keys() and row[0] in ids_coll_dict_ids_card_list:
                                 coll_object.mainstore[i][13] = Pango.Style.NORMAL
                 
                 if coll_object.tree_coll.get_model() == coll_object.searchstore:
                         for i, row in enumerate(coll_object.searchstore):
-                                if row[0] not in dict_responses_coll.keys() and row[0] in ids_coll_dict.values():
+                                if row[0] not in dict_responses_coll.keys() and row[0] in ids_coll_dict_ids_card_list:
                                         coll_object.mainstore[i][13] = Pango.Style.NORMAL
         
-        def change_nb_proxies(self, deck_name, proxies_dict_to_change):
-                '''Change the quantity of proxy cards in 'proxies_dict_to_change' for the deck 'deck_name'.
-                proxies_dict_to_change[id_db] = int (the modificator)
+        def change_nb_proxies(self, deck_name, proxies_list_to_change):
+                '''Change the quantity of proxy cards in 'proxies_list_to_change' for the deck 'deck_name'.
+                proxies_list_to_change[[id_db, int (the modificator), side]]
                 '''
+                def _gen_dict_current_proxies(response_proxies):
+                        dict_current_proxies = {}
+                        for proxy_data in response_proxies.split(";;;"):
+                                if proxy_data != "":
+                                        id_, nb = proxy_data.split("ø")
+                                        dict_current_proxies[id_] = int(nb)
+                        return(dict_current_proxies)
+                
+                def _add_proxies_to_deckstore(dict_proxies_to_add, side):
+                        conn, c = functions.db.connect_db()
+                        tmp_req = ""
+                        for tmp in dict_proxies_to_add.keys():
+                                tmp_req = tmp_req + "\"" + str(tmp) + "\", "
+                        tmp_req = tmp_req[:-2]
+                        request = """SELECT * FROM cards WHERE cards.id IN (""" + tmp_req + """)"""
+                        c.execute(request)
+                        reponses_db = c.fetchall()
+                        functions.db.disconnect_db(conn)
+                        
+                        cards = functions.various.prepare_cards_data_for_treeview(reponses_db)
+                        for id_, card in cards.items():
+                                nb_card = dict_proxies_to_add[id_]
+                                name = "-- " + card["name"]
+                                nameforeign = "-- " + card["nameforeign"]
+                                if side == 1:
+                                        name = "|" + defs.STRINGS["decks_sideboard"] + "-- " + card["name"] + "|"
+                                        nameforeign = "|" + defs.STRINGS["decks_sideboard"] + "-- " + card["nameforeign"] + "|"
+                                
+                                self.mainstore.insert_with_valuesv(-1, range(18), [card["id_"], name, card["edition_ln"], nameforeign, card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], 400, Pango.Style.ITALIC, card["nb_variant"], nb_card, 1, side])
+                
                 # first, we need the proxies list of this deck
                 conn_coll, c_coll = functions.collection.connect_db()
                 functions.various.lock_db(True, None)
                 
-                c_coll.execute("""SELECT proxies FROM decks WHERE name = ?""", (deck_name,))
+                c_coll.execute("""SELECT proxies, proxies_side FROM decks WHERE name = ?""", (deck_name,))
                 response_proxies = c_coll.fetchone()
-                dict_current_proxies = {}
-                for proxy_data in response_proxies[0].split(";;;"):
-                        if proxy_data != "":
-                                id_, nb = proxy_data.split("ø")
-                                dict_current_proxies[id_] = int(nb)
                 
+                dict_current_proxies = _gen_dict_current_proxies(response_proxies[0])
+                dict_current_proxies_side = _gen_dict_current_proxies(response_proxies[1])
+                
+                change_proxies = 0
+                change_proxies_side = 0
                 dict_proxies_to_add = {}
-                for id_db, qnt in proxies_dict_to_change.items():
-                        try:
-                                dict_current_proxies[id_db] = dict_current_proxies[id_db] + int(qnt)
-                        except KeyError:
-                                if int(qnt) > 0:
-                                        dict_current_proxies[id_db] = int(qnt)
-                                        dict_proxies_to_add[id_db] = int(qnt)
-                        if dict_current_proxies[id_db] == 0:
-                                del(dict_current_proxies[id_db])
+                dict_proxies_to_add_side = {}
+                for data in proxies_list_to_change:
+                        id_db, qnt, side = data
+                        if side == 0:
+                                change_proxies += 1
+                                try:
+                                        dict_current_proxies[id_db] = dict_current_proxies[id_db] + int(qnt)
+                                except KeyError:
+                                        if int(qnt) > 0:
+                                                dict_current_proxies[id_db] = int(qnt)
+                                                dict_proxies_to_add[id_db] = int(qnt)
+                                if dict_current_proxies[id_db] == 0:
+                                        del(dict_current_proxies[id_db])
+                        else:
+                                change_proxies_side += 1
+                                try:
+                                        dict_current_proxies_side[id_db] = dict_current_proxies_side[id_db] + int(qnt)
+                                except KeyError:
+                                        if int(qnt) > 0:
+                                                dict_current_proxies_side[id_db] = int(qnt)
+                                                dict_proxies_to_add_side[id_db] = int(qnt)
+                                if dict_current_proxies_side[id_db] == 0:
+                                        del(dict_current_proxies_side[id_db])
                 
                 # now we prepare the proxies' data for writing
-                proxies_str = ""
-                for id_, qnt in dict_current_proxies.items():
-                        proxies_str = proxies_str + id_ + "ø" + str(qnt) + ";;;"
-                proxies_str = proxies_str[:-3]
-                c_coll.execute("""UPDATE decks SET proxies = ? WHERE name = ?""", (proxies_str, deck_name,))
+                if change_proxies > 0:
+                        proxies_str = ""
+                        for id_, qnt in dict_current_proxies.items():
+                                proxies_str = proxies_str + id_ + "ø" + str(qnt) + ";;;"
+                        proxies_str = proxies_str[:-3]
+                        c_coll.execute("""UPDATE decks SET proxies = ? WHERE name = ?""", (proxies_str, deck_name,))
+                
+                if change_proxies_side > 0:
+                        proxies_str = ""
+                        for id_, qnt in dict_current_proxies_side.items():
+                                proxies_str = proxies_str + id_ + "ø" + str(qnt) + ";;;"
+                        proxies_str = proxies_str[:-3]
+                        c_coll.execute("""UPDATE decks SET proxies_side = ? WHERE name = ?""", (proxies_str, deck_name,))
                 
                 functions.collection.disconnect_db(conn_coll)
                 functions.various.lock_db(False, None)
@@ -319,55 +383,47 @@ class Decks:
                         if current_deck_name == deck_name:
                                 for i, card_data_deck in enumerate(self.mainstore):
                                         if card_data_deck[16] == 1:# proxy indicator
-                                                for card_in_coll_dict in proxies_dict_to_change.keys():
-                                                        if card_data_deck[0] == card_in_coll_dict:
-                                                                self.mainstore[i][15] = self.mainstore[i][15] + proxies_dict_to_change[card_in_coll_dict]
-                                                                if self.mainstore[i][15] < 1:
-                                                                        # we need to delete the row
-                                                                        if i not in row_to_delete:
-                                                                                row_to_delete.append(i)
+                                                for data in proxies_list_to_change:
+                                                        id_card, qnt, side = data
+                                                        if side == card_data_deck[17]:# sideboard indicator
+                                                                if card_data_deck[0] == id_card:
+                                                                        self.mainstore[i][15] = self.mainstore[i][15] + qnt
+                                                                        if self.mainstore[i][15] < 1:
+                                                                                # we need to delete the row
+                                                                                if i not in row_to_delete:
+                                                                                        row_to_delete.append(i)
                                 # we delete
                                 for id_to_delete in reversed(row_to_delete):
                                         del(self.mainstore[id_to_delete])
                                 # we add
                                 if len(dict_proxies_to_add) > 0:
-                                        conn, c = functions.db.connect_db()
-                                        tmp_req = ""
-                                        for tmp in dict_proxies_to_add.keys():
-                                                tmp_req = tmp_req + "\"" + str(tmp) + "\", "
-                                        tmp_req = tmp_req[:-2]
-                                        request = """SELECT * FROM cards WHERE cards.id IN (""" + tmp_req + """)"""
-                                        c.execute(request)
-                                        reponses_db = c.fetchall()
-                                        functions.db.disconnect_db(conn)
-                                        
-                                        cards = functions.various.prepare_cards_data_for_treeview(reponses_db)
-                                        for id_, card in cards.items():
-                                                nb_card = dict_proxies_to_add[id_]
-                                                self.mainstore.insert_with_valuesv(-1, range(17), [card["id_"], "-- " + card["name"], card["edition_ln"], "-- " + card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], 400, Pango.Style.ITALIC, card["nb_variant"], nb_card, 1])
+                                        _add_proxies_to_deckstore(dict_proxies_to_add, 0)
+                                if len(dict_proxies_to_add_side) > 0:
+                                        _add_proxies_to_deckstore(dict_proxies_to_add_side, 1)
                                 
                                 # we update the nb of cards
-                                nb_cards = 0
-                                for card_data_deck in self.mainstore:
-                                        nb_cards = nb_cards + card_data_deck[15]
-                                if nb_cards < 2:
-                                        self.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck"].replace("%%%", str(nb_cards)))
-                                else:
-                                        self.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck_s"].replace("%%%", str(nb_cards)))
+                                functions.decks.update_nb_cards_current_deck(self)
         
         def move_row(self, old_deck, new_deck, ids_db_list):
-                '''Move all the cards in the list of ids_db from 'old_deck' to 'new_deck'. 'new_deck' can be "" to delete all these cards from 'old_deck'.'''
+                '''Move all the cards in the list of ids_db from 'old_deck' to 'new_deck'. 'new_deck' can be "" to delete all these cards from 'old_deck'.
+                ids_db_list = [[id_card, side], ...]
+                '''
                 conn_coll, c_coll = functions.collection.connect_db()
                 functions.various.lock_db(True, None)
-                for id_db in ids_db_list:
-                        c_coll.execute("""UPDATE collection SET deck = ? WHERE id_card = ? AND deck = ?""", (new_deck, id_db, old_deck,))
+                for data in ids_db_list:
+                        id_db, side = data
+                        if side == 0:
+                                c_coll.execute("""UPDATE collection SET deck = ? WHERE id_card = ? AND deck = ?""", (new_deck, id_db, old_deck,))
+                        else:
+                                c_coll.execute("""UPDATE collection SET deck_side = ? WHERE id_card = ? AND deck_side = ?""", (new_deck, id_db, old_deck,))
                 conn_coll.commit()
                 # we need the list of all cards in 'ids_db_list'
                 ids_list = ""
-                for id_ in ids_db_list:
+                for data in ids_db_list:
+                        id_ = data[0]
                         ids_list = ids_list + "\"" + id_ + "\", "
                 ids_list = ids_list[:-2]
-                c_coll.execute("""SELECT id_coll, id_card, deck FROM collection WHERE id_card IN (""" + ids_list + """)""")
+                c_coll.execute("""SELECT id_coll, id_card, deck, deck_side FROM collection WHERE id_card IN (""" + ids_list + """)""")
                 responses_coll_in_deck = c_coll.fetchall()
                 
                 functions.collection.disconnect_db(conn_coll)
@@ -383,29 +439,24 @@ class Decks:
                 if current_deck_name != "":
                         if current_deck_name == old_deck:
                                 for i, card_data_deck in enumerate(self.mainstore):
-                                        for card_in_coll_dict in ids_db_list:
-                                                if card_data_deck[0] == card_in_coll_dict and card_data_deck[16] == 0:
+                                        for data in ids_db_list:
+                                                id_card, side = data
+                                                if card_data_deck[0] == id_card and card_data_deck[16] == 0 and card_data_deck[17] == side:
                                                         # we need to delete the row
                                                         if i not in row_to_delete:
                                                                 row_to_delete.append(i)
                                 for id_to_delete in reversed(row_to_delete):
                                         del(self.mainstore[id_to_delete])
                                 # we update the nb of cards
-                                nb_cards = 0
-                                for card_data_deck in self.mainstore:
-                                        nb_cards = nb_cards + card_data_deck[15]
-                                if nb_cards < 2:
-                                        self.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck"].replace("%%%", str(nb_cards)))
-                                else:
-                                        self.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck_s"].replace("%%%", str(nb_cards)))
+                                functions.decks.update_nb_cards_current_deck(self)
                 
                 tmp_id_dict = {}
                 for card_data in responses_coll_in_deck:
-                        id_coll, id_card, deck = card_data
-                        if deck != "":
-                                in_deck = True
-                        else:
+                        id_coll, id_card, deck, deck_side = card_data
+                        if deck == "" and deck_side == "":
                                 in_deck = False
+                        else:
+                                in_deck = True
                         try:
                                 tmp_id_dict[id_card]
                         except KeyError:
@@ -437,7 +488,7 @@ class Decks:
                 '''Delete a deck.'''
                 functions.various.lock_db(True, None)
                 conn_coll, c_coll = functions.collection.connect_db()
-                c_coll.execute("""SELECT id_coll, id_card FROM collection WHERE deck = ?""", (deck_name,))
+                c_coll.execute("""SELECT id_coll, id_card FROM collection WHERE deck = ? OR deck_side = ?""", (deck_name, deck_name,))
                 responses_ids = c_coll.fetchall()
                 ids_db_list = []
                 for data in responses_ids:
@@ -448,10 +499,10 @@ class Decks:
                 for id_ in ids_db_list:
                         ids_str = ids_str + "\"" + id_ + "\", "
                 ids_str = ids_str[:-2]
-                c_coll.execute("""SELECT id_coll, id_card, deck FROM collection WHERE id_card IN (""" + ids_str + """)""")
+                c_coll.execute("""SELECT id_coll, id_card, deck, deck_side FROM collection WHERE id_card IN (""" + ids_str + """)""")
                 responses = c_coll.fetchall()                
                 
-                c_coll.execute("""UPDATE collection SET deck = \"\" WHERE deck = ?""", (deck_name,))
+                c_coll.execute("""UPDATE collection SET deck = \"\", deck_side = \"\" WHERE deck = ? OR deck_side = ?""", (deck_name, deck_name,))
                 c_coll.execute("""DELETE FROM decks WHERE name = ?""", (deck_name,))
                 functions.collection.disconnect_db(conn_coll)
                 functions.various.lock_db(False, None)
@@ -465,8 +516,8 @@ class Decks:
                 
                 tmp_id_dict = {}
                 for card_data in responses:
-                        id_coll, id_card, deck = card_data
-                        if deck != "" and deck != deck_name:
+                        id_coll, id_card, deck, deck_side = card_data
+                        if (deck != "" and deck != deck_name) or (deck_side != "" and deck_side != deck_name):
                                 in_deck = True
                         else:
                                 in_deck = False

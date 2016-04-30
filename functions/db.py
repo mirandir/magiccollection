@@ -599,14 +599,14 @@ def prepare_request(search_widgets_list, type_request):
                                         text_to_find = py_lara(text)
                                         if text_to_find == "":
                                                 if negate == 0:
-                                                        tmp_request = """coll.deck = \"\""""
+                                                        tmp_request = """coll.deck = \"\" AND coll.deck_side = \"\""""
                                                 else:
-                                                        tmp_request = """coll.deck != \"\""""
+                                                        tmp_request = """coll.deck != \"\" OR coll.deck_side != \"\""""
                                         else:
                                                 if negate == 0:
-                                                        tmp_request = """py_lara(coll.deck) LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
+                                                        tmp_request = """py_lara(coll.deck) LIKE \"%""" + text_to_find + """%\" OR py_lara(coll.deck_side) LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                                 else:
-                                                        tmp_request = """py_lara(coll.deck) NOT LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
+                                                        tmp_request = """py_lara(coll.deck) NOT LIKE \"%""" + text_to_find + """%\" AND py_lara(coll.deck_side) NOT LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                         if tmp_enum_req == "":
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         else:

@@ -650,15 +650,17 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         
         """
         
-        def radiobutton_collection_toggled(radiobutton, expander, scrolledwindow_decks):
+        def radiobutton_collection_toggled(radiobutton, expander, scrolledwindow_decks, side_checkbutton):
                 if radiobutton.get_active():
                         expander.show()
                         scrolledwindow_decks.hide()
+                        side_checkbutton.hide()
         
-        def radiobutton_proxies_toggled(radiobutton, expander, scrolledwindow_decks, select_list_decks):
+        def radiobutton_proxies_toggled(radiobutton, expander, scrolledwindow_decks, select_list_decks, side_checkbutton):
                 if radiobutton.get_active():
                         expander.hide()
                         scrolledwindow_decks.show()
+                        side_checkbutton.show()
                         model, pathlist = select_list_decks.get_selected_rows()
                         if len(pathlist) == 0:
                                 select_list_decks.select_path(0)
@@ -694,6 +696,9 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
                                 name_for_add_popover = name_foreign.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                         else:
                                 name_for_add_popover = name.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                        if name_for_add_popover[0] == "|" and name_for_add_popover[-1] == "|":
+                                # sideboard detected
+                                name_for_add_popover = name_for_add_popover[:-1].replace("|" + defs.STRINGS["decks_sideboard"], "")
                         if name_for_add_popover[:3] == "-- ":
                                 # proxy detected, we need to delete this "-- "
                                 name_for_add_popover = name_for_add_popover[3:]
@@ -829,6 +834,7 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         
         radiobutton_proxies = None
         select_list_decks = None
+        side_checkbutton = None
         if nb_decks > 0:
                 box_radio_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
                 box_radio_buttons.set_halign(Gtk.Align.CENTER)
@@ -866,7 +872,10 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
                 
                 scrolledwindow_decks.add(tree_decks)
                 scrolledwindow_decks.set_no_show_all(True)
+                side_checkbutton = Gtk.CheckButton(label=defs.STRINGS["decks_add_to_sideboard"])
+                side_checkbutton.set_no_show_all(True)
                 popover_box.pack_start(scrolledwindow_decks, False, False, 0)
+                popover_box.pack_start(side_checkbutton, False, False, 0)
         
         box_quantity = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         label_quantity = Gtk.Label(defs.STRINGS["quantity"])
@@ -885,8 +894,8 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         popover.add(popover_box)
         
         if nb_decks > 0:
-                radiobutton_collection.connect("toggled", radiobutton_collection_toggled, expander, scrolledwindow_decks)
-                radiobutton_proxies.connect("toggled", radiobutton_proxies_toggled, expander, scrolledwindow_decks, select_list_decks)
+                radiobutton_collection.connect("toggled", radiobutton_collection_toggled, expander, scrolledwindow_decks, side_checkbutton)
+                radiobutton_proxies.connect("toggled", radiobutton_proxies_toggled, expander, scrolledwindow_decks, select_list_decks, side_checkbutton)
         
         grid_details, label_add_condition, comboboxtext_condition, label_add_lang, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, label_add_comment, scrolledwindow, textview = functions.various.gen_details_widgets()
         
@@ -901,7 +910,7 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
                 button_add.set_sensitive(False)
         else:
                 button_add = Gtk.Button(defs.STRINGS["add_button_validate"])
-        button_add.connect("clicked", button_add_clicked, popover, spinbutton, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview, cards_selected_list, overlay_labels, radiobutton_proxies, select_list_decks)
+        button_add.connect("clicked", button_add_clicked, popover, spinbutton, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview, cards_selected_list, overlay_labels, radiobutton_proxies, select_list_decks, side_checkbutton)
         defs.BUTTON_COLL_LOCK = button_add
         popover_box.pack_start(button_add, True, True, 0)
         
@@ -914,7 +923,7 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         popover.set_position(Gtk.PositionType.RIGHT)
         popover.show_all()
 
-def button_add_clicked(button_add, popover, spinbutton, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview, cards_selected_list, overlay_labels, radiobutton_proxies, select_list_decks):
+def button_add_clicked(button_add, popover, spinbutton, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview, cards_selected_list, overlay_labels, radiobutton_proxies, select_list_decks, side_checkbutton):
         """This is called when the user click on the add to the collection button. It add the selected cards to the collection or the deck selected if proxy mode is enabled.
         
         @button_add -> the 'add to the collection' GtkButton
@@ -923,11 +932,12 @@ def button_add_clicked(button_add, popover, spinbutton, comboboxtext_condition, 
         @comboboxtext_condition -> the GtkComboBox where the user indicated the condition of each card to add.
         @radiobutton_proxies -> None or a Gtk.RadioButton (for proxy mode).
         @select_list_decks -> None or a Gtk.TreeSelection (for proxy mode).
+        @side_checkbutton -> None or a Gtk.CheckButton (for proxy mode).
         
         """
         
-        def add_proxies(deck_name, proxies_dict_to_change):
-                GLib.idle_add(defs.MAINWINDOW.decks.change_nb_proxies, deck_name, proxies_dict_to_change)
+        def add_proxies(deck_name, proxies_list_to_change):
+                GLib.idle_add(defs.MAINWINDOW.decks.change_nb_proxies, deck_name, proxies_list_to_change)
         
         functions.various.lock_db(True, None)
         button_add.set_sensitive(False)
@@ -971,12 +981,16 @@ def button_add_clicked(button_add, popover, spinbutton, comboboxtext_condition, 
                 thread.daemon = True
                 thread.start()
         elif proxies_mode == 1:
-                proxies_dict_to_change = {}
+                if side_checkbutton.get_active():
+                        side = 1
+                else:
+                        side = 0
+                proxies_list_to_change = []
                 for card in cards_selected_list:
-                        proxies_dict_to_change[card[0]] = nb
+                        proxies_list_to_change.append([card[0], nb, side])
                 model_deck, pathlist_deck = select_list_decks.get_selected_rows()
                 deck_name = model_deck[pathlist_deck][1]
-                thread = threading.Thread(target = add_proxies, args = (deck_name, proxies_dict_to_change))
+                thread = threading.Thread(target = add_proxies, args = (deck_name, proxies_list_to_change))
                 thread.daemon = True
                 thread.start()
 

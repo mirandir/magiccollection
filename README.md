@@ -8,7 +8,7 @@ GNU/GPL v3
 
 #Dependencies
 
-* Python >= 3.4i
+* Python >= 3.4
 * GTK+ >= 3.18
 * Python-GObject
 

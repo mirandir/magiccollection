@@ -257,7 +257,7 @@ def get_data_for_estimate(ids_db_list, deckname):
         if deckname == None:
                 c.execute("""SELECT id_coll, id_card FROM collection WHERE id_card IN (""" + ids_db_list + """)""")
         else:
-                c.execute("""SELECT id_coll, id_card FROM collection WHERE id_card IN (""" + ids_db_list + """) AND deck = \"""" + deckname + """\"""")
+                c.execute("""SELECT id_coll, id_card FROM collection WHERE id_card IN (""" + ids_db_list + """) AND (deck = \"""" + deckname + """\" OR deck_side = \"""" + deckname + """\")""")
         reponses_coll = c.fetchall()
         functions.collection.disconnect_db(conn)
         cards_to_estimate = {}

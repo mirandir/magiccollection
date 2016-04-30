@@ -140,7 +140,7 @@ class Collection:
                                 for z in range(nb):
                                         # we add the card to the collection DB
                                         c_coll.execute("""
-                                        INSERT INTO collection VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?)""", (id_, current_date, condition, lang, foil, loaned_to, comment, ""))
+                                        INSERT INTO collection VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (id_, current_date, condition, lang, foil, loaned_to, comment, "", ""))
                                 
                                 # we update the collection store / treeview
                                 i = 0

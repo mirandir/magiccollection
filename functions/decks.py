@@ -165,7 +165,7 @@ def show_change_name_comment_deck(treeview, treepath, column, button_change_comm
 def prepare_estimate_deck(button, select_list_decks):
         model_deck, pathlist_deck = select_list_decks.get_selected_rows()
         deck_name = model_deck[pathlist_deck][1]
-        request = """SELECT DISTINCT id_card FROM collection WHERE deck = \"""" + deck_name + """\""""
+        request = """SELECT DISTINCT id_card FROM collection WHERE deck = \"""" + deck_name + """\" OR deck_side = \"""" + deck_name + """\""""
         conn, c = functions.collection.connect_db()
         c.execute(request)
         responses_db = c.fetchall()
@@ -194,16 +194,16 @@ def prepare_delete_deck(button, select_list_decks, decks_object):
 def prepare_delete_from_deck(button, deck_name, selection, decks_object):
         model, pathlist = selection.get_selected_rows()
         ids_db_list_to_delete = []
-        ids_db_dict_proxies_to_delete = {}
+        ids_db_list_proxies_to_delete = []
         for row in pathlist:
                 if model[row][16] == 0:
-                        ids_db_list_to_delete.append(model[row][0])
+                        ids_db_list_to_delete.append([model[row][0], model[row][17]])
                 elif model[row][16] == 1:
-                        ids_db_dict_proxies_to_delete[model[row][0]] = model[row][15] * -1
-        if ids_db_list_to_delete != []:
+                        ids_db_list_proxies_to_delete.append([model[row][0], model[row][15] * -1, model[row][17]])
+        if len(ids_db_list_to_delete) > 0:
                 GLib.idle_add(decks_object.move_row, deck_name, "", ids_db_list_to_delete)
-        if ids_db_dict_proxies_to_delete != {}:
-                GLib.idle_add(decks_object.change_nb_proxies, deck_name, ids_db_dict_proxies_to_delete)
+        if len(ids_db_list_proxies_to_delete) > 0:
+                GLib.idle_add(decks_object.change_nb_proxies, deck_name, ids_db_list_proxies_to_delete)
 
 def prepare_deck_comment_save(textbuffer, decks_object):
         def real_prepare_deck_comment_save(textbuffer, decks_object):
@@ -245,16 +245,96 @@ def textview_comment_save(textbuffer, decks_object, textview_comm):
 
 def gen_deck_content(deck_name, box, decks_object):
         '''Displays the cards of the deck.'''
+        def _cards_from_deck_to_dict(responses):
+                dict_cards_in_deck = {}
+                for card_deck in responses: 
+                        id_card = card_deck[1]
+                        bold = 400
+                        italic = Pango.Style.NORMAL
+                        try:
+                                nb_card = dict_cards_in_deck[id_card][0]
+                        except KeyError:
+                                dict_cards_in_deck[id_card] = [1, bold, italic]
+                        else:
+                                dict_cards_in_deck[id_card][0] = nb_card + 1
+                return(dict_cards_in_deck)
+        
+        def _proxies_from_deck_to_dict(responses_proxies):
+                dict_proxies_in_deck = {}
+                nb_proxies = 0
+                if responses_proxies != "" and responses_proxies != None:
+                        for card_proxy in responses_proxies.split(";;;"):
+                                id_card, nb_card = card_proxy.split("ø")
+                                bold = 400
+                                italic = Pango.Style.ITALIC
+                                dict_proxies_in_deck[id_card] = [int(nb_card), bold, italic]
+                                nb_proxies = nb_proxies + int(nb_card)
+                return(dict_proxies_in_deck, nb_proxies)
+        
+        def _gen_complete_list_of_ids(dict_cards_in_deck, dict_proxies_in_deck, responses_proxies):
+                complete_list_of_ids = []
+                for id_ in dict_cards_in_deck.keys():
+                        if id_ not in complete_list_of_ids:
+                                complete_list_of_ids.append(id_)
+                if responses_proxies != None:
+                        if len(responses_proxies) > 0:
+                                for id_ in dict_proxies_in_deck.keys():
+                                        if id_ not in complete_list_of_ids:
+                                                complete_list_of_ids.append(id_)
+                return(complete_list_of_ids)
+        
+        def _list_of_ids_into_str_for_sqlite(complete_list_of_ids):
+                tmp_req = ""
+                for tmp in complete_list_of_ids:
+                        tmp_req = tmp_req + "\"" + str(tmp) + "\", "
+                tmp_req = tmp_req[:-2]
+                return(tmp_req)
+        
+        def _add_to_store(cards, side, dict_cards_in_deck, dict_proxies_in_deck, decksstore):
+                for id_, card in cards.items():
+                        if id_ in dict_cards_in_deck.keys():
+                                nb_card = dict_cards_in_deck[id_][0]
+                                bold_card = dict_cards_in_deck[id_][1]
+                                italic_card = dict_cards_in_deck[id_][2]
+                                
+                                if side == 0:
+                                        name = card["name"]
+                                        nameforeign = card["nameforeign"]
+                                else:
+                                        name = "|" + defs.STRINGS["decks_sideboard"] + card["name"] + "|"
+                                        nameforeign = "|" + defs.STRINGS["decks_sideboard"] + card["nameforeign"] + "|"
+                                        italic_card = Pango.Style.ITALIC
+                                
+                                decksstore.insert_with_valuesv(-1, range(18), [card["id_"], name, card["edition_ln"], nameforeign, card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card, 0, side])
+                
+                        if id_ in dict_proxies_in_deck.keys():
+                                nb_card = dict_proxies_in_deck[id_][0]
+                                bold_card = dict_proxies_in_deck[id_][1]
+                                italic_card = dict_proxies_in_deck[id_][2]
+                                
+                                if side == 0:
+                                        name = "-- " + card["name"]
+                                        nameforeign = "-- " + card["nameforeign"]
+                                else:
+                                        name = "|" + defs.STRINGS["decks_sideboard"] + "-- " + card["name"] + "|"
+                                        nameforeign = "|" + defs.STRINGS["decks_sideboard"] + "-- " + card["nameforeign"] + "|"
+                                        italic_card = Pango.Style.ITALIC
+                                
+                                decksstore.insert_with_valuesv(-1, range(18), [card["id_"], name, card["edition_ln"], nameforeign, card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card, 1, side])
+        
         for widget in box.get_children():
                 box.remove(widget)
         
         conn, c = functions.collection.connect_db()
         c.execute("""SELECT id_coll, id_card FROM collection WHERE deck = ?""", (deck_name,))
         responses = c.fetchall()
-        c.execute("""SELECT proxies, comment FROM decks WHERE name = ?""", (deck_name,))
+        c.execute("""SELECT id_coll, id_card FROM collection WHERE deck_side = ?""", (deck_name,))
+        responses_side = c.fetchall()
+        c.execute("""SELECT proxies, proxies_side FROM decks WHERE name = ?""", (deck_name,))
         responses_datadeck = c.fetchone()
         functions.collection.disconnect_db(conn)
         nb_cards = len(responses)
+        nb_cards_side = len(responses_side)
         
         # we create the toolbar
         toolbar_box = Gtk.ButtonBox(Gtk.Orientation.HORIZONTAL)
@@ -286,53 +366,47 @@ def gen_deck_content(deck_name, box, decks_object):
         box.pack_end(toolbar_box, False, True, 0)  
         
         # the real cards in the deck
-        dict_cards_in_deck = {}
-        for card_deck in responses: 
-                id_card = card_deck[1]
-                bold = 400
-                italic = Pango.Style.NORMAL
-                try:
-                        nb_card = dict_cards_in_deck[id_card][0]
-                except KeyError:
-                        dict_cards_in_deck[id_card] = [1, bold, italic]
-                else:
-                        dict_cards_in_deck[id_card][0] = nb_card + 1
+        dict_cards_in_deck = _cards_from_deck_to_dict(responses)
         
-        # the proxies
-        responses_proxies = responses_datadeck[0]
-        dict_proxies_in_deck = {}
-        if responses_proxies != "":
-                nb_proxies = 0
-                for card_proxy in responses_proxies.split(";;;"):
-                        id_card, nb_card = card_proxy.split("ø")
-                        bold = 400
-                        italic = Pango.Style.ITALIC
-                        dict_proxies_in_deck[id_card] = [int(nb_card), bold, italic]
-                        nb_proxies = nb_proxies + int(nb_card)
-                nb_cards = nb_cards + nb_proxies
+        # the real cards in the sideboard of the deck
+        dict_cards_in_deck_side = _cards_from_deck_to_dict(responses_side)
         
-        complete_list_of_ids = []
-        for id_ in dict_cards_in_deck.keys():
-                if id_ not in complete_list_of_ids:
-                        complete_list_of_ids.append(id_)
-        if len(responses_proxies) > 0:
-                for id_ in dict_proxies_in_deck.keys():
-                        if id_ not in complete_list_of_ids:
-                                complete_list_of_ids.append(id_)
+        # the proxies in the deck
+        dict_proxies_in_deck, nb_proxies_total = _proxies_from_deck_to_dict(responses_datadeck[0])
+        nb_cards = nb_cards + nb_proxies_total
+        
+        # the proxies in the sideboard of the deck
+        dict_proxies_in_deck_side, nb_proxies_side_total = _proxies_from_deck_to_dict(responses_datadeck[1])
+        nb_cards_side = nb_cards_side + nb_proxies_side_total
+        
+        # the ids of the cards and the proxies in the deck (not in the sideboard)
+        complete_list_of_ids = _gen_complete_list_of_ids(dict_cards_in_deck, dict_proxies_in_deck, responses_datadeck[0])
+        
+        # the ids of the cards and the proxies in the sideboard of the deck
+        complete_list_of_ids_side = _gen_complete_list_of_ids(dict_cards_in_deck_side, dict_proxies_in_deck_side, responses_datadeck[1])
         
         if nb_cards < 2:
                 decks_object.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck"].replace("%%%", str(nb_cards)))
         else:
                 decks_object.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck_s"].replace("%%%", str(nb_cards)))
         
+        if nb_cards_side > 0:
+                tmp_text_cards = decks_object.label_nb_cards.get_text()
+                tmp_text_side = defs.STRINGS["decks_in_sideboard"].replace("%%%", str(nb_cards_side))
+                decks_object.label_nb_cards.set_text(defs.STRINGS["decks_order_cards_sideboard"].replace("{cards}", tmp_text_cards).replace("{sideboard}", tmp_text_side))
+        
         conn, c = functions.db.connect_db()
-        tmp_req = ""
-        for tmp in complete_list_of_ids:
-                tmp_req = tmp_req + "\"" + str(tmp) + "\", "
-        tmp_req = tmp_req[:-2]
+        
+        tmp_req = _list_of_ids_into_str_for_sqlite(complete_list_of_ids)
         request = """SELECT * FROM cards WHERE cards.id IN (""" + tmp_req + """)"""
         c.execute(request)
         reponses_db = c.fetchall()
+        if nb_cards_side > 0:
+                tmp_req_side = _list_of_ids_into_str_for_sqlite(complete_list_of_ids_side)
+                request_side = """SELECT * FROM cards WHERE cards.id IN (""" + tmp_req_side + """)"""
+                c.execute(request_side)
+                reponses_db_side = c.fetchall()
+        
         functions.db.disconnect_db(conn)
         
         scrolledwindow = Gtk.ScrolledWindow()
@@ -342,8 +416,8 @@ def gen_deck_content(deck_name, box, decks_object):
         scrolledwindow.set_vexpand(True)
         scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
         
-        # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", "nb_variant", "nb", "proxy"
-        decks_object.mainstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int, int)
+        # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", "nb_variant", "nb", "proxy", "in_sideboard"
+        decks_object.mainstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int, int, int)
         tree_coll = Gtk.TreeView(decks_object.mainstore)
         decks_object.tree_coll = tree_coll
         tree_coll.set_enable_search(False)
@@ -368,21 +442,11 @@ def gen_deck_content(deck_name, box, decks_object):
         box.pack_start(scrolledwindow, True, True, 0)
         
         cards = functions.various.prepare_cards_data_for_treeview(reponses_db)
+        _add_to_store(cards, 0, dict_cards_in_deck, dict_proxies_in_deck, decks_object.mainstore)
         
-        for id_, card in cards.items():
-                if id_ in dict_cards_in_deck.keys():
-                        nb_card = dict_cards_in_deck[id_][0]
-                        bold_card = dict_cards_in_deck[id_][1]
-                        italic_card = dict_cards_in_deck[id_][2]
-                        
-                        decks_object.mainstore.insert_with_valuesv(-1, range(17), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card, 0])
-        
-                if id_ in dict_proxies_in_deck.keys():
-                        nb_card = dict_proxies_in_deck[id_][0]
-                        bold_card = dict_proxies_in_deck[id_][1]
-                        italic_card = dict_proxies_in_deck[id_][2]
-                        
-                        decks_object.mainstore.insert_with_valuesv(-1, range(17), [card["id_"], "-- " + card["name"], card["edition_ln"], "-- " + card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card, 1])
+        if nb_cards_side > 0:
+                cards_side = functions.various.prepare_cards_data_for_treeview(reponses_db_side)
+                _add_to_store(cards_side, 1, dict_cards_in_deck_side, dict_proxies_in_deck_side, decks_object.mainstore)
         
         decks_object.mainstore.set_sort_column_id(7, Gtk.SortType.ASCENDING)
         decks_object.mainstore.set_sort_column_id(2, Gtk.SortType.ASCENDING)
@@ -398,11 +462,11 @@ def prepare_move_cards(select_list_decks, selection, old_deck, decks_object):
         model, pathlist = selection.get_selected_rows()
         ids_db_list = []
         for row in pathlist:
-                ids_db_list.append(model[row][0])
+                ids_db_list.append([model[row][0], model[row][17]])
         GLib.idle_add(decks_object.move_row, old_deck, new_deck, ids_db_list)
 
-def prepare_add_cards_deck(current_deck_name, ids_coll_dict, decks_object):
-        GLib.idle_add(decks_object.add_cards_to_deck, current_deck_name, ids_coll_dict)
+def prepare_add_cards_deck(current_deck_name, ids_coll_dict, decks_object, side):
+        GLib.idle_add(decks_object.add_cards_to_deck, current_deck_name, ids_coll_dict, side)
 
 def prepare_delete_cards_deck(current_deck_name, ids_coll_dict, decks_object):
         GLib.idle_add(decks_object.delete_cards_from_deck, current_deck_name, ids_coll_dict)
@@ -416,7 +480,7 @@ def gen_deck_change_quantity_popover(button_change_quantity, selection, decks_ob
                 else:
                         button_ok.set_sensitive(False)
         
-        def button_ok_clicked(button_ok, spinbutton, id_db, ids_cards_free_list, ids_cards_in_current_deck_list, current_quantity, popover, selection, current_deck_name, decks_object):
+        def button_ok_clicked(button_ok, spinbutton, id_db, ids_cards_free_list, ids_cards_in_current_deck_list, ids_cards_in_current_deck_side_list, current_quantity, popover, selection, current_deck_name, decks_object, side):
                 new_value = spinbutton.get_value_as_int()
                 if new_value > current_quantity:
                         # we add cards
@@ -430,7 +494,7 @@ def gen_deck_change_quantity_popover(button_change_quantity, selection, decks_ob
                                 if nb_added == nb_cards_to_add:
                                         break
                         
-                        thread = threading.Thread(target = prepare_add_cards_deck, args = (current_deck_name, ids_coll_dict, decks_object))
+                        thread = threading.Thread(target = prepare_add_cards_deck, args = (current_deck_name, ids_coll_dict, decks_object, side))
                         thread.daemon = True
                         thread.start()
                 elif new_value < current_quantity:
@@ -439,8 +503,12 @@ def gen_deck_change_quantity_popover(button_change_quantity, selection, decks_ob
                         
                         ids_coll_dict = {}
                         nb_added = 0
-                        for card_id_coll in reversed(ids_cards_in_current_deck_list):
-                                ids_coll_dict[card_id_coll] = id_db
+                        if side == 0:
+                                ids_card_current_to_use = ids_cards_in_current_deck_list
+                        else:
+                                ids_card_current_to_use = ids_cards_in_current_deck_side_list
+                        for card_id_coll in reversed(ids_card_current_to_use):
+                                ids_coll_dict[card_id_coll] = [id_db, side]
                                 nb_added += 1
                                 if nb_added == nb_cards_to_delete:
                                         break
@@ -450,11 +518,11 @@ def gen_deck_change_quantity_popover(button_change_quantity, selection, decks_ob
                         
                 popover.hide()
         
-        def button_ok_clicked_proxies(button, spinbutton, id_db, current_quantity, current_deck_name, popover, decks_object):
+        def button_ok_clicked_proxies(button, spinbutton, id_db, current_quantity, current_deck_name, popover, decks_object, side):
                 new_quantity = spinbutton.get_value_as_int()
                 diff = new_quantity - current_quantity
-                proxies_dict_to_change = {id_db: diff}
-                GLib.idle_add(decks_object.change_nb_proxies, current_deck_name, proxies_dict_to_change)
+                proxies_list_to_change = [[id_db, diff, side]]
+                GLib.idle_add(decks_object.change_nb_proxies, current_deck_name, proxies_list_to_change)
                 popover.hide()
         
         def popover_show(popover, button_change_quantity, selection, quantity_box, decks_object):
@@ -468,6 +536,7 @@ def gen_deck_change_quantity_popover(button_change_quantity, selection, decks_ob
                 for row in pathlist:
                         id_db = model[row][0]
                         proxy = model[row][16]
+                        side = model[row][17]
                         current_quantity = model[row][15]
                         break
                 
@@ -475,15 +544,18 @@ def gen_deck_change_quantity_popover(button_change_quantity, selection, decks_ob
                         details_store = functions.collection.gen_details_store(selection)
                         ids_cards_free_list = []
                         ids_cards_in_current_deck_list = []
+                        ids_cards_in_current_deck_side_list = []
                         cards_in_deck = 0
                         max_cards = len(details_store)
                         for card in details_store:
-                                if card[10] == "":
+                                if card[10] == "" and card[14] == "":
                                         ids_cards_free_list.append(card[0])
                                 else:
                                         cards_in_deck += 1
                                 if card[10] == current_deck_name:
                                         ids_cards_in_current_deck_list.append(card[0])
+                                if card[14] == current_deck_name:
+                                        ids_cards_in_current_deck_side_list.append(card[0])
                         
                         cards_disp = max_cards - cards_in_deck + current_quantity
                         
@@ -499,9 +571,9 @@ def gen_deck_change_quantity_popover(button_change_quantity, selection, decks_ob
                 
                 spinbutton.connect("value-changed", spinbutton_value_changed, button_ok, current_quantity)
                 if proxy == 0:
-                        button_ok.connect("clicked", button_ok_clicked, spinbutton, id_db, ids_cards_free_list, ids_cards_in_current_deck_list, current_quantity, popover, selection, current_deck_name, decks_object)
+                        button_ok.connect("clicked", button_ok_clicked, spinbutton, id_db, ids_cards_free_list, ids_cards_in_current_deck_list, ids_cards_in_current_deck_side_list, current_quantity, popover, selection, current_deck_name, decks_object, side)
                 else:
-                        button_ok.connect("clicked", button_ok_clicked_proxies, spinbutton, id_db, current_quantity, current_deck_name, popover, decks_object)
+                        button_ok.connect("clicked", button_ok_clicked_proxies, spinbutton, id_db, current_quantity, current_deck_name, popover, decks_object, side)
                 
                 quantity_box.show_all()
         
@@ -734,7 +806,7 @@ def write_new_deck_to_db(name_new_deck):
         conn_coll, c_coll = functions.collection.connect_db()
         functions.various.lock_db(True, None)
         
-        c_coll.execute("""INSERT INTO decks VALUES(null, ?, ?, ?)""", (name_new_deck, "", "",))
+        c_coll.execute("""INSERT INTO decks VALUES(null, ?, ?, ?, ?)""", (name_new_deck, "", "", "",))
         
         functions.collection.disconnect_db(conn_coll)
         functions.various.lock_db(False, None)
@@ -742,13 +814,14 @@ def write_new_deck_to_db(name_new_deck):
 def update_comment_deck_to_db(decks_object, deck_name, new_comment):
         '''Write the new comment of the deck to the collection database and update the list.'''
         def update_comment_in_decks_list(deck_name, decks_object):
-                try:
-                        for i, elm in enumerate(decks_object.store_list_decks):
-                                if elm[1] == deck_name:
-                                        decks_object.store_list_decks[i][2] = new_comment.replace("\n", " ")
-                                        break
-                except:
-                        pass
+                if decks_object != None:
+                        try:
+                                for i, elm in enumerate(decks_object.store_list_decks):
+                                        if elm[1] == deck_name:
+                                                decks_object.store_list_decks[i][2] = new_comment.replace("\n", " ")
+                                                break
+                        except:
+                                pass
         
         conn_coll, c_coll = functions.collection.connect_db()
         functions.various.lock_db(True, None)
@@ -757,3 +830,21 @@ def update_comment_deck_to_db(decks_object, deck_name, new_comment):
         functions.various.lock_db(False, None)
         
         GLib.idle_add(update_comment_in_decks_list, deck_name, decks_object)
+
+def update_nb_cards_current_deck(decks_object):
+        '''Counts the number of cards in the current deck, and update the GtkLabel "label_nb_cards".'''
+        nb_cards = 0
+        nb_cards_side = 0
+        for card_data_deck in decks_object.mainstore:
+                if card_data_deck[17] == 0:
+                        nb_cards = nb_cards + card_data_deck[15]
+                else:
+                        nb_cards_side = nb_cards_side + card_data_deck[15]
+        if nb_cards < 2:
+                decks_object.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck"].replace("%%%", str(nb_cards)))
+        else:
+                decks_object.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck_s"].replace("%%%", str(nb_cards)))
+        if nb_cards_side > 0:
+                tmp_text_cards = decks_object.label_nb_cards.get_text()
+                tmp_text_side = defs.STRINGS["decks_in_sideboard"].replace("%%%", str(nb_cards_side))
+                decks_object.label_nb_cards.set_text(defs.STRINGS["decks_order_cards_sideboard"].replace("{cards}", tmp_text_cards).replace("{sideboard}", tmp_text_side))
