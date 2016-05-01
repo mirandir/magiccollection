@@ -873,7 +873,7 @@ def write_new_deck_to_db(name_new_deck):
         conn_coll, c_coll = functions.collection.connect_db()
         functions.various.lock_db(True, None)
         
-        c_coll.execute("""INSERT INTO decks VALUES(null, ?, ?, ?, ?)""", (name_new_deck, "", "", "",))
+        c_coll.execute("""INSERT INTO decks VALUES(null, ?, ?, ?, ?, ?, ?)""", (name_new_deck, "", "", "", "", "",))
         
         functions.collection.disconnect_db(conn_coll)
         functions.various.lock_db(False, None)

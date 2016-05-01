@@ -42,7 +42,7 @@ def read_coll(box, coll_object):
         
         # we are doing a vacuum here, to keep the size of the db under control
         conn.execute("VACUUM")
-        
+        # we backup the collection
         backup_coll(None)
         
         c.execute("""SELECT id_coll, id_card, comment, deck, deck_side FROM collection""")
@@ -1583,7 +1583,9 @@ def create_db_coll():
              name TEXT,
              comment TEXT,
              proxies TEXT,
-             proxies_side TEXT
+             proxies_side TEXT,
+             type TEXT,
+             commander TEXT
         )
         """)
         
