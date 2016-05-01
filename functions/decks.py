@@ -464,7 +464,7 @@ def prepare_move_cards(select_list_decks, selection, old_deck, decks_object):
         proxies_list_to_change_remove = []
         proxies_list_to_change_add = []
         for row in pathlist:
-                if model[row][16] == 0:
+                if model[row][16] == 0:# not proxy
                         ids_db_list.append([model[row][0], model[row][17]])
                 else:
                         proxies_list_to_change_remove.append([model[row][0], model[row][15] * -1, model[row][17]])

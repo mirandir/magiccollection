@@ -609,13 +609,11 @@ class Decks:
                         for row in pathlist:
                                 if model[row][16] == 1:
                                         nb_row_proxy += 1
-                                        break
-                        if nb_row_proxy == 0:
+                        if nb_row_proxy == len(pathlist):
+                                self.button_show_details.set_sensitive(False)
+                        else:
                                 self.button_show_details.set_sensitive(True)
                                 self.button_show_details.set_popover(functions.collection.gen_details_popover(self.button_show_details, selection))
-                        else:
-                                self.button_show_details.set_sensitive(False)
-                                self.button_move.set_sensitive(False)
                         self.delete_button.set_sensitive(True)
                         self.button_move.set_popover(functions.decks.gen_move_deck_popover(self.button_move, selection, self))
                         self.button_move.set_sensitive(True)

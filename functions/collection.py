@@ -956,7 +956,12 @@ def gen_details_store(selection):
         # first, we get the list of all cards' ids
         ids_list = ""
         for row in pathlist:
-                ids_list = ids_list + "\"" + model[row][0] + "\", "
+                try:
+                        is_proxy = model[row][16]
+                except IndexError:
+                        is_proxy = 0
+                if is_proxy == 0:
+                        ids_list = ids_list + "\"" + model[row][0] + "\", "
         ids_list = ids_list[:-2]
         # we get data in the collection for this list
         conn, c = connect_db()
@@ -979,29 +984,34 @@ def gen_details_store(selection):
                 details_store = Gtk.ListStore(str, str, str, str, str, str, str, str, str, str, str, int, Pango.Style, str, str)
                 list_idscoll_added = []
                 for row in pathlist:
-                        card_id = model[row][0]
-                        card_name = model[row][1]
-                        if card_name[0] == "|" and card_name[-1] == "|":
-                                # sideboard detected
-                                card_name = card_name[:-1].replace("|" + defs.STRINGS["decks_sideboard"], "")
-                        card_editionln = model[row][2]
-                        card_nameforeign = model[row][3]
-                        if card_nameforeign[0] == "|" and card_nameforeign[-1] == "|":
-                                # sideboard detected
-                                card_nameforeign = card_nameforeign[:-1].replace("|" + defs.STRINGS["decks_sideboard"], "")
-                        
-                        for card in dict_responses_coll[card_id]:
-                                id_coll, date, condition, lang, foil, loaned_to, comment, deck, deck_side = card
-                                bold = 400
-                                if comment != "":
-                                        bold = 700
-                                italic = Pango.Style.NORMAL
-                                if deck != "" or deck_side != "":
-                                        italic = Pango.Style.ITALIC
+                        try:
+                                is_proxy = model[row][16]
+                        except IndexError:
+                                is_proxy = 0
+                        if is_proxy == 0:
+                                card_id = model[row][0]
+                                card_name = model[row][1]
+                                if card_name[0] == "|" and card_name[-1] == "|":
+                                        # sideboard detected
+                                        card_name = card_name[:-1].replace("|" + defs.STRINGS["decks_sideboard"], "")
+                                card_editionln = model[row][2]
+                                card_nameforeign = model[row][3]
+                                if card_nameforeign[0] == "|" and card_nameforeign[-1] == "|":
+                                        # sideboard detected
+                                        card_nameforeign = card_nameforeign[:-1].replace("|" + defs.STRINGS["decks_sideboard"], "")
                                 
-                                if str(id_coll) not in list_idscoll_added:
-                                        details_store.append([str(id_coll), card_name, card_editionln, card_nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, card_id, deck_side])
-                                        list_idscoll_added.append(str(id_coll))
+                                for card in dict_responses_coll[card_id]:
+                                        id_coll, date, condition, lang, foil, loaned_to, comment, deck, deck_side = card
+                                        bold = 400
+                                        if comment != "":
+                                                bold = 700
+                                        italic = Pango.Style.NORMAL
+                                        if deck != "" or deck_side != "":
+                                                italic = Pango.Style.ITALIC
+                                        
+                                        if str(id_coll) not in list_idscoll_added:
+                                                details_store.append([str(id_coll), card_name, card_editionln, card_nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, card_id, deck_side])
+                                                list_idscoll_added.append(str(id_coll))
                         
                 if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
                         details_store.set_sort_column_id(3, Gtk.SortType.ASCENDING)
