@@ -613,12 +613,12 @@ class Decks:
                         if nb_row_proxy == 0:
                                 self.button_show_details.set_sensitive(True)
                                 self.button_show_details.set_popover(functions.collection.gen_details_popover(self.button_show_details, selection))
-                                self.button_move.set_popover(functions.decks.gen_move_deck_popover(self.button_move, selection, self))
-                                self.button_move.set_sensitive(True)
                         else:
                                 self.button_show_details.set_sensitive(False)
                                 self.button_move.set_sensitive(False)
                         self.delete_button.set_sensitive(True)
+                        self.button_move.set_popover(functions.decks.gen_move_deck_popover(self.button_move, selection, self))
+                        self.button_move.set_sensitive(True)
                         
                         if len(pathlist) == 1:
                                 self.button_change_quantity.set_sensitive(True)

@@ -461,9 +461,19 @@ def prepare_move_cards(select_list_decks, selection, old_deck, decks_object):
         new_deck = model_deck[pathlist_deck][1]
         model, pathlist = selection.get_selected_rows()
         ids_db_list = []
+        proxies_list_to_change_remove = []
+        proxies_list_to_change_add = []
         for row in pathlist:
-                ids_db_list.append([model[row][0], model[row][17]])
-        GLib.idle_add(decks_object.move_row, old_deck, new_deck, ids_db_list)
+                if model[row][16] == 0:
+                        ids_db_list.append([model[row][0], model[row][17]])
+                else:
+                        proxies_list_to_change_remove.append([model[row][0], model[row][15] * -1, model[row][17]])
+                        proxies_list_to_change_add.append([model[row][0], model[row][15], model[row][17]])
+        if len(ids_db_list) > 0:
+                GLib.idle_add(decks_object.move_row, old_deck, new_deck, ids_db_list)
+        if len(proxies_list_to_change_add) > 0:
+                GLib.idle_add(decks_object.change_nb_proxies, old_deck, proxies_list_to_change_remove)
+                GLib.idle_add(decks_object.change_nb_proxies, new_deck, proxies_list_to_change_add)
 
 def prepare_add_cards_deck(current_deck_name, ids_coll_dict, decks_object, side):
         GLib.idle_add(decks_object.add_cards_to_deck, current_deck_name, ids_coll_dict, side)
