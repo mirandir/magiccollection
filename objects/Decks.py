@@ -730,6 +730,7 @@ class Decks:
                         self.button_move.set_sensitive(False)
                         self.delete_button.set_sensitive(False)
                         self.button_change_quantity.set_sensitive(False)
+                        self.button_side.set_sensitive(False)
         
         def load_card(self, cardid, simple_search):
                 '''Load a card in the card viewer'''

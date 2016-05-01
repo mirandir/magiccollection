@@ -613,6 +613,8 @@ class AdvancedSearch:
                                 self.button_show_details.set_popover(functions.collection.gen_details_popover(self.button_show_details, selection))
                         else:
                                 self.button_show_details.set_sensitive(False)
+                else:
+                        self.button_show_details.set_sensitive(False)
         
         def load_card(self, cardid, simple_search):
                 '''Load a card in the card viewer'''
