@@ -295,6 +295,9 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["delete_deck_warning"] = "Are you sure you want to remove the deck %%%?"
         translate["delete_from_deck_tooltip"] = "Delete from the deck"
         translate["move_to_other_deck_tooltip"] = "Move to another deck"
+        translate["sideboard_tooltip"] = "Sideboard"
+        translate["sideboard_add"] = "Put in the sideboard"
+        translate["sideboard_remove"] = "Remove from the sideboard"
         # languages
         translate["l_english"] = "English"
         translate["l_chinese"] = "Chinese"

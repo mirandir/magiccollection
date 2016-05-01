@@ -39,6 +39,7 @@ class Decks:
         def __init__(self, mainwindow):
                 self.mainstore = None
                 self.mainselect = None
+                self.maintreeview = None
                 self.store_list_decks = None
                 self.select_list_decks = None
                 self.treeview_list_decks = None
@@ -484,6 +485,94 @@ class Decks:
                                         else:
                                                 coll_object.searchstore[i][13] = Pango.Style.NORMAL
         
+        def switch_rows_sideboard(self, deck_name, ids_db_list):
+                '''Switches the sideboard position of the db list.
+                ids_db_list = [[id_db, proxy, current_side], ...]'''
+                proxies_list_to_change = []
+                
+                functions.various.lock_db(True, None)
+                conn_coll, c_coll = functions.collection.connect_db()
+                
+                for row in ids_db_list:
+                        id_db, proxy, current_side = row
+                        if current_side == 0:
+                                if proxy == 0:
+                                        # we put the cards in the sideboard
+                                        c_coll.execute("""SELECT id_coll FROM collection WHERE deck = ? AND id_card = ?""", (deck_name, id_db,))
+                                        ids_coll_list = c_coll.fetchall()
+                                        # we update the collection
+                                        for id_coll in ids_coll_list:
+                                                c_coll.execute("""UPDATE collection SET deck = \"\", deck_side = ? WHERE id_coll = ?""", (deck_name, id_coll[0],))
+                                        # we update the liststore, if needed
+                                        model, pathlist = self.select_list_decks.get_selected_rows()
+                                        try:
+                                                current_deck_name = model[pathlist][1]
+                                        except TypeError:
+                                                current_deck_name = ""
+                                        if current_deck_name != "":
+                                                if current_deck_name == deck_name:
+                                                        for card_data_deck in self.mainstore:
+                                                                if card_data_deck[16] == 0 and card_data_deck[17] == 0 and card_data_deck[0] == id_db:
+                                                                        card_data_deck[17] = 1
+                                                                        card_data_deck[1] = "|" + defs.STRINGS["decks_sideboard"] + card_data_deck[1] + "|"
+                                                                        card_data_deck[3] = "|" + defs.STRINGS["decks_sideboard"] + card_data_deck[3] + "|"
+                                                                        card_data_deck[13] = Pango.Style.ITALIC
+                                else:
+                                        for card_data_deck in self.mainstore:
+                                                if card_data_deck[16] == 1 and card_data_deck[17] == 0 and card_data_deck[0] == id_db:
+                                                        proxies_list_to_change.append([id_db, card_data_deck[15] * -1, 0])
+                                                        proxies_list_to_change.append([id_db, card_data_deck[15], 1])
+                        elif current_side == 1:
+                                if proxy == 0:
+                                        # we remove the cards from the sideboard
+                                        c_coll.execute("""SELECT id_coll FROM collection WHERE deck_side = ? AND id_card = ?""", (deck_name, id_db,))
+                                        ids_coll_list = c_coll.fetchall()
+                                        # we update the collection
+                                        for id_coll in ids_coll_list:
+                                                c_coll.execute("""UPDATE collection SET deck_side = \"\", deck = ? WHERE id_coll = ?""", (deck_name, id_coll[0],))
+                                        # we update the liststore, if needed
+                                        model, pathlist = self.select_list_decks.get_selected_rows()
+                                        try:
+                                                current_deck_name = model[pathlist][1]
+                                        except TypeError:
+                                                current_deck_name = ""
+                                        if current_deck_name != "":
+                                                if current_deck_name == deck_name:
+                                                        for card_data_deck in self.mainstore:
+                                                                if card_data_deck[16] == 0 and card_data_deck[17] == 1 and card_data_deck[0] == id_db:
+                                                                        card_data_deck[17] = 0
+                                                                        card_data_deck[1] = card_data_deck[1][1:-1].replace(defs.STRINGS["decks_sideboard"], "")
+                                                                        card_data_deck[3] = card_data_deck[3][1:-1].replace(defs.STRINGS["decks_sideboard"], "")
+                                                                        card_data_deck[13] = Pango.Style.NORMAL
+                                else:
+                                        for card_data_deck in self.mainstore:
+                                                if card_data_deck[16] == 1 and card_data_deck[17] == 1 and card_data_deck[0] == id_db:
+                                                        proxies_list_to_change.append([id_db, card_data_deck[15] * -1, 1])
+                                                        proxies_list_to_change.append([id_db, card_data_deck[15], 0])
+                
+                functions.collection.disconnect_db(conn_coll)
+                functions.various.lock_db(False, None)
+                
+                if len(proxies_list_to_change) > 0:
+                        self.change_nb_proxies(deck_name, proxies_list_to_change)
+                        # we need to select the initial selection of rows
+                        for z, card_data_deck in enumerate(self.mainstore):
+                                for i, data in enumerate(ids_db_list):
+                                        id_db, proxy, side = data
+                                        if side == 0:
+                                                side = 1
+                                        elif side == 1:
+                                                side = 0
+                                        if card_data_deck[16] == proxy and card_data_deck[17] == side and card_data_deck[0] == id_db:
+                                                if i == 0:
+                                                        self.maintreeview.set_cursor(z)
+                                                self.mainselect.select_path(z)
+                else:
+                        self.mainselect.emit("changed")
+                
+                # we update the nb of cards
+                functions.decks.update_nb_cards_current_deck(self)
+        
         def delete_deck(self, deck_name):
                 '''Delete a deck.'''
                 functions.various.lock_db(True, None)
@@ -604,6 +693,19 @@ class Decks:
                         tree_iter = model.get_iter(pathlist[0])
                         id_ = model.get_value(tree_iter, 0)
                         self.load_card(id_, simple_search)
+                        
+                        nb_row_in_side = 0
+                        nb_row_not_in_side = 0
+                        for row in pathlist:
+                                if model[row][17] == 1:
+                                        nb_row_in_side += 1
+                                else:
+                                        nb_row_not_in_side += 1
+                        if nb_row_in_side > 0 and nb_row_not_in_side > 0:
+                                self.button_side.set_sensitive(False)
+                        else:
+                                self.button_side.set_sensitive(True)
+                                self.button_side.set_popover(functions.decks.gen_sideboard_popover(self, self.button_side, selection, nb_row_in_side, nb_row_not_in_side))
                         
                         nb_row_proxy = 0
                         for row in pathlist:

@@ -298,6 +298,9 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["delete_deck_warning"] = "Êtes-vous sûr(e) de vouloir supprimer le deck %%% ?"
         translate["delete_from_deck_tooltip"] = "Supprimer du deck"
         translate["move_to_other_deck_tooltip"] = "Déplacer dans un autre deck"
+        translate["sideboard_tooltip"] = "Réserve"
+        translate["sideboard_add"] = "Mettre dans la réserve"
+        translate["sideboard_remove"] = "Enlever de la réserve"
         # languages
         translate["l_english"] = "Anglais"
         translate["l_chinese"] = "Chinois"

@@ -359,7 +359,11 @@ def gen_deck_content(deck_name, box, decks_object):
         decks_object.button_move.set_tooltip_text(defs.STRINGS["move_to_other_deck_tooltip"])
         decks_object.button_move.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="send-to-symbolic"), Gtk.IconSize.BUTTON))
         
-        for button in [decks_object.button_show_details, decks_object.delete_button, decks_object.button_change_quantity, decks_object.button_move]:
+        decks_object.button_side = Gtk.MenuButton()
+        decks_object.button_side.set_tooltip_text(defs.STRINGS["sideboard_tooltip"])
+        decks_object.button_side.add(Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="application-x-addon-symbolic"), Gtk.IconSize.BUTTON))
+        
+        for button in [decks_object.button_show_details, decks_object.delete_button, decks_object.button_change_quantity, decks_object.button_move, decks_object.button_side]:
                 button.set_sensitive(False)
                 toolbar_box.add(button)
         toolbar_box.show_all()
@@ -418,25 +422,25 @@ def gen_deck_content(deck_name, box, decks_object):
         
         # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", "nb_variant", "nb", "proxy", "in_sideboard"
         decks_object.mainstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int, int, int)
-        tree_coll = Gtk.TreeView(decks_object.mainstore)
-        decks_object.tree_coll = tree_coll
-        tree_coll.set_enable_search(False)
+        tree_deck = Gtk.TreeView(decks_object.mainstore)
+        decks_object.maintreeview = tree_deck
+        tree_deck.set_enable_search(False)
         # some work with columns
         columns_to_display = functions.config.read_config("decks_columns").split(";")
-        coll_columns_list = functions.various.gen_treeview_columns(columns_to_display, tree_coll)[0]
+        coll_columns_list = functions.various.gen_treeview_columns(columns_to_display, tree_deck)[0]
         decks_object.mainstore.set_sort_func(9, functions.various.compare_str_and_int, None)
         decks_object.mainstore.set_sort_func(10, functions.various.compare_str_and_int, None)
         
-        select = tree_coll.get_selection()
+        select = tree_deck.get_selection()
         select.set_mode(Gtk.SelectionMode.MULTIPLE)
         select.connect("changed", decks_object.send_id_to_loader, "blip", "blop", 0)
         decks_object.mainselect = select
-        scrolledwindow.add(tree_coll)
+        scrolledwindow.add(tree_deck)
         
-        tree_coll.connect("row-activated", decks_object.show_details, select, decks_object.button_show_details, decks_object.button_change_quantity)
+        tree_deck.connect("row-activated", decks_object.show_details, select, decks_object.button_show_details, decks_object.button_change_quantity)
         decks_object.delete_button.connect("clicked", prepare_delete_from_deck, deck_name, select, decks_object)
         
-        tree_coll.show_all()
+        tree_deck.show_all()
         scrolledwindow.show_all()
         
         box.pack_start(scrolledwindow, True, True, 0)
@@ -809,6 +813,59 @@ def gen_new_deck_popover(button_new_deck, decks_object):
         popover = Gtk.Popover.new(button_new_deck)
         popover.props.width_request = 300
         popover.connect("show", popover_show, decks_object)
+        return(popover)
+
+def gen_sideboard_popover(decks_object, button_side, selection, nb_row_in_side, nb_row_not_in_side):
+        '''Creates the popover which add / remove from the sideboard.'''
+        def popover_show(popover, decks_object, ids_db_list, sideboard_box, nb_row_in_side, nb_row_not_in_side):
+                def button_sideboard_clicked(button, deck_name, ids_db_list, popover, decks_object):
+                        def switch_sideboard(deck_name, ids_db_list, popover, decks_object):
+                                popover.hide()
+                                decks_object.switch_rows_sideboard(deck_name, ids_db_list)
+                        
+                        GLib.idle_add(switch_sideboard, deck_name, ids_db_list, popover, decks_object)
+                
+                for widget in sideboard_box.get_children():
+                        sideboard_box.remove(widget)
+                
+                model_deck, pathlist_deck = decks_object.select_list_decks.get_selected_rows()
+                deck_name = model_deck[pathlist_deck][1]
+                
+                model, pathlist = selection.get_selected_rows()
+                ids_db_list = []
+                for row in pathlist:
+                        id_db = model[row][0]
+                        proxy = model[row][16]
+                        side = model[row][17]
+                        ids_db_list.append([id_db, proxy, side])
+                
+                button_add_sideboard = Gtk.Button(defs.STRINGS["sideboard_add"])
+                button_add_sideboard.connect("clicked", button_sideboard_clicked, deck_name, ids_db_list, popover, decks_object)
+                button_remove_sideboard = Gtk.Button(defs.STRINGS["sideboard_remove"])
+                button_remove_sideboard.connect("clicked", button_sideboard_clicked, deck_name, ids_db_list, popover, decks_object)
+                
+                sideboard_box.pack_start(button_remove_sideboard, True, True, 0)
+                sideboard_box.pack_start(button_add_sideboard, True, True, 0)
+                
+                sideboard_box.show_all()
+                
+                model, pathlist = selection.get_selected_rows()
+                if len(pathlist) == nb_row_in_side:
+                        button_remove_sideboard.set_sensitive(True)
+                        button_add_sideboard.set_sensitive(False)
+                else:
+                        button_remove_sideboard.set_sensitive(False)
+                        button_add_sideboard.set_sensitive(True)
+        
+        sideboard_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        sideboard_box.set_margin_top(5)
+        sideboard_box.set_margin_bottom(5)
+        sideboard_box.set_margin_left(5)
+        sideboard_box.set_margin_right(5)
+        popover = Gtk.Popover.new(button_side)
+        
+        popover.connect("show", popover_show, decks_object, selection, sideboard_box, nb_row_in_side, nb_row_not_in_side)
+        popover.add(sideboard_box)
         return(popover)
 
 def write_new_deck_to_db(name_new_deck):
