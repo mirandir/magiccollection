@@ -26,8 +26,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.35"
-     inkscape:cx="-11.999996"
-     inkscape:cy="508.57142"
+     inkscape:cx="8"
+     inkscape:cy="518.5034"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -54,18 +54,26 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-28.362161)">
-    <flowRoot
+    <circle
+       style="fill:none;fill-opacity:1;stroke:#bebebe;stroke-width:10;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path4136"
+       cx="512"
+       cy="540.36218"
+       r="497.88" />
+    <text
        xml:space="preserve"
-       id="flowRoot4192"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:729.74835205px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:'Ubuntu, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#bebebe;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       transform="matrix(1.3050839,0,0,1.3050839,1300.7596,-108.62097)"><flowRegion
-         id="flowRegion4194"><rect
-           id="rect4196"
-           width="2837.9102"
-           height="2733.6604"
-           x="-922.54578"
-           y="10.221532"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:729.74835205px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:'Ubuntu, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#bebebe;fill-opacity:1" /></flowRegion><flowPara
-         id="flowPara4198"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:729.74835205px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:'Ubuntu, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#bebebe;fill-opacity:1">M</flowPara></flowRoot>  </g>
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:952.3828125px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:'Ubuntu, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#bebebe;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="96.761078"
+       y="870.36279"
+       id="text4137"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="96.761078"
+         y="870.36279"
+         id="tspan4139"><tspan
+           x="96.761078"
+           y="870.36279"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:952.3828125px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:'Ubuntu, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#bebebe;fill-opacity:1"
+           id="tspan4141">M</tspan></tspan></text>
+  </g>
 </svg>
