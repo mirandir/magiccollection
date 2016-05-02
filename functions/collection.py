@@ -884,8 +884,8 @@ def gen_add_deck_details_popover(button_add_deck, selection, details_store):
                 else:
                         ok_button.set_sensitive(True)
         
-        def row_activated(a, b, c, popover, selection, select_list_decks, details_store):
-                add_deck(None, popover, selection, select_list_decks, details_store)
+        def row_activated(a, b, c, popover, selection, select_list_decks, details_store, side_checkbutton, button_add_deck):
+                add_deck(None, popover, selection, select_list_decks, details_store, side_checkbutton, button_add_deck)
         
         def popover_show(popover, selection, add_deck_box, details_store, button_add_deck):
                 for widget in add_deck_box.get_children():
@@ -925,7 +925,7 @@ def gen_add_deck_details_popover(button_add_deck, selection, details_store):
                 
                 scrolledwindow_decks.add(tree_decks)
                 ok_button.set_sensitive(False)
-                tree_decks.connect("row-activated", row_activated, popover, selection, select_list_decks, details_store)
+                tree_decks.connect("row-activated", row_activated, popover, selection, select_list_decks, details_store, side_checkbutton, button_add_deck)
                 ok_button.connect("clicked", add_deck, popover, selection, select_list_decks, details_store, side_checkbutton, button_add_deck)
                 
                 add_deck_box.pack_start(scrolledwindow_decks, True, True, 0)

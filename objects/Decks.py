@@ -498,11 +498,21 @@ class Decks:
                         if current_side == 0:
                                 if proxy == 0:
                                         # we put the cards in the sideboard
-                                        c_coll.execute("""SELECT id_coll FROM collection WHERE deck = ? AND id_card = ?""", (deck_name, id_db,))
-                                        ids_coll_list = c_coll.fetchall()
+                                        c_coll.execute("""SELECT id_coll, deck, deck_side FROM collection WHERE (deck = ? OR deck_side = ?) AND id_card = ?""", (deck_name, deck_name, id_db,))
+                                        tmp_list = c_coll.fetchall()
+                                        ids_coll_list = []
+                                        quantity = 0
+                                        a_row_already_exists = False
+                                        for data in tmp_list:
+                                                id_coll, deck, deck_side = data
+                                                if deck == deck_name:
+                                                        ids_coll_list.append(id_coll)
+                                                        quantity += 1
+                                                elif deck_side == deck_name:
+                                                        a_row_already_exists = True
                                         # we update the collection
                                         for id_coll in ids_coll_list:
-                                                c_coll.execute("""UPDATE collection SET deck = \"\", deck_side = ? WHERE id_coll = ?""", (deck_name, id_coll[0],))
+                                                c_coll.execute("""UPDATE collection SET deck = \"\", deck_side = ? WHERE id_coll = ?""", (deck_name, id_coll,))
                                         # we update the liststore, if needed
                                         model, pathlist = self.select_list_decks.get_selected_rows()
                                         try:
@@ -511,12 +521,22 @@ class Decks:
                                                 current_deck_name = ""
                                         if current_deck_name != "":
                                                 if current_deck_name == deck_name:
-                                                        for card_data_deck in self.mainstore:
-                                                                if card_data_deck[16] == 0 and card_data_deck[17] == 0 and card_data_deck[0] == id_db:
-                                                                        card_data_deck[17] = 1
-                                                                        card_data_deck[1] = "|" + defs.STRINGS["decks_sideboard"] + card_data_deck[1] + "|"
-                                                                        card_data_deck[3] = "|" + defs.STRINGS["decks_sideboard"] + card_data_deck[3] + "|"
-                                                                        card_data_deck[13] = Pango.Style.ITALIC
+                                                        rows_to_remove = []
+                                                        for i, card_data_deck in enumerate(self.mainstore):
+                                                                if card_data_deck[16] == 0 and card_data_deck[17] == 1 and card_data_deck[0] == id_db and a_row_already_exists == True:
+                                                                        card_data_deck[15] = int(card_data_deck[15]) + quantity
+                                                                elif card_data_deck[16] == 0 and card_data_deck[17] == 0 and card_data_deck[0] == id_db:
+                                                                        if a_row_already_exists:
+                                                                                if i not in rows_to_remove:
+                                                                                        rows_to_remove.append(i)
+                                                                        else:
+                                                                                card_data_deck[17] = 1
+                                                                                card_data_deck[1] = "|" + defs.STRINGS["decks_sideboard"] + card_data_deck[1] + "|"
+                                                                                card_data_deck[3] = "|" + defs.STRINGS["decks_sideboard"] + card_data_deck[3] + "|"
+                                                                                card_data_deck[13] = Pango.Style.ITALIC
+                                                        if len(rows_to_remove) > 0:
+                                                                for row in reversed(rows_to_remove):
+                                                                        del(self.mainstore[row])
                                 else:
                                         for card_data_deck in self.mainstore:
                                                 if card_data_deck[16] == 1 and card_data_deck[17] == 0 and card_data_deck[0] == id_db:
@@ -525,11 +545,21 @@ class Decks:
                         elif current_side == 1:
                                 if proxy == 0:
                                         # we remove the cards from the sideboard
-                                        c_coll.execute("""SELECT id_coll FROM collection WHERE deck_side = ? AND id_card = ?""", (deck_name, id_db,))
-                                        ids_coll_list = c_coll.fetchall()
+                                        c_coll.execute("""SELECT id_coll, deck, deck_side FROM collection WHERE (deck = ? OR deck_side = ?) AND id_card = ?""", (deck_name, deck_name, id_db,))
+                                        tmp_list = c_coll.fetchall()
+                                        ids_coll_list = []
+                                        quantity = 0
+                                        a_row_already_exists = False
+                                        for data in tmp_list:
+                                                id_coll, deck, deck_side = data
+                                                if deck_side == deck_name:
+                                                        ids_coll_list.append(id_coll)
+                                                        quantity += 1
+                                                elif deck == deck_name:
+                                                        a_row_already_exists = True
                                         # we update the collection
                                         for id_coll in ids_coll_list:
-                                                c_coll.execute("""UPDATE collection SET deck_side = \"\", deck = ? WHERE id_coll = ?""", (deck_name, id_coll[0],))
+                                                c_coll.execute("""UPDATE collection SET deck_side = \"\", deck = ? WHERE id_coll = ?""", (deck_name, id_coll,))
                                         # we update the liststore, if needed
                                         model, pathlist = self.select_list_decks.get_selected_rows()
                                         try:
@@ -538,12 +568,22 @@ class Decks:
                                                 current_deck_name = ""
                                         if current_deck_name != "":
                                                 if current_deck_name == deck_name:
-                                                        for card_data_deck in self.mainstore:
-                                                                if card_data_deck[16] == 0 and card_data_deck[17] == 1 and card_data_deck[0] == id_db:
-                                                                        card_data_deck[17] = 0
-                                                                        card_data_deck[1] = card_data_deck[1][1:-1].replace(defs.STRINGS["decks_sideboard"], "")
-                                                                        card_data_deck[3] = card_data_deck[3][1:-1].replace(defs.STRINGS["decks_sideboard"], "")
-                                                                        card_data_deck[13] = Pango.Style.NORMAL
+                                                        rows_to_remove = []
+                                                        for i, card_data_deck in enumerate(self.mainstore):
+                                                                if card_data_deck[16] == 0 and card_data_deck[17] == 0 and card_data_deck[0] == id_db and a_row_already_exists == True:
+                                                                        card_data_deck[15] = int(card_data_deck[15]) + quantity
+                                                                elif card_data_deck[16] == 0 and card_data_deck[17] == 1 and card_data_deck[0] == id_db:
+                                                                        if a_row_already_exists:
+                                                                                if i not in rows_to_remove:
+                                                                                        rows_to_remove.append(i)
+                                                                        else:
+                                                                                card_data_deck[17] = 0
+                                                                                card_data_deck[1] = card_data_deck[1][1:-1].replace(defs.STRINGS["decks_sideboard"], "")
+                                                                                card_data_deck[3] = card_data_deck[3][1:-1].replace(defs.STRINGS["decks_sideboard"], "")
+                                                                                card_data_deck[13] = Pango.Style.NORMAL
+                                                        if len(rows_to_remove) > 0:
+                                                                for row in reversed(rows_to_remove):
+                                                                        del(self.mainstore[row])
                                 else:
                                         for card_data_deck in self.mainstore:
                                                 if card_data_deck[16] == 1 and card_data_deck[17] == 1 and card_data_deck[0] == id_db:
