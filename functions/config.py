@@ -137,6 +137,7 @@ def show_pref_dialog():
                 
                 pref_dialog = Gtk.Dialog()
                 pref_dialog.set_title(defs.STRINGS["preferences_of_mc"])
+                pref_dialog.set_icon_name("magic_collection")
                 if defs.MAINWINDOW != None:
                         pref_dialog.set_transient_for(defs.MAINWINDOW)
                         pref_dialog.set_modal(True)

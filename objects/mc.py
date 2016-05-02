@@ -40,8 +40,8 @@ import functions.importexport
 class MagicCollection(Gtk.Application):
         '''App creation'''
         def __init__(self):
-                Gtk.Application.__init__(self)
-                self.mainwindow = None
+                Gtk.Application.__init__(self, application_id="org.mirandir.MagicCollection")
+                self.window = None
                 GLib.set_application_name(defs.STRINGS["app_name"])
                 GLib.set_prgname("magic_collection")
                 if functions.config.read_config("dark_theme") == "1":
@@ -49,22 +49,23 @@ class MagicCollection(Gtk.Application):
                         settings.set_property("gtk-application-prefer-dark-theme", True)
 
         def do_activate(self):
-                mainwindow = MC_Window(self)
-                self.mainwindow = mainwindow
-                mainwindow.show_all()
-                
-                # we hide the MenuBar (yes, it's bad)
-                for widget in self.mainwindow.get_children():
-                        if widget.__class__.__name__ == "MenuBar":
-                                widget.hide()
-                
-                '''print(defs.OS)
-                print(defs.STRINGS["language_name"])'''
-                
-                # checking and loading database
-                thread = threading.Thread(target = functions.db.check_db)
-                thread.daemon = True
-                thread.start()
+                if self.window == None:
+                        self.window = MC_Window(self)
+                        self.window.show_all()
+                        
+                        # we hide the MenuBar (yes, it's bad)
+                        for widget in self.window.get_children():
+                                if widget.__class__.__name__ == "MenuBar":
+                                        widget.hide()
+                        
+                        '''print(defs.OS)
+                        print(defs.STRINGS["language_name"])'''
+                        
+                        # checking and loading database
+                        thread = threading.Thread(target = functions.db.check_db)
+                        thread.daemon = True
+                        thread.start()
+                self.window.present()
                 
         def load_mc(self):
                 if defs.DB_VERSION != None:
@@ -75,9 +76,9 @@ class MagicCollection(Gtk.Application):
                         # do we need to autoupdate the prices?
                         if functions.config.read_config("price_autodownload") == "1":
                                 functions.prices.check_prices("auto")
-                        self.mainwindow.create_gui()
+                        self.window.create_gui()
                 else:
-                        self.mainwindow.widget_overlay.destroy()
+                        self.window.widget_overlay.destroy()
                         functions.various.message_dialog(defs.STRINGS["problem_db"], 0)
 
         def do_startup(self):
@@ -141,9 +142,10 @@ class MagicCollection(Gtk.Application):
         
         def about_cb(self, action, parameters, app):
                 aboutdialog = Gtk.AboutDialog("")
-                aboutdialog.set_transient_for(app.mainwindow)
+                aboutdialog.set_transient_for(app.window)
                 aboutdialog.set_title(defs.STRINGS["about"] + " - " + defs.STRINGS["app_name"])
                 aboutdialog.set_program_name(defs.STRINGS["app_name"])
+                aboutdialog.set_icon_name("magic_collection")
                 if defs.DB_VERSION != None:
                         aboutdialog.set_version(defs.VERSION + " - " + defs.STRINGS["aboutdialog_db"] + " " + defs.DB_VERSION)
                 else:
@@ -167,7 +169,7 @@ class MagicCollection(Gtk.Application):
                 else:
                         # quit
                         # we remember the size of the window
-                        width, height = defs.MAINWINDOW.get_size()
+                        width, height = self.window.get_size()
                         functions.config.change_config("last_width", str(width))
                         functions.config.change_config("last_height", str(height))
                         self.quit()
@@ -176,8 +178,8 @@ class MC_Window(Gtk.ApplicationWindow):
         '''Mainwindow creation'''
         def __init__(self, app):
                 Gtk.Window.__init__(self, title=defs.STRINGS["app_name"], application=app)
-                self.set_wmclass("magic_collection", "magic_collection")
-                #self.set_icon_from_file(os.path.join(defs.PATH_MC, "images", "mclogo.png"))
+                self.set_wmclass(defs.STRINGS["app_name"], defs.STRINGS["app_name"])
+                self.set_icon_name("magic_collection")
                 self.app = app
                 defs.MAINWINDOW = self
                 self.accelgroup = Gtk.AccelGroup()
@@ -357,7 +359,7 @@ class MC_Window(Gtk.ApplicationWindow):
                                 if request != None:
                                         spinner = Gtk.Spinner()
                                         spinner.show()
-                                        defs.MAINWINDOW.headerbar.pack_start(spinner)
+                                        self.headerbar.pack_start(spinner)
                                         spinner.start()
                                         search_entry.set_sensitive(False)
                                         try:
