@@ -293,13 +293,17 @@ class MC_Window(Gtk.ApplicationWindow):
         
         def change_mode(self, window, event):
                 keyname = Gdk.keyval_name(event.keyval)
-                if event.state & Gdk.ModifierType.MOD1_MASK and keyname == "c" :
+                if defs.OS == "unity":
+                        modifier = Gdk.ModifierType.CONTROL_MASK
+                else:
+                        modifier = Gdk.ModifierType.MOD1_MASK
+                if event.state & modifier and keyname == "c" :
                         if self.main_stack.get_visible_child_name() != "collection":
                                 self.main_stack.set_visible_child_name("collection")
-                if event.state & Gdk.ModifierType.MOD1_MASK and keyname == "d" :
+                if event.state & modifier and keyname == "d" :
                         if self.main_stack.get_visible_child_name() != "decks":
                                 self.main_stack.set_visible_child_name("decks")
-                if event.state & Gdk.ModifierType.MOD1_MASK and keyname == "s" :
+                if event.state & modifier and keyname == "s" :
                         if self.main_stack.get_visible_child_name() != "advancedsearch":
                                 self.main_stack.set_visible_child_name("advancedsearch")
         
