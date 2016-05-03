@@ -45,21 +45,17 @@ class MagicCollection(Gtk.Application):
                 GLib.set_application_name(defs.STRINGS["app_name"])
                 GLib.set_prgname("magic_collection")
                 if functions.config.read_config("dark_theme") == "1":
-                        settings = Gtk.Settings.get_default()
-                        settings.set_property("gtk-application-prefer-dark-theme", True)
+                        Gtk.Settings.get_default().set_property("gtk-application-prefer-dark-theme", True)
 
         def do_activate(self):
                 if self.window == None:
                         self.window = MC_Window(self)
                         self.window.show_all()
                         
-                        # we hide the MenuBar (yes, it's bad)
+                        # we hide the MenuBar if it exists
                         for widget in self.window.get_children():
                                 if widget.__class__.__name__ == "MenuBar":
                                         widget.hide()
-                        
-                        '''print(defs.OS)
-                        print(defs.STRINGS["language_name"])'''
                         
                         # checking and loading database
                         thread = threading.Thread(target = functions.db.check_db)
@@ -294,14 +290,18 @@ class MC_Window(Gtk.ApplicationWindow):
                 self.main_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         
         def change_mode(self, window, event):
+                if defs.OS == "unity":
+                        modifier = Gdk.ModifierType.SHIFT_MASK# Shift, because Alt is use by the GUI
+                else:
+                        modifier = Gdk.ModifierType.MOD1_MASK# Alt
                 keyname = Gdk.keyval_name(event.keyval)
-                if event.state & Gdk.ModifierType.MOD1_MASK and keyname == "c" :
+                if event.state & modifier and keyname == "c" :
                         if self.main_stack.get_visible_child_name() != "collection":
                                 self.main_stack.set_visible_child_name("collection")
-                if event.state & Gdk.ModifierType.MOD1_MASK and keyname == "d" :
+                if event.state & modifier and keyname == "d" :
                         if self.main_stack.get_visible_child_name() != "decks":
                                 self.main_stack.set_visible_child_name("decks")
-                if event.state & Gdk.ModifierType.MOD1_MASK and keyname == "s" :
+                if event.state & modifier and keyname == "s" :
                         if self.main_stack.get_visible_child_name() != "advancedsearch":
                                 self.main_stack.set_visible_child_name("advancedsearch")
         
