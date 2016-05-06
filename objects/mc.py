@@ -42,6 +42,7 @@ class MagicCollection(Gtk.Application):
         def __init__(self):
                 Gtk.Application.__init__(self, application_id="org.mirandir.MagicCollection")
                 self.window = None
+                self.aboutwindow = None
                 GLib.set_application_name(defs.STRINGS["app_name"])
                 GLib.set_prgname("magic_collection")
                 if functions.config.read_config("dark_theme") == "1":
@@ -141,26 +142,31 @@ class MagicCollection(Gtk.Application):
                 GLib.idle_add(functions.importexport.export_data)
         
         def about_cb(self, action, parameters, app):
-                aboutdialog = Gtk.AboutDialog("")
-                aboutdialog.set_transient_for(app.window)
-                aboutdialog.set_title(defs.STRINGS["about"] + " - " + defs.STRINGS["app_name"])
-                aboutdialog.set_program_name(defs.STRINGS["app_name"])
-                aboutdialog.set_icon_name("magic_collection")
-                if defs.DB_VERSION != None:
-                        aboutdialog.set_version(defs.VERSION + " - " + defs.STRINGS["aboutdialog_db"] + " " + defs.DB_VERSION)
+                if self.aboutwindow == None:
+                        aboutdialog = Gtk.AboutDialog("")
+                        aboutdialog.set_transient_for(app.window)
+                        aboutdialog.set_title(defs.STRINGS["about"] + " - " + defs.STRINGS["app_name"])
+                        aboutdialog.set_program_name(defs.STRINGS["app_name"])
+                        aboutdialog.set_icon_name("magic_collection")
+                        if defs.DB_VERSION != None:
+                                aboutdialog.set_version(defs.VERSION + " - " + defs.STRINGS["aboutdialog_db"] + " " + defs.DB_VERSION)
+                        else:
+                                aboutdialog.set_version(defs.VERSION)
+                        aboutdialog.set_website(defs.SITEMC + "magiccollection/")
+                        aboutdialog.set_website_label(defs.STRINGS["website"])
+                        aboutdialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "icons", "mclogo_min.png")))
+                        aboutdialog.set_copyright(defs.STRINGS["about_copyright"])
+                        aboutdialog.set_comments(defs.STRINGS["about_comment"])
+                        aboutdialog.set_authors(["mirandir [mirandir@orange.fr]"])
+                        aboutdialog.set_license(defs.STRINGS["about_licence"])
+                        aboutdialog.set_wrap_license(True)
+                        
+                        self.aboutwindow = aboutdialog
+                        aboutdialog.run()
+                        aboutdialog.destroy()
+                        self.aboutwindow = None
                 else:
-                        aboutdialog.set_version(defs.VERSION)
-                aboutdialog.set_website(defs.SITEMC + "magiccollection/")
-                aboutdialog.set_website_label(defs.STRINGS["website"])
-                aboutdialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "icons", "mclogo_min.png")))
-                aboutdialog.set_copyright(defs.STRINGS["about_copyright"])
-                aboutdialog.set_comments(defs.STRINGS["about_comment"])
-                aboutdialog.set_authors(["mirandir [mirandir@orange.fr]"])
-                aboutdialog.set_license(defs.STRINGS["about_licence"])
-                aboutdialog.set_wrap_license(True)
-                
-                aboutdialog.run()
-                aboutdialog.destroy()
+                        self.aboutwindow.present()
 
         def quit_cb(self, action, parameter):
                 if defs.COLL_LOCK:
