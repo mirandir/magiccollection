@@ -186,6 +186,8 @@ class MC_Window(Gtk.ApplicationWindow):
                 Gtk.Window.__init__(self, title=defs.STRINGS["app_name"], application=app)
                 self.set_wmclass(defs.STRINGS["app_name"], defs.STRINGS["app_name"])
                 self.set_icon_name("magic_collection")
+                if defs.OS == "windows":
+                        self.set_icon_from_file(os.path.join(defs.PATH_MC, "images", "icons", "mclogo_min.png"))
                 self.app = app
                 defs.MAINWINDOW = self
                 self.accelgroup = Gtk.AccelGroup()
