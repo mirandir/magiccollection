@@ -1277,6 +1277,7 @@ def gen_details_popover(button_show_details, selection):
                         box2.pack_start(grid_details, True, True, 0)
                         
                         details_box.show_all()
+                        details_tree.grab_focus()
                 
                         if defs.COLL_LOCK:
                                 for widget in [comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment]:
