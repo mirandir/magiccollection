@@ -778,6 +778,10 @@ def gen_new_deck_popover(button_new_deck, decks_object):
                                         ok_button.set_sensitive(False)
                         GLib.idle_add(real_entry_changed, entry, ok_button, list_decks_names)
                 
+                def entry_activate(entry_name_deck, ok_button, list_decks_names, decks_object, popover):
+                        if defs.COLL_LOCK == False and entry_name_deck.get_text() != "" and entry_name_deck.get_text().lower() not in list_decks_names and ok_button.get_sensitive:
+                                create_deck(None, entry_name_deck, decks_object, popover)
+                
                 def real_show(popover, decks_object):
                         for widget in popover.get_children():
                                 popover.remove(widget)
@@ -801,6 +805,7 @@ def gen_new_deck_popover(button_new_deck, decks_object):
                         entry_name_deck = Gtk.Entry()
                         ok_button = Gtk.Button(defs.STRINGS["create_new_deck_ok"])
                         entry_name_deck.connect("changed", entry_changed, ok_button, list_decks_names)
+                        entry_name_deck.connect("activate", entry_activate, ok_button, list_decks_names, decks_object, popover)
                         ok_button.set_sensitive(False)
                         ok_button.connect("clicked", create_deck, entry_name_deck, decks_object, popover)
                         for widget in [label_name_deck, entry_name_deck, ok_button]:
