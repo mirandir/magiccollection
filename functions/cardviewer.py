@@ -466,7 +466,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         # the edition picture
                         edition_pic = Gtk.Image()
                         if os.path.isfile(os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(edition_code) + ".png")):
-                                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(edition_code) + ".png")), 22, 22)
+                                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size((os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(edition_code) + ".png")), 22, 22)
                         else:
                                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(defs.PATH_MC, "images", "nothing.png"), 22, 22)
                         edition_pic.set_from_pixbuf(pixbuf)
