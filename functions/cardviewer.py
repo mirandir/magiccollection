@@ -422,7 +422,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
 
                         # we try to load the image of the card. If we get a GLib error, then the picture is corrupted, and we delete it
                         try:
-                                pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
+                                pixbuf = functions.various.gdkpixbuf_new_from_file(path)
                         except GLib.GError:
                                 os.remove(path)
                         else:
@@ -434,7 +434,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                 else:
                                         pix_size = max(pixbuf_width, pixbuf_height)
                                 
-                                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, pix_size, pix_size)
+                                pixbuf = functions.various.gdkpixbuf_new_from_file_at_size(path, pix_size, pix_size)
                                 card_pic.set_from_pixbuf(pixbuf)
                                 card_pic.set_size_request(size, size)
                         
@@ -443,9 +443,9 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         # the colors picture
                         colors_pic = Gtk.Image()
                         if colors != "":
-                                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(defs.PATH_MC, "images", "color_indicators", colors.lower() + ".png"), 22, 22)
+                                pixbuf = functions.various.gdkpixbuf_new_from_file_at_size(os.path.join(defs.PATH_MC, "images", "color_indicators", colors.lower() + ".png"), 22, 22)
                         else:
-                                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(defs.PATH_MC, "images", "nothing.png"), 22, 22)
+                                pixbuf = functions.various.gdkpixbuf_new_from_file_at_size(os.path.join(defs.PATH_MC, "images", "nothing.png"), 22, 22)
                         colors_pic.set_from_pixbuf(pixbuf)
                         grid.attach_next_to(colors_pic, overlay_card_pic, Gtk.PositionType.BOTTOM, 1, 1)
                         
@@ -466,9 +466,9 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         # the edition picture
                         edition_pic = Gtk.Image()
                         if os.path.isfile(os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(edition_code) + ".png")):
-                                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(edition_code) + ".png"), 22, 22)
+                                pixbuf = functions.various.gdkpixbuf_new_from_file_at_size(os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(edition_code) + ".png"), 22, 22)
                         else:
-                                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(defs.PATH_MC, "images", "nothing.png"), 22, 22)
+                                pixbuf = functions.various.gdkpixbuf_new_from_file_at_size(os.path.join(defs.PATH_MC, "images", "nothing.png"), 22, 22)
                         edition_pic.set_from_pixbuf(pixbuf)
                         grid.attach_next_to(edition_pic, label_type, Gtk.PositionType.RIGHT, 1, 1)
                         
@@ -534,7 +534,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                                                 found = start_iter.forward_search(text_to_search, 0, None)
                                                                 if found:
                                                                         match_start, match_end = found
-                                                                        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(defs.PATH_MC, "images", "symbols", file_name), size, size)
+                                                                        pixbuf = functions.various.gdkpixbuf_new_from_file_at_size(os.path.join(defs.PATH_MC, "images", "symbols", file_name), size, size)
                                                                         textbuffer.insert_pixbuf(match_start, pixbuf)
                                                                         # we delete this text
                                                                         start_iter = textbuffer.get_start_iter()
@@ -602,7 +602,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         if functions.various.check_card_pic(edition_code, name):
                                 path = os.path.join(defs.CACHEMCPIC, functions.various.valid_filename_os(edition_code), functions.various.valid_filename_os(name) + ".full.jpg") # for historical reason, we save files with a jpg extension, even if recent files are png.
                                 try:
-                                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
+                                        pixbuf = functions.various.gdkpixbuf_new_from_file(path)
                                         pic_ok = 1
                                         add_pic.set_from_file(os.path.join(defs.PATH_MC, "images", "add.png"))
                                 except GLib.GError:
@@ -1008,9 +1008,9 @@ def load_card_picture(path, pixbuf, card_pic, gg_pic, layout, radius, flip_pic):
         pixbuf_width = pixbuf.get_width()
         pixbuf_height = pixbuf.get_height()
         if pixbuf_width > size or pixbuf_height > size:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, size, size)
+                pixbuf = functions.various.gdkpixbuf_new_from_file_at_size(path, size, size)
         else:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
+                pixbuf = functions.various.gdkpixbuf_new_from_file(path)
         
         # we add rounded corners to the picture
         w = pixbuf.get_width()
@@ -1041,7 +1041,7 @@ def waiting_for_downloader(card_pic, layout, edition_code, name, spinner, intern
         
         # we search the perfect size for this pixbuf
         try:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
+                pixbuf = functions.various.gdkpixbuf_new_from_file(path)
         except GLib.GError:
                 os.remove(path)
         else:
@@ -1191,9 +1191,9 @@ def gen_manacost_popover(cmc_button, manacost):
                                 elm = "".join(sorted(elm))
                         mana_pic = Gtk.Image()
                         if elm == "1000000":
-                                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(defs.PATH_MC, "images", "symbols", elm + ".png"), 100, 100)
+                                pixbuf = functions.various.gdkpixbuf_new_from_file_at_size(os.path.join(defs.PATH_MC, "images", "symbols", elm + ".png"), 100, 100)
                         else:
-                                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(defs.PATH_MC, "images", "symbols", elm + ".png"), 20, 20)
+                                pixbuf = functions.various.gdkpixbuf_new_from_file_at_size(os.path.join(defs.PATH_MC, "images", "symbols", elm + ".png"), 20, 20)
                         mana_pic.set_from_pixbuf(pixbuf)
                         manacost_box.pack_start(mana_pic, True, True, 0)
                 manacosts_box.pack_start(manacost_box, True, True, 0)

@@ -154,7 +154,7 @@ class MagicCollection(Gtk.Application):
                                 aboutdialog.set_version(defs.VERSION)
                         aboutdialog.set_website(defs.SITEMC + "magiccollection/")
                         aboutdialog.set_website_label(defs.STRINGS["website"])
-                        aboutdialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "icons", "mclogo_min.png")))
+                        aboutdialog.set_logo(functions.various.gdkpixbuf_new_from_file(os.path.join(defs.PATH_MC, "images", "icons", "mclogo_min.png")))
                         aboutdialog.set_copyright(defs.STRINGS["about_copyright"])
                         aboutdialog.set_comments(defs.STRINGS["about_comment"])
                         aboutdialog.set_authors(["mirandir [mirandir@orange.fr]"])

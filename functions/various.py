@@ -200,7 +200,7 @@ def downloadPicture(multiverseid, imageurl, name, edition_code):
                 
                 if check_card_pic(edition_code, name):
                         try:
-                                pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
+                                pixbuf = gdkpixbuf_new_from_file(path)
                                 return(True)
                         except:
                                 os.remove(path)
@@ -414,9 +414,9 @@ def prepare_cards_data_for_treeview(cards):
                 edition_code = card[4]
                 edition_ln = edition_code_to_longname(edition_code)
                 if card[16] != "":
-                        pix_colors = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "color_indicators", colors.lower() + ".png"))
+                        pix_colors = gdkpixbuf_new_from_file(os.path.join(defs.PATH_MC, "images", "color_indicators", colors.lower() + ".png"))
                 else:
-                        pix_colors = GdkPixbuf.Pixbuf.new_from_file(os.path.join(defs.PATH_MC, "images", "nothing.png"))
+                        pix_colors = gdkpixbuf_new_from_file(os.path.join(defs.PATH_MC, "images", "nothing.png"))
                 cmc = card[18]
                 type_ = card[21]
                 artist = card[22]
@@ -932,3 +932,17 @@ def update_entrycompletions(entry_lang, entry_loaned):
         for elm in list_entrycompletion_loaned:
                 liststore_loaned.append([elm])
         entry_loaned.set_completion(entrycompletion_loaned)
+
+def gdkpixbuf_new_from_file(path):
+        '''We wrap GdkPixbuf.Pixbuf.new_from_file, because it's not the same function on Windows. We return a GdkPixbuf.Pixbuf.'''
+        if defs.OS == "windows":
+                return(GdkPixbuf.Pixbuf.new_from_file_utf8(path))
+        else:
+                return(GdkPixbuf.Pixbuf.new_from_file(path))
+
+def gdkpixbuf_new_from_file_at_size(path, width, height):
+        '''We wrap GdkPixbuf.Pixbuf.new_from_file_at_size, because it's not the same function on Windows. We return a GdkPixbuf.Pixbuf.'''
+        if defs.OS == "windows":
+                return(GdkPixbuf.Pixbuf.new_from_file_at_size_utf8(path, width, height))
+        else:
+                return(GdkPixbuf.Pixbuf.new_from_file_at_size(path, width, height))
