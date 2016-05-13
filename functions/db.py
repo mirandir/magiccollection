@@ -97,7 +97,7 @@ def prepare_request(search_widgets_list, type_request):
                                 if text[0] == "!":
                                         text = text[1:]
                                         negate = 1
-                                if text == "ø":
+                                if text == "ø" or text == "¤":
                                         text = ""
                                 
                                 tmp_request = ""
