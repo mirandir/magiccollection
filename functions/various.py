@@ -946,3 +946,28 @@ def gdkpixbuf_new_from_file_at_size(path, width, height):
                 return(GdkPixbuf.Pixbuf.new_from_file_at_size_utf8(path, width, height))
         else:
                 return(GdkPixbuf.Pixbuf.new_from_file_at_size(path, width, height))
+
+def clear_gui_del():
+        if defs.MAINWINDOW.advancedsearch.mainstore != None:
+                for line in defs.MAINWINDOW.advancedsearch.mainstore:
+                        if line[12] == 700:
+                                line[12] = 400
+                if defs.MAINWINDOW.advancedsearch.mainselect != None:
+                        defs.MAINWINDOW.advancedsearch.mainselect.emit("changed")
+        
+        if defs.MAINWINDOW.decks.mainstore != None:
+                defs.MAINWINDOW.decks.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck"].replace("%%%", "0"))
+                defs.MAINWINDOW.decks.mainstore.clear()
+        defs.MAINWINDOW.decks.gen_list_decks(None)
+        
+        try:
+                defs.MAINWINDOW.collection.label_nb_card_coll.set_text(defs.STRINGS["nb_card_coll"].replace("%%%", "0"))
+        except:
+                pass
+        try:
+                if defs.MAINWINDOW.collection.tree_coll.get_model() == defs.MAINWINDOW.collection.searchstore:
+                        defs.MAINWINDOW.collection.button_back_coll.emit("clicked")
+        except:
+                pass
+        if defs.MAINWINDOW.collection.mainstore != None:
+                defs.MAINWINDOW.collection.mainstore.clear()

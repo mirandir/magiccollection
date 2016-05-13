@@ -230,22 +230,7 @@ class Collection:
                 os.remove(os.path.join(defs.HOMEMC, "collection.sqlite"))
                 functions.collection.create_db_coll()
                 
-                if defs.MAINWINDOW.advancedsearch.mainstore != None:
-                        for line in defs.MAINWINDOW.advancedsearch.mainstore:
-                                if line[12] == 700:
-                                        line[12] = 400
-                        if defs.MAINWINDOW.advancedsearch.mainselect != None:
-                                defs.MAINWINDOW.advancedsearch.mainselect.emit("changed")
-                
-                if defs.MAINWINDOW.decks.mainstore != None:
-                        defs.MAINWINDOW.decks.label_nb_cards.set_text(defs.STRINGS["nb_cards_in_deck"].replace("%%%", "0"))
-                        defs.MAINWINDOW.decks.mainstore.clear()
-                defs.MAINWINDOW.decks.gen_list_decks(None)
-                
-                self.label_nb_card_coll.set_text(defs.STRINGS["nb_card_coll"].replace("%%%", "0"))
-                if self.tree_coll.get_model() == self.searchstore:
-                        self.button_back_coll.emit("clicked")
-                self.mainstore.clear()
+                functions.various.clear_gui_del()
         
         def del_collection(self, cards_to_delete):
                 '''Delete the cards in 'cards_to_delete'.'''

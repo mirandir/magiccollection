@@ -51,7 +51,7 @@ def import_data():
                         filefilter.set_name(defs.STRINGS["exportimport_filetype"])
                         filefilter.add_pattern("*.mcollection")
                         dialog.add_filter(filefilter)
-                        restart = 0
+                        go = 0
                         response = dialog.run()
                         if response == Gtk.ResponseType.OK:
                                 filename = dialog.get_filename()
@@ -61,12 +61,19 @@ def import_data():
                                         functions.various.message_dialog(defs.STRINGS["import_error"], 0)
                                         functions.collection.restore_backup(lastsave)
                                 else:
-                                        functions.various.message_dialog(defs.STRINGS["import_success"], 0)
-                                        restart = 1
+                                        go = 1
                         dialog.destroy()
-                        if restart == 1:
-                                python = sys.executable
-                                os.execl(python, python, os.path.join(defs.PATH_MC, "magic_collection.py"))
+                        if go == 1:
+                                functions.various.clear_gui_del()
+                                defs.READ_COLL_FINISH = False
+                                functions.collection.read_coll(defs.MAINWINDOW.collection.right_content, defs.MAINWINDOW.collection)
+                                while defs.READ_COLL_FINISH != True:
+                                        time.sleep(1 / 1000)
+                                defs.READ_COLL_FINISH = False
+                                functions.decks.gen_decks_display(defs.MAINWINDOW.decks, defs.MAINWINDOW.decks.right_content)
+                                if defs.MAINWINDOW.advancedsearch.mainstore != None:
+                                        defs.MAINWINDOW.advancedsearch.mainstore.clear()
+                                functions.various.message_dialog(defs.STRINGS["import_success"], 0)
 
 def export_data():
         '''This function exports the collection and the decks to a SQLite file.'''
