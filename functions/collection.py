@@ -542,7 +542,7 @@ def gen_delete_popover(button_delete, selection):
                 dialog.destroy()
                 # -8 yes, -9 no
                 if response == -8:
-                        defs.MAINWINDOW.collection.del_all_collection_decks()
+                        GLib.idle_add(defs.MAINWINDOW.collection.del_all_collection_decks)
         
         def button_delete_select_clicked(button, popover, selection):
                 popover.hide()
