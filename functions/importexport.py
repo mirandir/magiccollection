@@ -139,7 +139,10 @@ def import_oldformat():
                         if os.path.isdir(os.path.join(defs.CACHEMCPIC, folder)):
                                 for pic in os.listdir(os.path.join(defs.CACHEMCPIC, folder)):
                                         if "(" in pic and ")" in pic:
-                                                os.remove(os.path.join(defs.CACHEMCPIC, folder, pic))
+                                                try:
+                                                        os.remove(os.path.join(defs.CACHEMCPIC, folder, pic))
+                                                except:
+                                                        pass
                                                 nbvariant = ""
                                                 if pic[-11].isdigit():
                                                         nbvariant = pic[-11]
@@ -194,34 +197,37 @@ def import_oldformat():
 def cards_finder_oldcollection(Collection):
         '''This function try to found the old cards in the new database.'''
         def show_dialog(final_text_cards_not_found):
-                dialog = Gtk.Dialog(title=defs.STRINGS["import_conver"], buttons=(Gtk.STOCK_OK, Gtk.ResponseType.OK))
-                dialog.set_default_size(600, 400)
-                if defs.MAINWINDOW != None:
-                        dialog.set_transient_for(defs.MAINWINDOW)
-                        dialog.set_modal(True)
-                label_1 = Gtk.Label(defs.STRINGS["import_oldformat_finish"])
-                label_1.show()
-                label_1.set_max_width_chars(20)
-                label_1.set_line_wrap(True)
-                label_1.set_ellipsize(Pango.EllipsizeMode.END)
-                label_1.set_lines(10)
-                label_1.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
-                label = Gtk.Label(final_text_cards_not_found)
-                label.set_selectable(True)
-                label.set_alignment(0.0, 0.5)
-                scrolledwindow = Gtk.ScrolledWindow()
-                scrolledwindow.set_min_content_height(250)
-                scrolledwindow.set_min_content_width(250)
-                scrolledwindow.add_with_viewport(label)
-                scrolledwindow.show_all()
-                
-                content_area = dialog.get_content_area()
-                content_area.props.border_width = 6
-                content_area.pack_start(label_1, True, True, 0)
-                content_area.pack_start(scrolledwindow, True, True, 0)
-                
-                dialog.run()
-                dialog.destroy()
+                if final_text_cards_not_found != "":
+                        dialog = Gtk.Dialog(title=defs.STRINGS["import_conver"], buttons=(Gtk.STOCK_OK, Gtk.ResponseType.OK))
+                        dialog.set_default_size(600, 400)
+                        if defs.MAINWINDOW != None:
+                                dialog.set_transient_for(defs.MAINWINDOW)
+                                dialog.set_modal(True)
+                        label_1 = Gtk.Label(defs.STRINGS["import_oldformat_finish"])
+                        label_1.show()
+                        label_1.set_max_width_chars(20)
+                        label_1.set_line_wrap(True)
+                        label_1.set_ellipsize(Pango.EllipsizeMode.END)
+                        label_1.set_lines(10)
+                        label_1.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
+                        label = Gtk.Label(final_text_cards_not_found)
+                        label.set_selectable(True)
+                        label.set_alignment(0.0, 0.5)
+                        scrolledwindow = Gtk.ScrolledWindow()
+                        scrolledwindow.set_min_content_height(250)
+                        scrolledwindow.set_min_content_width(250)
+                        scrolledwindow.add_with_viewport(label)
+                        scrolledwindow.show_all()
+                        
+                        content_area = dialog.get_content_area()
+                        content_area.props.border_width = 6
+                        content_area.pack_start(label_1, True, True, 0)
+                        content_area.pack_start(scrolledwindow, True, True, 0)
+                        
+                        dialog.run()
+                        dialog.destroy()
+                else:
+                        functions.various.message_dialog(defs.STRINGS["import_oldformat_finish_ok"], 0)
         
         cards_found = {}
         cards_not_found = []
@@ -294,7 +300,8 @@ def cards_finder_oldcollection(Collection):
                 else:
                         final_text_cards_not_found = final_text_cards_not_found + card[0] + " - " + functions.various.edition_code_to_longname(card[1]) + " - " + tmp_text + "\n"
         
-        final_text_cards_not_found = final_text_cards_not_found[:-1]
+        if len(final_text_cards_not_found) > 0:
+                final_text_cards_not_found = final_text_cards_not_found[:-1]
         
         # we create the dialog
         GLib.idle_add(show_dialog, final_text_cards_not_found)

@@ -384,5 +384,6 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["import_useindeck"] = "utilisée dans le deck"
         translate["import_conver"] = "Conversion des données"
         translate["import_oldformat_finish"] = translate["app_name"] + " a terminé la conversion de vos données, mais certaines cartes n’ont pas été trouvées. Cela peut arriver notamment avec certains jetons qui avaient auparavant leur couleur dans leur nom. Il est conseillé de copier cette liste dans un endroit sûr, afin de pouvoir ressaisir ces cartes dans " + translate["app_name"] + "."
+        translate["import_oldformat_finish_ok"] = "La conversion de vos données est terminée."
         #########################
         return(translate)

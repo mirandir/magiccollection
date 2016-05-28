@@ -381,5 +381,6 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["import_useindeck"] = "used in the deck"
         translate["import_conver"] = "Convert data"
         translate["import_oldformat_finish"] = translate["app_name"] + " finished converting your data, but some cards were not found. This can happen with some tokens that previously had color in their name. You should copy this list in a safe place, in order to add these cards again in " + translate["app_name"] + "."
+        translate["import_oldformat_finish_ok"] = "Converting your data is complete."
         #########################
         return(translate)
