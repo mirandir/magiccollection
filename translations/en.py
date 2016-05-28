@@ -28,9 +28,9 @@ def translate():
         # Gmenu
         translate["preferences"] = "Preferences"
         translate["preferences_of_mc"] = "Preferences of " + translate["app_name"]
-        translate["importexport"] = "Import / Export"
-        translate["import"] = "Import collection & decks"
-        translate["export"] = "Export your data"
+        translate["importexport"] = "Restore / Backup"
+        translate["import"] = "Restore a backup"
+        translate["export"] = "Backup your data"
         translate["help"] = "Help"
         translate["doc"] = "Documentation"
         translate["website"] = "Website"
@@ -367,14 +367,14 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["config_need_restart"] = "Need a restart of " + translate["app_name"]
         # export
         translate["exportimport_filetype"] = "Files of " + translate["app_name"]
-        translate["export_collection_busy"] = "Unable to export your data, the collection is busy."
+        translate["export_collection_busy"] = "Unable to backup your data, the collection is busy."
         translate["export_filename"] = "Magic collection of %user% (%date%)"
         translate["export_write_impossible"] = "Unable to save th file.\nYou may not have the required permissions. Make sure the location is correct and try again."
         # import
-        translate["import_collection_busy"] = "Unable to import your data, the collection is busy."
+        translate["import_collection_busy"] = "Unable to restore your data, the collection is busy."
         translate["import_areyousure"] = "Your collection and your decks will be replaced.\nAre you sure?"
         translate["import_error"] = "Error when importing file."
-        translate["import_success"] = "The import was successful."
+        translate["import_success"] = "Restore was successful."
         translate["import_oldformat"] = "Converting your collection and your decks. Can take some time..."
         translate["import_oldformat_error_sqlite_is_here"] = "Error: " + translate["app_name"] + " is unable to convert your collection and your decks to the new format, because a collection already exists in this format. This should not happen unless you have manually copied the old files in the folder where " + translate["app_name"] + " stores your data. If it's not the case, thank you to report the problem."
         translate["import_oldformat_error_collection0810"] = "Error when converting the collection. " + translate["app_name"] + " can only convert the collection used with " + translate["app_name"] + " 0.8.10."

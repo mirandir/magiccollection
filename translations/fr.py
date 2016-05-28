@@ -28,9 +28,9 @@ def translate():
         # Gmenu
         translate["preferences"] = "Préférences"
         translate["preferences_of_mc"] = "Préférences de " + translate["app_name"]
-        translate["importexport"] = "Importer / Exporter"
-        translate["import"] = "Importer collection & decks"
-        translate["export"] = "Exporter vos données"
+        translate["importexport"] = "Restaurer / Sauvegarder"
+        translate["import"] = "Restaurer une sauvegarde"
+        translate["export"] = "Sauvegarder vos données"
         translate["help"] = "Aide"
         translate["doc"] = "Documentation"
         translate["website"] = "Site internet"
@@ -370,14 +370,14 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["config_need_restart"] = "Nécessite un redémarrage de " + translate["app_name"]
         # export
         translate["exportimport_filetype"] = "Fichiers " + translate["app_name"]
-        translate["export_collection_busy"] = "Impossible d'exporter vos données maintenant, la collection est en cours d'utilisation."
+        translate["export_collection_busy"] = "Impossible de sauvegarder vos données maintenant, la collection est en cours d'utilisation."
         translate["export_filename"] = "Collection Magic de %user% (%date%)"
         translate["export_write_impossible"] = "Impossible d'enregistrer le fichier.\nVous n’avez peut-être pas les permissions nécessaires. Vérifiez que vous avez saisi l’emplacement correctement et réessayez."
         # import
-        translate["import_collection_busy"] = "Impossible d'importer des données maintenant, la collection est en cours d'utilisation."
+        translate["import_collection_busy"] = "Impossible de restaurer une sauvegarde maintenant, la collection est en cours d'utilisation."
         translate["import_areyousure"] = "Votre collection et vos decks actuels vont être remplacés.\nÊtes-vous sûr(e) de vouloir continuer ?"
         translate["import_error"] = "Erreur lors de l'importation du fichier."
-        translate["import_success"] = "L'importation a réussi."
+        translate["import_success"] = "La restauration a réussi."
         translate["import_oldformat"] = "Conversion de votre collection et de vos decks. Cela peut prendre plusieurs minutes…"
         translate["import_oldformat_error_sqlite_is_here"] = "Erreur : " + translate["app_name"] + " ne peut pas convertir votre collection et vos decks vers le nouveau format de base de données, car une collection existe déjà dans ce nouveau format. Cela ne devrait pas arriver, sauf si vous avez copié manuellement des anciens fichiers dans le répertoire où " + translate["app_name"] + " stocke ses données. Si ce n’est pas le cas, merci de signaler le problème."
         translate["import_oldformat_error_collection0810"] = "Erreur lors de la conversion de l'ancienne collection. " + translate["app_name"] + " ne peut convertir que les collections ayant été utilisées avec " + translate["app_name"] + " 0.8.10."
