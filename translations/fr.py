@@ -287,6 +287,7 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["comment_deck"] = "Commentaire du deck"
         translate["edit_name_deck"] = "Nom du deck"
         translate["edit_comment_name_deck"] = "Modifier les informations du deck"
+        translate["change_deck_name"] = "Modifier"
         translate["decks_click_deck"] = "Cliquez sur un deck pour afficher les cartes qu'il contient."
         translate["nb_cards_in_deck"] = "%%% carte"
         translate["nb_cards_in_deck_s"] = "%%% cartes"

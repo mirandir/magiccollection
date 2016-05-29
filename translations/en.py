@@ -284,6 +284,7 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["comment_deck"] = "Comment of the deck"
         translate["edit_name_deck"] = "Name of the deck"
         translate["edit_comment_name_deck"] = "Edit the informations of the deck"
+        translate["change_deck_name"] = "Change"
         translate["decks_click_deck"] = "Click on a deck to show his cards."
         translate["nb_cards_in_deck"] = "%%% card"
         translate["nb_cards_in_deck_s"] = "%%% cards"

@@ -725,7 +725,7 @@ def gen_edit_comm_name_deck_popover(button_change_comm_deck, decks_object, selec
                         label_name_deck = Gtk.Label(defs.STRINGS["edit_name_deck"])
                         entry_name_deck = Gtk.Entry()
                         entry_name_deck.set_text(deck_name)
-                        ok_button = Gtk.Button(defs.STRINGS["create_new_deck_ok"])
+                        ok_button = Gtk.Button(defs.STRINGS["change_deck_name"])
                         entry_name_deck.connect("changed", entry_changed, ok_button, list_decks_names)
                         ok_button.set_sensitive(False)
                         ok_button.connect("clicked", rename_deck, entry_name_deck, decks_object, popover, deck_name)
