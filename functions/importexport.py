@@ -134,27 +134,11 @@ def import_oldformat():
                         shutil.rmtree(os.path.join(defs.CACHEMCPR))
                         os.mkdir(os.path.join(defs.CACHEMCPR))
                 
-                # we delete old pictures in CACHEMCPIC
+                # we delete old HD pictures in CACHEMCPIC
                 for folder in os.listdir(os.path.join(defs.CACHEMCPIC)):
                         if os.path.isdir(os.path.join(defs.CACHEMCPIC, folder)):
                                 for pic in os.listdir(os.path.join(defs.CACHEMCPIC, folder)):
-                                        if "(" in pic and ")" in pic:
-                                                try:
-                                                        os.remove(os.path.join(defs.CACHEMCPIC, folder, pic))
-                                                except:
-                                                        pass
-                                                nbvariant = ""
-                                                if pic[-11].isdigit():
-                                                        nbvariant = pic[-11]
-                                                        if nbvariant == "0":
-                                                                nbvariant = "10"
-                                                if nbvariant != "":
-                                                        name_without_variant = pic.replace(" (" + nbvariant + ")", "")
-                                                        try:
-                                                                os.remove(os.path.join(defs.CACHEMCPIC, folder, name_without_variant))
-                                                        except:
-                                                                pass
-                                        elif ".full.hd" in pic or "Forest" in pic or "Island" in pic or "Mountain" in pic or "Plains" in pic or "Swamp" in pic:
+                                        if ".full.hd" in pic:
                                                 try:
                                                         os.remove(os.path.join(defs.CACHEMCPIC, folder, pic))
                                                 except:
