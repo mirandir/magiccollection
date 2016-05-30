@@ -527,10 +527,16 @@ def prepare_request(search_widgets_list, type_request):
                                                         text_to_find = ""
                                                 if text_to_find == defs.STRINGS["foil_yes"]:
                                                         text_to_find = "1"
-                                                if negate == 0:
-                                                        tmp_request = """coll.foil = \"""" + text_to_find + """\""""
+                                                if text_to_find == "":
+                                                        if negate == 0:
+                                                                tmp_request = """coll.foil != \"1\""""
+                                                        else:
+                                                                tmp_request = """coll.foil = \"1\""""
                                                 else:
-                                                        tmp_request = """coll.foil != \"""" + text_to_find + """\""""
+                                                        if negate == 0:
+                                                                tmp_request = """coll.foil = \"""" + text_to_find + """\""""
+                                                        else:
+                                                                tmp_request = """coll.foil != \"""" + text_to_find + """\""""
                                                 if tmp_enum_req == "":
                                                         tmp_enum_req = "(" + tmp_request + ")"
                                                 else:
