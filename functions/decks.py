@@ -81,7 +81,7 @@ def gen_decks_display(decks_object, box):
                 scrolledwindow_decks.set_hexpand(True)
                 scrolledwindow_decks.set_shadow_type(Gtk.ShadowType.IN)
                 
-                # id_deck, name
+                # id_deck, name, comment
                 decks_object.store_list_decks = Gtk.ListStore(str, str, str)
                 
                 tree_decks = Gtk.TreeView(decks_object.store_list_decks)
@@ -101,6 +101,10 @@ def gen_decks_display(decks_object, box):
                 column_comment_decks = Gtk.TreeViewColumn(defs.STRINGS["comment_deck"], renderer_comment, text=2)
                 column_comment_decks.set_sort_column_id(2)
                 tree_decks.append_column(column_comment_decks)
+                
+                if defs.OS == "mac":
+                        decks_object.store_list_decks.set_sort_func(1, functions.various.compare_str_osx, None)
+                        decks_object.store_list_decks.set_sort_func(2, functions.various.compare_str_osx, None)
                 
                 decks_object.select_list_decks = tree_decks.get_selection()
                 decks_object.gen_list_decks(None)
