@@ -428,6 +428,8 @@ def gen_deck_content(deck_name, box, decks_object):
         # some work with columns
         columns_to_display = functions.config.read_config("decks_columns").split(";")
         coll_columns_list = functions.various.gen_treeview_columns(columns_to_display, tree_deck)[0]
+        if defs.OS == "mac":
+                decks_object.mainstore.set_sort_func(3, functions.various.compare_str_osx, None)
         decks_object.mainstore.set_sort_func(9, functions.various.compare_str_and_int, None)
         decks_object.mainstore.set_sort_func(10, functions.various.compare_str_and_int, None)
         

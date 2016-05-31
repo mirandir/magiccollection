@@ -501,6 +501,19 @@ def vertical_flip_pic(gtkimage):
         pixbuf = pixbuf.rotate_simple(GdkPixbuf.PixbufRotation.UPSIDEDOWN)
         gtkimage.set_from_pixbuf(pixbuf)
 
+def compare_str_osx(model, row1, row2, user_data):
+        '''This function compares two strings without accent. It's used only on Mac OS X, where the default GTK sort functions seem bugus.'''
+        sort_column, _ = model.get_sort_column_id()
+        value1 = py_lara(model.get_value(row1, sort_column))
+        value2 = py_lara(model.get_value(row2, sort_column))
+        
+        if value1 < value2:
+                return(-1)
+        elif value1 == value2:
+                return(0)
+        else:
+                return(1)
+
 def compare_str_and_int(model, row1, row2, user_data):
         '''This function compares a list of strings and int. int values are sorted first.'''
         def isFloat(string):
@@ -811,6 +824,9 @@ def create_window_search_name(request_response, current_object_view):
                 store_results.set_sort_column_id(3, Gtk.SortType.ASCENDING)
         else:
                 store_results.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+        
+        if defs.OS == "mac":
+                store_results.set_sort_func(3, compare_str_osx, None)
         
         label_nb_cards = Gtk.Label(defs.STRINGS["results"].replace("%%%", str(nb)))
         mainbox.pack_start(label_nb_cards, False, False, 0)

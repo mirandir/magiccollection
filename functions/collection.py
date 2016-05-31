@@ -190,6 +190,8 @@ def read_coll(box, coll_object):
                 # some work with columns
                 columns_to_display = functions.config.read_config("coll_columns").split(";")
                 coll_columns_list = functions.various.gen_treeview_columns(columns_to_display, tree_coll)[0]
+                if defs.OS == "mac":
+                        coll_object.mainstore.set_sort_func(3, functions.various.compare_str_osx, None)
                 coll_object.mainstore.set_sort_func(9, functions.various.compare_str_and_int, None)
                 coll_object.mainstore.set_sort_func(10, functions.various.compare_str_and_int, None)
                 
@@ -1377,6 +1379,8 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
                 else:
                         coll_object.searchstore.set_sort_column_id(1, Gtk.SortType.ASCENDING)
                 
+                if defs.OS == "mac":
+                        coll_object.searchstore.set_sort_func(3, functions.various.compare_str_osx, None)
                 coll_object.searchstore.set_sort_func(9, functions.various.compare_str_and_int, None)
                 coll_object.searchstore.set_sort_func(10, functions.various.compare_str_and_int, None)
                 

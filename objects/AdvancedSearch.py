@@ -289,6 +289,8 @@ class AdvancedSearch:
                         AS_object.mainselect = select
                         scrolledwindow.add(tree_results)
                         AS_object.mainstore = store_results
+                        if defs.OS == "mac":
+                                AS_object.mainstore.set_sort_func(3, functions.various.compare_str_osx, None)
                         AS_object.mainstore.set_sort_func(9, functions.various.compare_str_and_int, None)
                         AS_object.mainstore.set_sort_func(10, functions.various.compare_str_and_int, None)
                         
