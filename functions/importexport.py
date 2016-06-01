@@ -439,6 +439,12 @@ def card_validator_oldformat(card_name, card_ex):
         if card_ex == "CSPtd":
                 card_ex = "CST"
         
+        if card_ex == "KTK":
+                if card_name == "Emblem Sarkhan":
+                        card_name = "Emblem Sarkhan, the Dragonspeaker"
+                if card_name == "Emblem Sorin":
+                        card_name = "Emblem Sorin, Solemn Visitor"
+        
         if card_ex == "UNH":
                 if card_name == "Pegasus (1/1)" or card_name == "Soldier (1/1) (White)" or card_name == "Zombie (1/1)" or card_name == "Goblin (1/1)" or card_name == "Sheep (1/1)" or card_name == "Squirrel (1/1)":
                         card_ex = "UGL"
