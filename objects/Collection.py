@@ -68,7 +68,7 @@ class Collection:
                         functions.collection.create_db_coll()
                 
                 if os.path.isfile(os.path.join(defs.HOMEMC, "collection.sqlite")):
-                        functions.collection.read_coll(self.right_content, self)
+                        GLib.idle_add(functions.collection.read_coll, self.right_content, self)
                 else:
                         label_error_coll = Gtk.Label()
                         label_error_coll.set_markup("<big>" + defs.STRINGS["db_coll_error"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") + "</big>")

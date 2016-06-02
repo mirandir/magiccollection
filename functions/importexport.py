@@ -65,11 +65,7 @@ def import_data():
                         dialog.destroy()
                         if go == 1:
                                 functions.various.clear_gui_del()
-                                defs.READ_COLL_FINISH = False
                                 functions.collection.read_coll(defs.MAINWINDOW.collection.right_content, defs.MAINWINDOW.collection)
-                                while defs.READ_COLL_FINISH != True:
-                                        time.sleep(1 / 1000)
-                                defs.READ_COLL_FINISH = False
                                 functions.decks.gen_decks_display(defs.MAINWINDOW.decks, defs.MAINWINDOW.decks.right_content)
                                 if defs.MAINWINDOW.advancedsearch.mainstore != None:
                                         defs.MAINWINDOW.advancedsearch.mainstore.clear()
