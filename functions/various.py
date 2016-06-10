@@ -316,6 +316,32 @@ def prepare_cards_data_for_treeview(cards):
         reponse_split_flip = c.fetchall()
         functions.db.disconnect_db(conn)
         
+        # we choose the foreign name
+        if foreign_name == "name_chinesetrad":
+                nb_foreign = 5
+        elif foreign_name == "name_chinesesimp":
+                nb_foreign = 6
+        elif foreign_name == "name_french":
+                nb_foreign = 7
+        elif foreign_name == "name_german":
+                nb_foreign = 8
+        elif foreign_name == "name_italian":
+                nb_foreign = 9
+        elif foreign_name == "name_japanese":
+                nb_foreign = 10
+        elif foreign_name == "name_korean":
+                nb_foreign = 11
+        elif foreign_name == "name_portuguesebrazil":
+                nb_foreign = 12
+        elif foreign_name == "name_portuguese":
+                nb_foreign = 13
+        elif foreign_name == "name_russian":
+                nb_foreign = 14
+        elif foreign_name == "name_spanish":
+                nb_foreign = 15
+        else:
+                nb_foreign = 8 # why not ?
+        
         cards_ok = {}
         
         for card in cards:
@@ -325,30 +351,7 @@ def prepare_cards_data_for_treeview(cards):
                 real_name = card[1]
                 name = card[1]
                 # we choose the foreign name
-                if foreign_name == "name_chinesetrad":
-                        nameforeign = card[5]
-                elif foreign_name == "name_chinesesimp":
-                        nameforeign = card[6]
-                elif foreign_name == "name_french":
-                        nameforeign = card[7]
-                elif foreign_name == "name_german":
-                        nameforeign = card[8]
-                elif foreign_name == "name_italian":
-                        nameforeign = card[9]
-                elif foreign_name == "name_japanese":
-                        nameforeign = card[10]
-                elif foreign_name == "name_korean":
-                        nameforeign = card[11]
-                elif foreign_name == "name_portuguesebrazil":
-                        nameforeign = card[12]
-                elif foreign_name == "name_portuguese":
-                        nameforeign = card[13]
-                elif foreign_name == "name_russian":
-                        nameforeign = card[14]
-                elif foreign_name == "name_spanish":
-                        nameforeign = card[15]
-                else:
-                        nameforeign = card[8] # why not ?
+                nameforeign = card[nb_foreign]
                 
                 nameforeign_r = str(nameforeign)
                 names_r = card[3]

@@ -200,6 +200,7 @@ def read_coll(box, coll_object):
                                 italic_card = dict_rowcards_in_coll[id_][2]
                                 
                                 coll_object.mainstore.insert_with_valuesv(-1, range(17), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card])
+                                functions.various.force_update_gui(0)
                         
                         coll_object.mainstore.set_sort_column_id(7, Gtk.SortType.ASCENDING)
                         coll_object.mainstore.set_sort_column_id(2, Gtk.SortType.ASCENDING)
@@ -216,7 +217,6 @@ def read_coll(box, coll_object):
                         box.pack_start(overlay_coll, True, True, 0)
                         
                         defs.READ_COLL_FINISH = True
-                        print("coucou")
                 GLib.idle_add(cw_real, box, coll_spinner)
         
         for widget in box.get_children():
