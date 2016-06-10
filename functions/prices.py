@@ -166,9 +166,13 @@ def check_prices2(orig):
                 datedbprices = filepricesdb.read(8)
                 filepricesdb.close()
                 if os.path.isfile(os.path.join(defs.CACHEMCPR, "prices_" + datedbprices + ".sqlite.tar.xz")):
-                        tar = tarfile.open(os.path.join(defs.CACHEMCPR, "prices_" + datedbprices + ".sqlite.tar.xz"))
-                        tar.extractall(defs.CACHEMCPR)
-                        tar.close()
+                        try:
+                                tar = tarfile.open(os.path.join(defs.CACHEMCPR, "prices_" + datedbprices + ".sqlite.tar.xz"))
+                        except:
+                                pass
+                        else:
+                                tar.extractall(defs.CACHEMCPR)
+                                tar.close()
                         os.remove(os.path.join(defs.CACHEMCPR, "prices_" + datedbprices + ".sqlite.tar.xz"))
         
         if check_prices_presence():
