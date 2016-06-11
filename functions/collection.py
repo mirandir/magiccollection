@@ -661,6 +661,11 @@ def gen_quantity_popover(button_change_quantity, selection):
                 else:
                         button_ok.set_sensitive(False)
         
+        def spinbutton_activate(spinbutton, id_db, ids_coll_list, current_quantity, popover, selection, button_ok):
+                value = spinbutton.get_value_as_int()
+                if value != current_quantity and defs.COLL_LOCK == False:
+                        button_ok_clicked(button_ok, spinbutton, id_db, ids_coll_list, current_quantity, popover, selection)
+        
         def button_ok_clicked(button_ok, spinbutton, id_db, ids_coll_list, current_quantity, popover, selection):
                 new_value = spinbutton.get_value_as_int()
                 if new_value > current_quantity:
@@ -713,6 +718,7 @@ def gen_quantity_popover(button_change_quantity, selection):
                 quantity_box.pack_start(button_ok, True, True, 0)
                 
                 spinbutton.connect("value-changed", spinbutton_value_changed, button_ok, current_quantity)
+                spinbutton.connect("activate", spinbutton_activate, id_db, ids_coll_list, current_quantity, popover, selection, button_ok)
                 button_ok.connect("clicked", button_ok_clicked, spinbutton, id_db, ids_coll_list, current_quantity, popover, selection)
                 
                 quantity_box.show_all()
