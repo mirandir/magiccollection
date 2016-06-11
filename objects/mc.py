@@ -48,6 +48,9 @@ class MagicCollection(Gtk.Application):
                 if functions.config.read_config("dark_theme") == "1":
                         settings = Gtk.Settings.get_default()
                         settings.set_property("gtk-application-prefer-dark-theme", True)
+                # we disable the floating scrollbars with Windows
+                if defs.OS == "windows":
+                        os.environ["GTK_OVERLAY_SCROLLING"] = "0"
 
         def do_activate(self):
                 if self.window == None:
