@@ -735,23 +735,36 @@ def gen_quantity_popover(button_change_quantity, selection):
 
 def gen_add_deck_popover(button_add_deck, selection):
         '''Displays a popover which can add the current selection to a deck, if it's possible.'''
-        def select_changed(selection, ok_button, spinbuttons_dict):
+        def select_changed(selection, ok_button, spinbuttons_dict, all_spinbutton_list):
                 model, treeiter = selection.get_selected()
                 if treeiter == None:
                         ok_button.set_sensitive(False)
                 else:
                         at_least_one_to_add = 0
-                        for id_db, spinbutton in spinbuttons_dict.items():
-                                if spinbutton.get_value_as_int() > 0:
-                                        at_least_one_to_add += 1
-                                        break
+                        if all_spinbutton_list[0] == None:
+                                for id_db, spinbutton in spinbuttons_dict.items():
+                                        if spinbutton.get_value_as_int() > 0:
+                                                at_least_one_to_add += 1
+                                                break
+                        else:
+                                at_least_one_to_add = all_spinbutton_list[0].get_value_as_int()
                         if at_least_one_to_add > 0:
                                 ok_button.set_sensitive(True)
                         else:
                                 ok_button.set_sensitive(False)
         
-        def row_activated(a, b, c, popover, select_list_decks, cards_avail, spinbuttons_dict, selection):
-                add_deck(None, popover, select_list_decks, cards_avail, spinbuttons_dict, selection)
+        def row_activated(a, b, c, popover, select_list_decks, cards_avail, spinbuttons_dict, selection, side_checkbutton, all_spinbutton):
+                add_deck(None, popover, select_list_decks, cards_avail, spinbuttons_dict, selection, side_checkbutton, all_spinbutton)
+        
+        def all_spin_value_changed(spinbutton, select_list_decks, ok_button):
+                model, treeiter = select_list_decks.get_selected()
+                if treeiter == None:
+                        ok_button.set_sensitive(False)
+                else:
+                        if spinbutton.get_value_as_int() > 0:
+                                ok_button.set_sensitive(True)
+                        else:
+                                ok_button.set_sensitive(False)
         
         def spin_value_changed(spinbutton, spinbuttons_dict, select_list_decks, ok_button):
                 model, treeiter = select_list_decks.get_selected()
@@ -816,11 +829,14 @@ def gen_add_deck_popover(button_add_deck, selection):
                 side_checkbutton = Gtk.CheckButton(label=defs.STRINGS["decks_add_to_sideboard"])
                 
                 spinbuttons_dict = {}
+                all_spinbutton_list = []
+                list_nb_avail = []
                 
-                select_list_decks.connect("changed", select_changed, ok_button, spinbuttons_dict)
+                select_list_decks.connect("changed", select_changed, ok_button, spinbuttons_dict, all_spinbutton_list)
                 
                 cards_avail = {}
                 details_store = gen_details_store(selection)
+                
                 for i, row in enumerate(pathlist):
                         id_db_row = model[row][0]
                         if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
@@ -840,39 +856,65 @@ def gen_add_deck_popover(button_add_deck, selection):
                                                 else:
                                                         cards_avail[card[13]].append(card[0])
                                                 nb_avail += 1
+                                                list_nb_avail.append(nb_avail)
                                 
                         if nb_avail > 0:
-                                box_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
-                                label_name = Gtk.Label()
-                                label_name.set_markup("<b>" + row_name + "</b>")
-                                box_card.pack_start(label_name, False, False, 0)
                                 adjustment = Gtk.Adjustment(value=0, lower=0, upper=nb_avail, step_increment=1, page_increment=10, page_size=0)
                                 spinbutton = Gtk.SpinButton(adjustment=adjustment)
-                                spinbutton.connect("value-changed", spin_value_changed, spinbuttons_dict, select_list_decks, ok_button)
-                                box_card.pack_start(spinbutton, False, False, 0)
-                                box_cards.pack_start(box_card, False, False, 0)
                                 spinbuttons_dict[id_db_row] = spinbutton
-                        '''else:
-                                adjustment = Gtk.Adjustment(value=0, lower=0, upper=0, step_increment=1, page_increment=10, page_size=0)'''
+                                if len(pathlist) < 6:
+                                        box_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+                                        label_name = Gtk.Label()
+                                        label_name.set_markup("<b>" + row_name + "</b>")
+                                        box_card.pack_start(label_name, False, False, 0)
+                                        spinbutton.connect("value-changed", spin_value_changed, spinbuttons_dict, select_list_decks, ok_button)
+                                        box_card.pack_start(spinbutton, False, False, 0)
+                                        box_cards.pack_start(box_card, False, False, 0)
                         
-                if len(spinbuttons_dict) == 1:
+                all_spinbutton = None
+                if len(pathlist) > 5:
+                        try:
+                                max_all = max(list_nb_avail)
+                        except ValueError:
+                                max_all = 0
+                        all_adjustment = Gtk.Adjustment(value=0, lower=0, upper=max_all, step_increment=1, page_increment=10, page_size=0)
+                        all_spinbutton = Gtk.SpinButton(adjustment=all_adjustment)
+                        all_spinbutton.connect("value-changed", all_spin_value_changed, select_list_decks, ok_button)
+                        box_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+                        label_name = Gtk.Label()
+                        label_name.set_markup("<b>" + defs.STRINGS["add_to_deck_all"] + "</b>")
+                        box_card.pack_start(label_name, False, False, 0)
+                        box_card.pack_start(all_spinbutton, False, False, 0)
+                        box_cards.pack_start(box_card, False, False, 0)
+                all_spinbutton_list.append(all_spinbutton)
+                
+                if len(pathlist) > 5 or len(spinbuttons_dict) == 1:
                         scrolledwindow_cards.set_min_content_height(60)
                 elif len(spinbuttons_dict) == 2:
                         scrolledwindow_cards.set_min_content_height(120)
                 else:
                         scrolledwindow_cards.set_min_content_height(150)
-                ok_button.connect("clicked", add_deck, popover, select_list_decks, cards_avail, spinbuttons_dict, selection, side_checkbutton)
-                tree_decks.connect("row-activated", row_activated, popover, select_list_decks, cards_avail, spinbuttons_dict, selection)
+                ok_button.connect("clicked", add_deck, popover, select_list_decks, cards_avail, spinbuttons_dict, selection, side_checkbutton, all_spinbutton)
+                tree_decks.connect("row-activated", row_activated, popover, select_list_decks, cards_avail, spinbuttons_dict, selection, side_checkbutton, all_spinbutton)
                 add_deck_box.pack_start(scrolledwindow_decks, True, True, 0)
                 add_deck_box.pack_start(scrolledwindow_cards, True, True, 0)
                 add_deck_box.pack_start(side_checkbutton, True, True, 0)
                 add_deck_box.pack_start(ok_button, True, True, 0)
                 add_deck_box.show_all()
         
-        def add_deck(button, popover, select_list_decks, cards_avail, spinbuttons_dict, selection, side_checkbutton):
+        def add_deck(button, popover, select_list_decks, cards_avail, spinbuttons_dict, selection, side_checkbutton, all_spinbutton):
+                nb_max_for_all = -1
+                if all_spinbutton != None:
+                        nb_max_for_all = all_spinbutton.get_value_as_int()
                 ids_coll_dict = {}
                 for id_db_spin, spinbutton in spinbuttons_dict.items():
                         nb = spinbutton.get_value_as_int()
+                        if nb_max_for_all != -1:
+                                nb_avail = spinbutton.get_adjustment().get_upper()
+                                if nb_max_for_all < nb_avail:
+                                        nb = int(nb_max_for_all)
+                                else:
+                                        nb = int(nb_avail)
                         # ids_coll_dict[id_coll] = id_db
                         z = 0
                         for id_db, _cards_avail in cards_avail.items():

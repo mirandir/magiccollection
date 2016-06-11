@@ -255,6 +255,7 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["quantity_card_coll_only_number"] = "Searching by Quantity can only be done with numeric values."
         translate["change_quantity"] = "Change quantity"
         translate["change_quantity_validate"] = "Ok"
+        translate["add_to_deck_all"] = "All the selection"
         translate["delete_select"] = "Delete the selection"
         translate["delete_select_warning"] = "All copies of these cards will be DELETED.\nAre you sure?"
         translate["delete_all"] = "Delete the collection and the decks"
