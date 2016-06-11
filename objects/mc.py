@@ -235,6 +235,8 @@ class MC_Window(Gtk.ApplicationWindow):
                 search_entry.connect("activate", self.search_launched, self.main_stack)
                 search_entry.connect("icon-release", self.search_icon_release, self.main_stack)
                 search_entry.connect("changed", self.update_icons_search_entry)
+                search_entry.connect("button-press-event", self.focus_press_search_entry)
+                search_entry.connect("button-release-event", self.focus_release_search_entry)
                 search_entry.set_size_request(210, -1)
                 search_revealer.add(search_entry)
                 
@@ -325,6 +327,16 @@ class MC_Window(Gtk.ApplicationWindow):
                         functions.config.change_config("last_height", str(height))
                         # close
                         return(False)
+        
+        def focus_press_search_entry(self, entry, eventbutton):
+                if entry.has_focus():
+                        defs.SIMPLY_SEARCH_ENTRY_HAD_FOCUS = True
+                else:
+                        defs.SIMPLY_SEARCH_ENTRY_HAD_FOCUS = False
+        
+        def focus_release_search_entry(self, entry, eventbutton):
+                if entry.get_text() != "" and defs.SIMPLY_SEARCH_ENTRY_HAD_FOCUS == False:
+                        entry.select_region(0, -1)
         
         def update_icons_search_entry(self, entry):
                 if entry.get_text() == "":
