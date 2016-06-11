@@ -354,6 +354,7 @@ class MC_Window(Gtk.ApplicationWindow):
         def search_icon_release(self, search_entry, icon, event, main_stack):
                 if icon.value_name == "GTK_ENTRY_ICON_SECONDARY":
                         search_entry.set_text("")
+                        search_entry.grab_focus()
                 elif icon.value_name == "GTK_ENTRY_ICON_PRIMARY":
                         search_entry.emit("activate")
         
