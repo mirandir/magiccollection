@@ -102,9 +102,8 @@ def gen_decks_display(decks_object, box):
                 column_comment_decks.set_sort_column_id(2)
                 tree_decks.append_column(column_comment_decks)
                 
-                if defs.OS == "mac":
-                        decks_object.store_list_decks.set_sort_func(1, functions.various.compare_str_osx, None)
-                        decks_object.store_list_decks.set_sort_func(2, functions.various.compare_str_osx, None)
+                decks_object.store_list_decks.set_sort_func(1, functions.various.compare_str, None)
+                decks_object.store_list_decks.set_sort_func(2, functions.various.compare_str, None)
                 
                 decks_object.select_list_decks = tree_decks.get_selection()
                 decks_object.gen_list_decks(None)
@@ -432,10 +431,6 @@ def gen_deck_content(deck_name, box, decks_object):
         # some work with columns
         columns_to_display = functions.config.read_config("decks_columns").split(";")
         coll_columns_list = functions.various.gen_treeview_columns(columns_to_display, tree_deck)[0]
-        if defs.OS == "mac":
-                decks_object.mainstore.set_sort_func(3, functions.various.compare_str_osx, None)
-        decks_object.mainstore.set_sort_func(9, functions.various.compare_str_and_int, None)
-        decks_object.mainstore.set_sort_func(10, functions.various.compare_str_and_int, None)
         
         select = tree_deck.get_selection()
         select.set_mode(Gtk.SelectionMode.MULTIPLE)
@@ -458,6 +453,9 @@ def gen_deck_content(deck_name, box, decks_object):
                 cards_side = functions.various.prepare_cards_data_for_treeview(reponses_db_side)
                 _add_to_store(cards_side, 1, dict_cards_in_deck_side, dict_proxies_in_deck_side, decks_object.mainstore)
         
+        decks_object.mainstore.set_sort_func(3, functions.various.compare_str, None)
+        decks_object.mainstore.set_sort_func(9, functions.various.compare_str_and_int, None)
+        decks_object.mainstore.set_sort_func(10, functions.various.compare_str_and_int, None)
         decks_object.mainstore.set_sort_column_id(7, Gtk.SortType.ASCENDING)
         decks_object.mainstore.set_sort_column_id(2, Gtk.SortType.ASCENDING)
         if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():

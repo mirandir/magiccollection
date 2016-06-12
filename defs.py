@@ -54,7 +54,7 @@ if OS == "windows":
         if locale.windows_locale[windll.GetUserDefaultUILanguage()][:2] != "":
                 LANGUAGE = locale.windows_locale[windll.GetUserDefaultUILanguage()][:2]
 else:
-        locale.setlocale(locale.LC_ALL, '')
+        locale.setlocale(locale.LC_ALL, "")
         if locale.getlocale()[0][:2] != "":
                 LANGUAGE = locale.getlocale()[0][:2]
 
@@ -90,12 +90,15 @@ LOC_LANG_NAME = {
 8: ["es", STRINGS["l_spanish"]]
 }
 
+# From http://stackoverflow.com/a/1098616
+ACCENTED_CHAR_DICT = "".maketrans({"à":"a", "ã":"a", "á":"a", "â":"a", "ä":"a", "é":"e", "è":"e", "ê":"e", "ë":"e", "î":"i", "ï":"i", "ì":"i", "í":"i", "ĩ":"i", "ù":"u", "ú":"u", "ü":"u", "û":"u", "ũ":"u", "ô":"o", "ö":"o", "ó":"o", "ò":"o", "õ":"o", "ñ":"n", "ý":"y", "ç":"c", "ß":"ss"})
+
 # screen's size
 DISPLAY_WIDTH = Gdk.Screen.get_default().get_width()
 DISPLAY_HEIGHT = Gdk.Screen.get_default().get_height()
 
 # user dirs
-HOME = os.path.expanduser('~')
+HOME = os.path.expanduser("~")
 CONFIG = GLib.get_user_config_dir()
 DATA = GLib.get_user_data_dir()
 CACHE = GLib.get_user_cache_dir()
@@ -121,9 +124,9 @@ Gtk.IconTheme.append_search_path(Gtk.IconTheme.get_default(), os.path.join(PATH_
 Gtk.IconTheme.append_search_path(Gtk.IconTheme.get_default(), os.path.join(PATH_MC, "images", "icons"))
 
 # we add a custom size for gicons
-Gtk.icon_size_register('150_mana_symbol', 150, 150)
-Gtk.icon_size_register('100_mana_symbol', 100, 100)
-Gtk.icon_size_register('12_config_warning', 12, 12)
+Gtk.icon_size_register("150_mana_symbol", 150, 150)
+Gtk.icon_size_register("100_mana_symbol", 100, 100)
+Gtk.icon_size_register("12_config_warning", 12, 12)
 
 # MC website
 SITEMC = "http://mirandir.pagesperso-orange.fr/"
