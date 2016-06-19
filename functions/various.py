@@ -276,9 +276,19 @@ def isSQLite3(filename):
 
         return(header[:16] == b'SQLite format 3\x00')
 
-def remove_accented_char(text):
-        '''From http://stackoverflow.com/a/1098616'''
-        return(text.translate(defs.ACCENTED_CHAR_DICT))
+def remove_accented_char(texte):
+        accents = { 'a': ['à', 'ã', 'á', 'â', 'ä'],
+                    'e': ['é', 'è', 'ê', 'ë'],
+                    'i': ['î', 'ï', 'ì', 'í', 'ĩ'],
+                    'u': ['ù', 'ú', 'ü', 'û', 'ũ'],
+                    'o': ['ô', 'ö', 'ó', 'ò', 'õ'],
+                    'n': ['ñ'],
+                    'y': ['ý'],
+                    'c': ['ç'] }
+        for (char, accented_chars) in accents.items():
+            for accented_char in accented_chars:
+                texte = texte.replace(accented_char, char)
+        return(texte)
 
 def gen_dict_editions():
         '''Dict for editions' names'''
@@ -494,8 +504,8 @@ def vertical_flip_pic(gtkimage):
         pixbuf = pixbuf.rotate_simple(GdkPixbuf.PixbufRotation.UPSIDEDOWN)
         gtkimage.set_from_pixbuf(pixbuf)
 
-def compare_str(model, row1, row2, user_data):
-        '''This function compares two strings, without accent. The default GTK sort functions seem broken.'''
+def compare_str_osx(model, row1, row2, user_data):
+        '''This function compares two strings without accent. It's used only on Mac OS X, where the default GTK sort functions seem bugus.'''
         sort_column, _ = model.get_sort_column_id()
         value1 = py_lara(model.get_value(row1, sort_column))
         value2 = py_lara(model.get_value(row2, sort_column))
@@ -818,7 +828,8 @@ def create_window_search_name(request_response, current_object_view):
         else:
                 store_results.set_sort_column_id(1, Gtk.SortType.ASCENDING)
         
-        store_results.set_sort_func(3, compare_str, None)
+        if defs.OS == "mac":
+                store_results.set_sort_func(3, compare_str_osx, None)
         
         label_nb_cards = Gtk.Label(defs.STRINGS["results"].replace("%%%", str(nb)))
         mainbox.pack_start(label_nb_cards, False, False, 0)

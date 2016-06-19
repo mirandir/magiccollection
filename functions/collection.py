@@ -166,6 +166,10 @@ def read_coll(box, coll_object):
                         # some work with columns
                         columns_to_display = functions.config.read_config("coll_columns").split(";")
                         coll_columns_list = functions.various.gen_treeview_columns(columns_to_display, tree_coll)[0]
+                        if defs.OS == "mac":
+                                coll_object.mainstore.set_sort_func(3, functions.various.compare_str_osx, None)
+                        coll_object.mainstore.set_sort_func(9, functions.various.compare_str_and_int, None)
+                        coll_object.mainstore.set_sort_func(10, functions.various.compare_str_and_int, None)
                         
                         select = tree_coll.get_selection()
                         coll_object.select = select
@@ -197,10 +201,6 @@ def read_coll(box, coll_object):
                                 
                                 coll_object.mainstore.insert_with_valuesv(-1, range(17), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card])
                                 functions.various.force_update_gui(0)
-                        
-                        coll_object.mainstore.set_sort_func(3, functions.various.compare_str, None)
-                        coll_object.mainstore.set_sort_func(9, functions.various.compare_str_and_int, None)
-                        coll_object.mainstore.set_sort_func(10, functions.various.compare_str_and_int, None)
                         
                         coll_object.mainstore.set_sort_column_id(7, Gtk.SortType.ASCENDING)
                         coll_object.mainstore.set_sort_column_id(2, Gtk.SortType.ASCENDING)
@@ -1446,7 +1446,8 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
                 else:
                         coll_object.searchstore.set_sort_column_id(1, Gtk.SortType.ASCENDING)
                 
-                coll_object.searchstore.set_sort_func(3, functions.various.compare_str, None)
+                if defs.OS == "mac":
+                        coll_object.searchstore.set_sort_func(3, functions.various.compare_str_osx, None)
                 coll_object.searchstore.set_sort_func(9, functions.various.compare_str_and_int, None)
                 coll_object.searchstore.set_sort_func(10, functions.various.compare_str_and_int, None)
                 

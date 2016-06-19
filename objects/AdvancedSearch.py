@@ -289,15 +289,16 @@ class AdvancedSearch:
                         AS_object.mainselect = select
                         scrolledwindow.add(tree_results)
                         AS_object.mainstore = store_results
+                        if defs.OS == "mac":
+                                AS_object.mainstore.set_sort_func(3, functions.various.compare_str_osx, None)
+                        AS_object.mainstore.set_sort_func(9, functions.various.compare_str_and_int, None)
+                        AS_object.mainstore.set_sort_func(10, functions.various.compare_str_and_int, None)
                         
                         tree_results.connect("row-activated", self.show_details, select, self.button_show_details)
                         
                         AS_object.box_results.pack_start(scrolledwindow, True, True, 0)
                 
-                def _end(AS_object, store_results, wait_button):
-                        AS_object.mainstore.set_sort_func(3, functions.various.compare_str, None)
-                        AS_object.mainstore.set_sort_func(9, functions.various.compare_str_and_int, None)
-                        AS_object.mainstore.set_sort_func(10, functions.various.compare_str_and_int, None)
+                def _end(store_results, wait_button):
                         store_results.set_sort_column_id(7, Gtk.SortType.ASCENDING)
                         store_results.set_sort_column_id(2, Gtk.SortType.ASCENDING)
                         if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
@@ -415,7 +416,7 @@ class AdvancedSearch:
                                         nb_lines_added += 1
                                         insert_data(store_results, cards_added, card, bold, italic)
                         
-                        _end(self, store_results, wait_button)
+                        _end(store_results, wait_button)
                         
                         if type_s == "edition":
                                 if nb_lines_added > 1:
