@@ -259,7 +259,8 @@ PIC_IN_TEXT = {
 "{R/P}": ["pr.png", 15],
 "{U/P}": ["pu.png", 15],
 "{W/P}": ["pw.png", 15],
-"{P}": ["p.png", 15]
+"{P}": ["p.png", 15],
+"{½}": ["1_2.png", 15]
 }
 
 for nb in range(20):
