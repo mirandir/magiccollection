@@ -284,7 +284,8 @@ def remove_accented_char(texte):
                     'o': ['ô', 'ö', 'ó', 'ò', 'õ'],
                     'n': ['ñ'],
                     'y': ['ý'],
-                    'c': ['ç'] }
+                    'c': ['ç'],
+                    'ss': ['ß'] }
         for (char, accented_chars) in accents.items():
             for accented_char in accented_chars:
                 texte = texte.replace(accented_char, char)
