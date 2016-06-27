@@ -609,6 +609,8 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         radius = 13
                         if imageurl != "":
                                 radius = 7
+                        if type_[:7] == "Plane —":
+                                radius = 18
                         
                         if pic_ok == 0:
                                 origin = object_origin.__class__.__name__
