@@ -263,10 +263,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                                 id_otherface = tmp_card[0]
                                                 break
                                 
-                                if basename == names.split("|")[0]:
-                                        df_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="weather-clear-night-symbolic"), Gtk.IconSize.LARGE_TOOLBAR)
-                                else:
-                                        df_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="weather-clear-symbolic"), Gtk.IconSize.LARGE_TOOLBAR)
+                                df_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="icon_flip_card-symbolic"), Gtk.IconSize.LARGE_TOOLBAR)
                                 df_button.connect("clicked", object_origin.load_card_from_outside, str(id_otherface), [], simple_search)
                                 df_button.set_tooltip_text(defs.STRINGS["dfbutton_seeotherside_tooltip"])
                                 Gtk.StyleContext.add_provider(context_df_button, style_provider_df_button, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
