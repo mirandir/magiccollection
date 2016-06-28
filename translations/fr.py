@@ -151,10 +151,10 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["column_nb"] = "#"
         translate["column_nb_complete"] = "Quantité"
         translate["column_prices"] = "Prix"
-        translate["cmc_only_number"] = "La recherche par Coût converti de mana ne peut se faire qu'avec des valeurs numériques."
-        translate["power_only_number"] = "La recherche par Force ne peut se faire qu'avec des valeurs numériques."
-        translate["toughness_only_number"] = "La recherche par Endurance ne peut se faire qu'avec des valeurs numériques."
-        translate["loyalty_only_number"] = "La recherche par Loyauté ne peut se faire qu'avec des valeurs numériques."
+        translate["cmc_only_number"] = "La recherche par Coût converti de mana ne peut se faire qu'avec des valeurs numériques entières."
+        translate["power_only_number"] = "La recherche par Force ne peut se faire qu'avec des valeurs numériques entières."
+        translate["toughness_only_number"] = "La recherche par Endurance ne peut se faire qu'avec des valeurs numériques entières."
+        translate["loyalty_only_number"] = "La recherche par Loyauté ne peut se faire qu'avec des valeurs numériques entières."
         # rarity
         translate["rarity"] = "Rareté"
         translate["mythic"] = "Mythique"
@@ -255,7 +255,7 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["foil_only_yesno"] = "Le critère de recherche Foil ne peut s'utiliser qu'avec les valeurs suivantes : 1, 0, " + translate["foil_yes"] + ", " + translate["foil_no"] + "."
         translate["placeholder_date"] = "AAAA-MM-JJ" # y-m-d
         translate["date_format"] = "La recherche par Date d'ajout à la collection ne peut se faire qu'avec le format AAAA-MM-JJ (Année-Mois-Jour)."
-        translate["quantity_card_coll_only_number"] = "La recherche par Nombre d'exemplaires dans la collection ne peut se faire qu'avec des valeurs numériques."
+        translate["quantity_card_coll_only_number"] = "La recherche par Nombre d'exemplaires dans la collection ne peut se faire qu'avec des valeurs numériques entières."
         translate["change_quantity"] = "Modifier la quantité"
         translate["change_quantity_validate"] = "Valider"
         translate["add_to_deck_all"] = "Toute la sélection"

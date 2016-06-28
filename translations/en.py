@@ -148,10 +148,10 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["column_nb"] = "#"
         translate["column_nb_complete"] = "Quantity"
         translate["column_prices"] = "Price"
-        translate["cmc_only_number"] = "Searching by Converted Mana Cost can only be done with numeric values."
-        translate["power_only_number"] = "Searching by Power can only be done with numeric values."
-        translate["toughness_only_number"] = "Searching by Toughness can only be done with numeric values."
-        translate["loyalty_only_number"] = "Searching by Loyalty can only be done with numeric values."
+        translate["cmc_only_number"] = "Searching by Converted Mana Cost can only be done with integers."
+        translate["power_only_number"] = "Searching by Power can only be done with integers."
+        translate["toughness_only_number"] = "Searching by Toughness can only be done with integers."
+        translate["loyalty_only_number"] = "Searching by Loyalty can only be done with integers."
         # rarity
         translate["rarity"] = "Rarity"
         translate["mythic"] = "Mythic"
@@ -252,7 +252,7 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["foil_only_yesno"] = "Searching by Foil can only be done with: 1, 0, " + translate["foil_yes"] + ", " + translate["foil_no"] + "."
         translate["placeholder_date"] = "YYYY-MM-DD" # y-m-d
         translate["date_format"] = "Searching by Date added to the collection can only be done with the YYYY-MM-DD format (Year-Month-Day)."
-        translate["quantity_card_coll_only_number"] = "Searching by Quantity can only be done with numeric values."
+        translate["quantity_card_coll_only_number"] = "Searching by Quantity can only be done with integers."
         translate["change_quantity"] = "Change quantity"
         translate["change_quantity_validate"] = "Ok"
         translate["add_to_deck_all"] = "All the selection"
