@@ -953,6 +953,27 @@ def update_entrycompletions(entry_lang, entry_loaned):
                 liststore_loaned.append([elm])
         entry_loaned.set_completion(entrycompletion_loaned)
 
+def gen_entrycompletion_editions(adsearch_item):
+        '''We generate the completion for the GtkEntry 'editions'.'''
+        liststore_edition = Gtk.ListStore(str)
+        entrycompletion_edition = Gtk.EntryCompletion()
+        entrycompletion_edition.set_match_func(matchfunc_custom, 0)
+        entrycompletion_edition.set_minimum_key_length(3)
+        entrycompletion_edition.set_model(liststore_edition)
+        entrycompletion_edition.set_text_column(0)
+        for elm in adsearch_item.list_entrycompletion_editions:
+                liststore_edition.append([elm])
+        return(entrycompletion_edition)
+
+def matchfunc_custom(completion, key, iter, column):
+        '''We check when we have to pop one or more edition's name.'''
+        model = completion.get_model()
+        ed_name = model.get_value(iter, column)
+        if py_lara(key) in py_lara(ed_name):
+                return(True)
+        else:
+                return(False)
+
 def gdkpixbuf_new_from_file(path):
         '''We wrap GdkPixbuf.Pixbuf.new_from_file, because it's not the same function on Windows. We return a GdkPixbuf.Pixbuf.'''
         if defs.OS == "windows":

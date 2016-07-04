@@ -1376,6 +1376,7 @@ def show_hide_searchbar(togglebutton, searchbar):
 def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
         '''Return a GtkGrid with all widgets for searching in the collection.'''
         def comboboxtext_changed(comboboxtext, entry):
+                # we use the code in the Advanced Search
                 defs.MAINWINDOW.advancedsearch.comboboxtext_changed(comboboxtext, entry)
         
         def on_button_radio_op(button, name, entry, popover):
@@ -1547,12 +1548,17 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
         
         searchbar.connect_entry(entry1)
         
+        # name
         comboboxtext1.set_active(0)
         comboboxtext1.connect("changed", comboboxtext_changed, entry1)
+        # type
         comboboxtext2.set_active(2)
         comboboxtext2.connect("changed", comboboxtext_changed, entry2)
+        # edition
         comboboxtext3.set_active(1)
         comboboxtext3.connect("changed", comboboxtext_changed, entry3)
+        entry3.set_completion(functions.various.gen_entrycompletion_editions(defs.MAINWINDOW.advancedsearch))
+        # color
         comboboxtext4.set_active(3)
         comboboxtext4.connect("changed", comboboxtext_changed, entry4)
         

@@ -48,6 +48,8 @@ class AdvancedSearch:
                 self.mainbox.set_margin_left(5)
                 self.mainbox.set_margin_right(5)
                 
+                self.list_entrycompletion_editions = []
+                
                 mainwindow.main_stack.add_titled(self.mainbox, "advancedsearch", defs.STRINGS["advancedsearch"])
                 
                 self.card_viewer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -148,12 +150,17 @@ class AdvancedSearch:
                 entry3 = Gtk.Entry()
                 entry4 = Gtk.Entry()
                 
+                # name
                 comboboxtext1.set_active(0)
                 comboboxtext1.connect("changed", self.comboboxtext_changed, entry1)
+                # type
                 comboboxtext2.set_active(2)
                 comboboxtext2.connect("changed", self.comboboxtext_changed, entry2)
+                # edition
                 comboboxtext3.set_active(1)
                 comboboxtext3.connect("changed", self.comboboxtext_changed, entry3)
+                entry3.set_completion(functions.various.gen_entrycompletion_editions(self))
+                # color
                 comboboxtext4.set_active(3)
                 comboboxtext4.connect("changed", self.comboboxtext_changed, entry4)
                 
@@ -574,10 +581,17 @@ class AdvancedSearch:
                 else:
                         entry.set_icon_from_pixbuf(Gtk.EntryIconPosition.PRIMARY, None)
                 
+                # we add a placeholder for the date
                 if search == "date":
                         entry.set_placeholder_text(defs.STRINGS["placeholder_date"])
                 else:
                         entry.set_placeholder_text("")
+                
+                # we add a completion for the editions
+                if search == "edition":
+                        entry.set_completion(functions.various.gen_entrycompletion_editions(self))
+                else:
+                        entry.set_completion(None)
                 
         def gen_list_editions(self):
                 self.store_editions.clear()
@@ -591,9 +605,11 @@ class AdvancedSearch:
                         if use_french_name == "1":
                                 if info_edition[4] != "":
                                         nom_fr_ou_en = info_edition[4]
+                        self.list_entrycompletion_editions.append(nom_fr_ou_en)
                         self.store_editions.append([nom_fr_ou_en, info_edition[1], info_edition[2], info_edition[3].replace("-", ""), info_edition[4], info_edition[5]])
                 
                 functions.db.disconnect_db(conn)
+                self.list_entrycompletion_editions.sort()
         
         def show_details(self, treeview, treepath, column, selection, button_show_details):
                 if button_show_details.get_sensitive():
