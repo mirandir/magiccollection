@@ -306,8 +306,6 @@ class AdvancedSearch:
                         AS_object.box_results.pack_start(scrolledwindow, True, True, 0)
                 
                 def _end(store_results, wait_button):
-                        store_results.set_sort_column_id(7, Gtk.SortType.ASCENDING)
-                        store_results.set_sort_column_id(2, Gtk.SortType.ASCENDING)
                         if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
                                 store_results.set_sort_column_id(3, Gtk.SortType.ASCENDING)
                         else:

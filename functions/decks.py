@@ -458,8 +458,6 @@ def gen_deck_content(deck_name, box, decks_object):
                 cards_side = functions.various.prepare_cards_data_for_treeview(reponses_db_side)
                 _add_to_store(cards_side, 1, dict_cards_in_deck_side, dict_proxies_in_deck_side, decks_object.mainstore)
         
-        decks_object.mainstore.set_sort_column_id(7, Gtk.SortType.ASCENDING)
-        decks_object.mainstore.set_sort_column_id(2, Gtk.SortType.ASCENDING)
         if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
                 decks_object.mainstore.set_sort_column_id(3, Gtk.SortType.ASCENDING)
         else:

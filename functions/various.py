@@ -822,8 +822,6 @@ def create_window_search_name(request_response, current_object_view):
                         cards_added.append(card["name"] + "-" + card["edition_ln"])
                         nb += 1
         
-        store_results.set_sort_column_id(7, Gtk.SortType.ASCENDING)
-        store_results.set_sort_column_id(2, Gtk.SortType.ASCENDING)
         if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
                 store_results.set_sort_column_id(3, Gtk.SortType.ASCENDING)
         else:
