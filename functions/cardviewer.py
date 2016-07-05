@@ -994,6 +994,7 @@ def button_add_clicked(button_add, popover, spinbutton, comboboxtext_condition, 
                 thread = threading.Thread(target = add_proxies, args = (deck_name, proxies_list_to_change))
                 thread.daemon = True
                 thread.start()
+        popover.hide()
 
 def popover_add_close(popover, eventbox):
         eventbox.remove(eventbox.get_child())
