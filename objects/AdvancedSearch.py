@@ -247,6 +247,7 @@ class AdvancedSearch:
                                         if row[1] == card[0] and row[2] == card[1]:
                                                 self.mainstore[i][12] = 700
                                 i += 1
+                        self.mainselect.emit("changed")
         
         def empty_box_results(self):
                 for widget in self.box_results.get_children():
