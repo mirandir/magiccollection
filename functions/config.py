@@ -23,6 +23,7 @@
 from gi.repository import Gtk, Gio, GLib
 import os
 import threading
+import shutil
 
 # import global values
 import defs
@@ -305,18 +306,30 @@ def show_pref_dialog():
                 box_prices = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
                 gen_prices_box_content(box_prices, dict_config)
                 
+                # cards pictures
+                box_pic_cards = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
                 
-                for grid in [box_display, box_columns, box_internet, box_prices]:
+                label_pic_cards_downloaded = Gtk.Label()
+                label_pic_cards_downloaded.set_markup("<b>" + defs.STRINGS["config_pic_cards_downloaded"] + "</b>")
+                box_pic_cards.pack_start(label_pic_cards_downloaded, False, True, 0)
+                
+                box_pic_cards_downloaded_content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+                box_pic_cards.pack_start(box_pic_cards_downloaded_content, False, True, 0)
+                gen_pic_cards_downloaded_content(box_pic_cards_downloaded_content)
+                
+                
+                for grid in [box_display, box_columns, box_internet, box_prices, box_pic_cards]:
                         grid.props.border_width = 12
-                for label in [label_editions, label_ext_sort_as, label_searches, label_collection, label_pics_cards, label_connection, label_nonenglish_names, label_columns_order_disp, label_columns_order_disp_helper]:
+                for label in [label_editions, label_ext_sort_as, label_searches, label_collection, label_pics_cards, label_connection, label_nonenglish_names, label_columns_order_disp, label_columns_order_disp_helper, label_pic_cards_downloaded]:
                         label.set_alignment(0.0, 0.5)
-                for widget in [label_ext_sort_as, checkbutton_no_reprints, checkbutton_add_collection_show_details, checkbutton_download_pic_collection_decks, checkbutton_download_pic_as, checkbutton_not_internet_popup, label_fr_language, label_columns_order_disp_helper, box_columns_coll_decks, scrolledwindow_columns_as]:
+                for widget in [label_ext_sort_as, checkbutton_no_reprints, checkbutton_add_collection_show_details, checkbutton_download_pic_collection_decks, checkbutton_download_pic_as, checkbutton_not_internet_popup, label_fr_language, label_columns_order_disp_helper, box_columns_coll_decks, scrolledwindow_columns_as, box_pic_cards_downloaded_content]:
                         widget.set_margin_left(12)
                 
                 notebook.append_page(box_display, Gtk.Label(defs.STRINGS["config_display"]))
                 notebook.append_page(box_columns, Gtk.Label(defs.STRINGS["config_columns"]))
                 notebook.append_page(box_internet, Gtk.Label(defs.STRINGS["config_internet"]))
                 notebook.append_page(box_prices, Gtk.Label(defs.STRINGS["config_cardsprices"]))
+                notebook.append_page(box_pic_cards, Gtk.Label(defs.STRINGS["config_pic_cards"]))
                 
                 content_area = pref_dialog.get_content_area()
                 content_area.props.border_width = 0
@@ -342,6 +355,124 @@ def down_prices_manual(button, box_prices, box_button, label, dict_config):
         thread.daemon = True
         thread.start()
 
+def get_size(start_path):
+        '''Gets the size of a folder (from http://stackoverflow.com/questions/1392413/calculating-a-directory-size-using-python)'''
+        total_size = 0
+        for dirpath, dirnames, filenames in os.walk(start_path):
+                for f in filenames:
+                        fp = os.path.join(dirpath, f)
+                        total_size += os.path.getsize(fp)
+        return(total_size)
+
+def GetHumanReadableSize(size,precision=2):
+        '''Adapted from http://stackoverflow.com/a/32009595'''
+        suffixes=[defs.STRINGS["config_pic_cards_size_b"], defs.STRINGS["config_pic_cards_size_ko"], defs.STRINGS["config_pic_cards_size_mo"], defs.STRINGS["config_pic_cards_size_go"], defs.STRINGS["config_pic_cards_size_to"]]
+        suffixIndex = 0
+        while size > 1000 and suffixIndex < 4:
+                suffixIndex += 1 #increment the index of the suffix
+                size = size/1000.0 #apply the division
+        end_val = defs.STRINGS["config_pic_cards_size_unit"].replace("{VALUE}", "%.*f").replace("{SIZE}", "%s")
+        return(end_val % (precision, size, suffixes[suffixIndex]))
+
+def get_size_pic_cache(label_pic_cards_size):
+        def update_label(label_pic_cards_size, size):
+                label_pic_cards_size.set_text(defs.STRINGS["config_pic_cards_size_all"] + size)
+                label_pic_cards_size.show()
+        size = GetHumanReadableSize(get_size(defs.CACHEMCPIC))
+        GLib.idle_add(update_label, label_pic_cards_size, size)
+
+def gen_pic_cards_downloaded_content(box_pic_cards_downloaded_content):
+        for widget in box_pic_cards_downloaded_content.get_children():
+                box_pic_cards_downloaded_content.remove(widget)
+        
+        edition_with_pics_list = os.listdir(defs.CACHEMCPIC)
+        if len(edition_with_pics_list) < 3:
+                label_pic_cards_downloaded_editions_intro = Gtk.Label(defs.STRINGS["config_pic_cards_downloaded_editions_intro_none"])
+                box_pic_cards_downloaded_content.pack_start(label_pic_cards_downloaded_editions_intro, False, True, 0)
+                label_pic_cards_downloaded_editions_intro.set_alignment(0.0, 0.5)
+                label_pic_cards_downloaded_editions_intro.show()
+        else:
+                def select_changed(selection, liststore, del_pics_ed_button):
+                        model, treeiter = selection.get_selected()
+                        if treeiter == None:
+                                del_pics_ed_button.set_sensitive(False)
+                        else:
+                                del_pics_ed_button.set_sensitive(True)
+                
+                def del_pics_ed_button_clicked(button, selection):
+                        model, treeiter = selection.get_selected()
+                        if treeiter != None:
+                                try:
+                                        shutil.rmtree(os.path.join(defs.CACHEMCPIC, model[treeiter][0]))
+                                except:
+                                        pass
+                                else:
+                                        gen_pic_cards_downloaded_content(box_pic_cards_downloaded_content)
+                
+                def del_all_pics_ed_button_clicked(button, liststore):
+                        for data in liststore:
+                                code, longname = data
+                                try:
+                                        shutil.rmtree(os.path.join(defs.CACHEMCPIC, code))
+                                except:
+                                        pass
+                        gen_pic_cards_downloaded_content(box_pic_cards_downloaded_content)
+                                
+                
+                label_pic_cards_size = Gtk.Label()
+                label_pic_cards_size.set_alignment(0.0, 0.5)
+                thread = threading.Thread(target = get_size_pic_cache, args = [label_pic_cards_size])
+                thread.daemon = True
+                thread.start()
+                
+                liststore = Gtk.ListStore(str, str)
+                
+                for edition_code in edition_with_pics_list:
+                        try:
+                                edition_name = functions.various.edition_code_to_longname(edition_code)
+                        except:
+                                pass
+                        else:
+                                liststore.append([edition_code, edition_name])
+                
+                del_pics_ed_button = Gtk.Button(defs.STRINGS["config_pic_cards_delete"])
+                del_pics_ed_button.set_sensitive(False)
+                
+                del_all_pics_ed_button = Gtk.Button(defs.STRINGS["config_pic_cards_delete_all"])
+                
+                scrolledwindow = Gtk.ScrolledWindow()
+                scrolledwindow.set_min_content_width(100)
+                scrolledwindow.set_min_content_height(120)
+                scrolledwindow.set_vexpand(True)
+                scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
+                
+                treeview = Gtk.TreeView(liststore)
+                treeview.set_enable_search(False)
+                
+                select = treeview.get_selection()
+                select.connect("changed", select_changed, liststore, del_pics_ed_button)
+                del_pics_ed_button.connect("clicked", del_pics_ed_button_clicked, select)
+                del_all_pics_ed_button.connect("clicked", del_all_pics_ed_button_clicked, liststore)
+                
+                renderer_column_ed_name = Gtk.CellRendererText()
+                column_column_ed_name = Gtk.TreeViewColumn(defs.STRINGS["config_pic_cards_downloaded_editions_intro"], renderer_column_ed_name, text=1)
+                
+                treeview.append_column(column_column_ed_name)
+                liststore.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+                
+                scrolledwindow.add(treeview)
+                scrolledwindow.show_all()
+                del_pics_ed_button.show()
+                del_all_pics_ed_button.show()
+                
+                '''for label in [label_pic_cards_downloaded_editions_intro]:
+                        label.set_alignment(0.0, 0.5)'''
+                
+                box_pic_cards_downloaded_content.pack_start(scrolledwindow, False, True, 0)
+                box_pic_cards_downloaded_content.pack_start(label_pic_cards_size, False, True, 0)
+                box_pic_cards_downloaded_content.pack_start(del_pics_ed_button, False, True, 0)
+                box_pic_cards_downloaded_content.pack_start(del_all_pics_ed_button, False, True, 0)
+        
 def gen_prices_box_content(box_prices, dict_config):
         for widget in box_prices.get_children():
                 box_prices.remove(widget)

@@ -370,22 +370,35 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["config_cardsprices_checking_update"] = "Vérification des mises à jour des prix des cartes…"
         translate["config_cardsprices_downloading"] = "Téléchargement des prix des cartes…"
         translate["config_need_restart"] = "Nécessite un redémarrage de " + translate["app_name"]
+        translate["config_pic_cards"] = "Images des cartes"
+        translate["config_pic_cards_downloaded"] = "Images téléchargées"
+        translate["config_pic_cards_downloaded_editions_intro_none"] = "Aucune image n'a encore été téléchargée."
+        translate["config_pic_cards_downloaded_editions_intro"] = "Des images ont été téléchargées pour les éditions suivantes :"
+        translate["config_pic_cards_delete"] = "Supprimer les images de l'édition sélectionnée"
+        translate["config_pic_cards_delete_all"] = "Supprimer toutes les images téléchargées"
+        translate["config_pic_cards_size_all"] = "Taille totale des images : "
+        translate["config_pic_cards_size_b"] = "b"
+        translate["config_pic_cards_size_ko"] = "ko"
+        translate["config_pic_cards_size_mo"] = "Mo"
+        translate["config_pic_cards_size_go"] = "Go"
+        translate["config_pic_cards_size_to"] = "To"
+        translate["config_pic_cards_size_unit"] = "{VALUE} {SIZE}"
         # export
         translate["exportimport_filetype"] = "Fichiers " + translate["app_name"]
         translate["export_collection_busy"] = "Impossible de sauvegarder vos données maintenant, la collection est en cours d'utilisation."
         translate["export_filename"] = "Collection Magic de %user% (%date%)"
-        translate["export_write_impossible"] = "Impossible d'enregistrer le fichier.\nVous n’avez peut-être pas les permissions nécessaires. Vérifiez que vous avez saisi l’emplacement correctement et réessayez."
+        translate["export_write_impossible"] = "Impossible d'enregistrer le fichier.\nVous n'avez peut-être pas les permissions nécessaires. Vérifiez que vous avez saisi l'emplacement correctement et réessayez."
         # import
         translate["import_collection_busy"] = "Impossible de restaurer une sauvegarde maintenant, la collection est en cours d'utilisation."
         translate["import_areyousure"] = "Votre collection et vos decks actuels vont être remplacés.\nÊtes-vous sûr(e) de vouloir continuer ?"
         translate["import_error"] = "Erreur lors de l'importation du fichier."
         translate["import_success"] = "La restauration a réussi."
         translate["import_oldformat"] = "Conversion de votre collection et de vos decks. Cela peut prendre plusieurs minutes…"
-        translate["import_oldformat_error_sqlite_is_here"] = "Erreur : " + translate["app_name"] + " ne peut pas convertir votre collection et vos decks vers le nouveau format de base de données, car une collection existe déjà dans ce nouveau format. Cela ne devrait pas arriver, sauf si vous avez copié manuellement des anciens fichiers dans le répertoire où " + translate["app_name"] + " stocke ses données. Si ce n’est pas le cas, merci de signaler le problème."
+        translate["import_oldformat_error_sqlite_is_here"] = "Erreur : " + translate["app_name"] + " ne peut pas convertir votre collection et vos decks vers le nouveau format de base de données, car une collection existe déjà dans ce nouveau format. Cela ne devrait pas arriver, sauf si vous avez copié manuellement des anciens fichiers dans le répertoire où " + translate["app_name"] + " stocke ses données. Si ce n'est pas le cas, merci de signaler le problème."
         translate["import_oldformat_error_collection0810"] = "Erreur lors de la conversion de l'ancienne collection. " + translate["app_name"] + " ne peut convertir que les collections ayant été utilisées avec " + translate["app_name"] + " 0.8.10."
         translate["import_useindeck"] = "utilisée dans le deck"
         translate["import_conver"] = "Conversion des données"
-        translate["import_oldformat_finish"] = translate["app_name"] + " a terminé la conversion de vos données, mais certaines cartes n’ont pas été trouvées. Cela peut arriver notamment avec certains jetons qui avaient auparavant leur couleur dans leur nom. Il est conseillé de copier cette liste dans un endroit sûr, afin de pouvoir ressaisir ces cartes dans " + translate["app_name"] + "."
+        translate["import_oldformat_finish"] = translate["app_name"] + " a terminé la conversion de vos données, mais certaines cartes n'ont pas été trouvées. Cela peut arriver notamment avec certains jetons qui avaient auparavant leur couleur dans leur nom. Il est conseillé de copier cette liste dans un endroit sûr, afin de pouvoir ressaisir ces cartes dans " + translate["app_name"] + "."
         translate["import_oldformat_finish_ok"] = "La conversion de vos données est terminée."
         #########################
         return(translate)

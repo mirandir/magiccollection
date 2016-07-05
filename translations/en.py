@@ -367,6 +367,19 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["config_cardsprices_checking_update"] = "Checking updates for the cards prices..."
         translate["config_cardsprices_downloading"] = "Downloading of the cards prices..."
         translate["config_need_restart"] = "Need a restart of " + translate["app_name"]
+        translate["config_pic_cards"] = "Cards pictures"
+        translate["config_pic_cards_downloaded"] = "Downloaded pictures"
+        translate["config_pic_cards_downloaded_editions_intro_none"] = "No picture downloaded yet."
+        translate["config_pic_cards_downloaded_editions_intro"] = "Pictures had been downloaded for editions:"
+        translate["config_pic_cards_delete"] = "Delete the pictures of the selected edition"
+        translate["config_pic_cards_delete_all"] = "Delete all downloaded pictures"
+        translate["config_pic_cards_size_all"] = "Size of the pictures: "
+        translate["config_pic_cards_size_b"] = "b"
+        translate["config_pic_cards_size_ko"] = "ko"
+        translate["config_pic_cards_size_mo"] = "Mo"
+        translate["config_pic_cards_size_go"] = "Go"
+        translate["config_pic_cards_size_to"] = "To"
+        translate["config_pic_cards_size_unit"] = "{VALUE} {SIZE}"
         # export
         translate["exportimport_filetype"] = "Files of " + translate["app_name"]
         translate["export_collection_busy"] = "Unable to backup your data, the collection is busy."
