@@ -354,7 +354,7 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["config_download_pic_collection_decks"] = "Télécharger les images des cartes dans le mode Collection et le mode Decks"
         translate["config_download_pic_as"] = "Télécharger les images des cartes dans le mode Recherche avancée"
         translate["config_connection"] = "Connexion"
-        translate["config_not_internet_popup"] = "Afficher un avertissement quand aucune connexion internet n'est trouvée"
+        translate["config_not_internet_popup"] = "Afficher un avertissement lorsqu'aucune connexion internet n'est trouvée"
         translate["config_cardsprices"] = "Prix des cartes"
         translate["config_cardsprices_download_first"] = "Téléchargez d'abord les prix des cartes en cliquant ici."
         translate["config_cardsprices_download"] = "Télécharger les prix des cartes"
