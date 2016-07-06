@@ -1437,8 +1437,6 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
                         coll_object.searchstore.insert_with_valuesv(-1, range(17), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card])
                         nb_cards_disp = nb_cards_disp + nb_card
                 
-                coll_object.searchstore.set_sort_column_id(7, Gtk.SortType.ASCENDING)
-                coll_object.searchstore.set_sort_column_id(2, Gtk.SortType.ASCENDING)
                 if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
                         coll_object.searchstore.set_sort_column_id(3, Gtk.SortType.ASCENDING)
                 else:
