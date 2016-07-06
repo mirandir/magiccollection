@@ -768,34 +768,30 @@ def create_window_search_name(request_response, current_object_view):
         if no_reprints == "1":
                 cards_added_reprints = {}
                 for card in dict(cards).values():
-                        # if nb_variant is not empty, this card is a reprint, we can delete it safety
-                        if card["nb_variant"] != "":
-                                del(cards[card["id_"]])
+                        unique_name = card["name"] + "-" + card["nb_variant"] + "-" + card["type_"] + "-" + card["text"] + "-" + card["power"] + "-" + card["toughness"] + "-" + card["colors"]
+                        try:
+                                cards_added_reprints[unique_name]
+                        except KeyError:
+                                # first print of this card
+                                cards_added_reprints[unique_name] = card["id_"]
                         else:
-                                unique_name = card["name"] + "-" + card["type_"] + "-" + card["text"] + "-" + card["power"] + "-" + card["toughness"] + "-" + card["colors"]
+                                # it's not the first print of this card
                                 try:
-                                        cards_added_reprints[unique_name]
-                                except KeyError:
-                                        # first print of this card
+                                        current_release_date = int(card["release_date"])
+                                except ValueError:
+                                        current_release_date = 0
+                                try:
+                                        print_in_cards_added_reprints_release_date = int(cards[cards_added_reprints[unique_name]]["release_date"])
+                                except ValueError:
+                                        print_in_cards_added_reprints_release_date = 0
+                                
+                                if current_release_date > print_in_cards_added_reprints_release_date:
+                                        # current print is more recent
+                                        del(cards[cards_added_reprints[unique_name]])
                                         cards_added_reprints[unique_name] = card["id_"]
                                 else:
-                                        # it's not the first print of this card
-                                        try:
-                                                current_release_date = int(card["release_date"])
-                                        except ValueError:
-                                                current_release_date = 0
-                                        try:
-                                                print_in_cards_added_reprints_release_date = int(cards[cards_added_reprints[unique_name]]["release_date"])
-                                        except ValueError:
-                                                print_in_cards_added_reprints_release_date = 0
-                                        
-                                        if current_release_date > print_in_cards_added_reprints_release_date:
-                                                # current print is more recent
-                                                del(cards[cards_added_reprints[unique_name]])
-                                                cards_added_reprints[unique_name] = card["id_"]
-                                        else:
-                                                # current print is older
-                                                del(cards[card["id_"]])
+                                        # current print is older
+                                        del(cards[card["id_"]])
         
         # we get a list of ids of cards in the collection
         conn, c = functions.collection.connect_db()
@@ -814,12 +810,12 @@ def create_window_search_name(request_response, current_object_view):
                 
                 add = True
                 
-                if card["name"] + "-" + card["edition_ln"] in cards_added:
+                if card["name"] + "-" + card["nb_variant"] + "-" + card["edition_ln"] in cards_added:
                         add = False
                 
                 if add:
                         store_results.insert_with_valuesv(-1, range(14), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic])
-                        cards_added.append(card["name"] + "-" + card["edition_ln"])
+                        cards_added.append(card["name"] + "-" + card["nb_variant"] + "-" + card["edition_ln"])
                         nb += 1
         
         if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
