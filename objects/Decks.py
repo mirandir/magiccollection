@@ -126,7 +126,7 @@ class Decks:
         def add_cards_to_deck(self, deck_name, ids_coll_dict, side):
                 '''Add the cards in 'ids_coll_dict' to the deck 'deck_name'.
                 ids_coll_dict[id_coll] = id_db
-                side: 1 -> add to the sideboard, 0 -> add to the deck
+                side: 1 -> add to the sideboard, 0 -> add to the main deck
                 '''
                 conn_coll, c_coll = functions.collection.connect_db()
                 functions.various.lock_db(True, None)
@@ -209,7 +209,7 @@ class Decks:
                 if coll_object.tree_coll.get_model() == coll_object.searchstore:
                         for i, row in enumerate(coll_object.searchstore):
                                 if row[0] in new_id_db_to_italic:
-                                        coll_object.mainstore[i][13] = Pango.Style.ITALIC
+                                        coll_object.searchstore[i][13] = Pango.Style.ITALIC
         
         def delete_cards_from_deck(self, deck_name, ids_coll_dict):
                 '''Deletes the cards in 'ids_coll_dict' from the deck 'deck_name'.
