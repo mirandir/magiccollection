@@ -677,7 +677,7 @@ def gen_move_deck_popover(button_move, selection, decks_object):
         move_deck_box.set_margin_left(5)
         move_deck_box.set_margin_right(5)
         popover = Gtk.Popover.new(button_move)
-        popover.props.width_request = 200
+        popover.props.width_request = 350
         popover.connect("show", popover_show, decks_object, move_deck_box, selection)
         popover.add(move_deck_box)
         return(popover)

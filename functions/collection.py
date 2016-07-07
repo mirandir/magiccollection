@@ -959,7 +959,7 @@ def gen_add_deck_popover(button_add_deck, selection):
         add_deck_box.set_margin_left(5)
         add_deck_box.set_margin_right(5)
         popover = Gtk.Popover.new(button_add_deck)
-        popover.props.width_request = 250
+        popover.props.width_request = 350
         popover.connect("show", popover_show, selection, add_deck_box)
         popover.add(add_deck_box)
         return(popover)
@@ -1034,7 +1034,7 @@ def gen_add_deck_details_popover(button_add_deck, selection, details_store):
         add_deck_box.set_margin_left(5)
         add_deck_box.set_margin_right(5)
         popover = Gtk.Popover.new(button_add_deck)
-        popover.props.width_request = 250
+        popover.props.width_request = 350
         popover.connect("show", popover_show, selection, add_deck_box, details_store, button_add_deck)
         popover.add(add_deck_box)
         return(popover)
