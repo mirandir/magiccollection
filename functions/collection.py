@@ -547,9 +547,15 @@ def gen_delete_popover(button_delete, selection):
                                 if model[row][13] == Pango.Style.ITALIC:
                                         nb_rows_in_deck += 1
                                         break
-                        if len(pathlist) > 0 and nb_rows_in_deck == 0:
+                        if len(pathlist) > 1 and nb_rows_in_deck == 0:
                                 button_delete_select.set_sensitive(True)
                                 button_delete_select.grab_focus()
+                        elif len(pathlist) == 1 and nb_rows_in_deck == 0:
+                                if model[pathlist][0] not in defs.SDF_VERSO_IDS_LIST:
+                                        button_delete_select.set_sensitive(True)
+                                        button_delete_select.grab_focus()
+                                else:
+                                        button_delete_select.set_sensitive(False)
                         else:
                                 button_delete_select.set_sensitive(False)
         
@@ -600,8 +606,13 @@ def gen_estimate_popover(button_estimate, selection):
                 estimate_box.show_all()
                 
                 model, pathlist = selection.get_selected_rows()
-                if len(pathlist) > 0:
+                if len(pathlist) > 1:
                         button_estimate_select.set_sensitive(True)
+                elif len(pathlist) == 1:
+                        if model[pathlist][0] not in defs.SDF_VERSO_IDS_LIST:
+                                button_estimate_select.set_sensitive(True)
+                        else:
+                                button_estimate_select.set_sensitive(False)
                 else:
                         button_estimate_select.set_sensitive(False)
         
@@ -1066,18 +1077,23 @@ def gen_details_store(selection):
                                         # sideboard detected
                                         card_nameforeign = card_nameforeign[:-1].replace("|" + defs.STRINGS["decks_sideboard"], "")
                                 
-                                for card in dict_responses_coll[card_id]:
-                                        id_coll, date, condition, lang, foil, loaned_to, comment, deck, deck_side = card
-                                        bold = 400
-                                        if comment != "":
-                                                bold = 700
-                                        italic = Pango.Style.NORMAL
-                                        if deck != "" or deck_side != "":
-                                                italic = Pango.Style.ITALIC
-                                        
-                                        if str(id_coll) not in list_idscoll_added:
-                                                details_store.append([str(id_coll), card_name, card_editionln, card_nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, card_id, deck_side])
-                                                list_idscoll_added.append(str(id_coll))
+                                try:
+                                        tmp_data = dict_responses_coll[card_id]
+                                except:
+                                        pass
+                                else:
+                                        for card in tmp_data:
+                                                id_coll, date, condition, lang, foil, loaned_to, comment, deck, deck_side = card
+                                                bold = 400
+                                                if comment != "":
+                                                        bold = 700
+                                                italic = Pango.Style.NORMAL
+                                                if deck != "" or deck_side != "":
+                                                        italic = Pango.Style.ITALIC
+                                                
+                                                if str(id_coll) not in list_idscoll_added:
+                                                        details_store.append([str(id_coll), card_name, card_editionln, card_nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, card_id, deck_side])
+                                                        list_idscoll_added.append(str(id_coll))
                         
                 if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
                         details_store.set_sort_column_id(3, Gtk.SortType.ASCENDING)
@@ -1417,17 +1433,17 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
         def reset_search(button, entry1, entry2, entry3, entry4):
                 defs.MAINWINDOW.advancedsearch.reset_search(button, entry1, entry2, entry3, entry4)
         
-        def launch_request(request, dict_rowcards_in_coll, quantity_card_req, wait_button):
-                conn, c = functions.db.connect_db()
-                c.execute("ATTACH DATABASE ? AS db_coll", (os.path.join(defs.HOMEMC, "collection.sqlite"),))
+        def launch_request(request, dict_rowcards_in_coll, quantity_card_req, wait_button, conn, c):
+                c.execute("ATTACH DATABASE ? AS db_cards", (os.path.join(defs.CACHEMC, "dbmc_" + defs.DB_VERSION + ".sqlite"),))
                 c.execute(request)
                 reponses_db = c.fetchall()
-                functions.db.disconnect_db(conn)
+                disconnect_db(conn)
                 coll_object.searchstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int)
                 
                 cards = functions.various.prepare_cards_data_for_treeview(reponses_db)
                 nb_results = len(reponses_db)
                 nb_cards_disp = 0
+                nb_verso = 0
                 
                 for id_, card in cards.items():
                         nb_card = dict_rowcards_in_coll[id_][0]
@@ -1435,7 +1451,10 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
                         italic_card = dict_rowcards_in_coll[id_][2]
                         
                         coll_object.searchstore.insert_with_valuesv(-1, range(17), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card])
-                        nb_cards_disp = nb_cards_disp + nb_card
+                        if card["id_"] not in defs.SDF_VERSO_IDS_LIST:
+                                nb_cards_disp = nb_cards_disp + nb_card
+                        else:
+                                nb_verso += 1
                 
                 if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
                         coll_object.searchstore.set_sort_column_id(3, Gtk.SortType.ASCENDING)
@@ -1451,6 +1470,7 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
                 coll_object.button_back_coll.set_sensitive(True)
                 coll_object.button_search_coll.set_label("● " + defs.STRINGS["search_collection_button"])
                 
+                nb_results = nb_results - nb_verso
                 if quantity_card_req != None:
                         nb_results = nb_cards_disp
                 if nb_results < 2:
@@ -1470,6 +1490,7 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
                         as_spinner.start()
                         wait_button.show_all()
                         overlay_coll.add_overlay(wait_button)
+                
                 if defs.AS_LOCK == False:
                         request_list = functions.db.prepare_request(search_widgets_list, "coll")
                         request = request_list[0]
@@ -1479,10 +1500,9 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
                                 wait_button = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
                                 GLib.idle_add(prepare_wait_button, wait_button, overlay_coll)
                                 
-                                conn, c = connect_db()
+                                conn, c = connect_tmp_coll_with_sdf()
                                 c.execute("""SELECT * FROM collection""")
                                 reponses_coll = c.fetchall()
-                                disconnect_db(conn)
                                 
                                 dict_rowcards_in_coll = {}
                                 for card_coll in reponses_coll:
@@ -1517,7 +1537,7 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
                                 if quantity_card_req != None:
                                         request = request + """ GROUP BY coll.id_card """ + quantity_card_req
                                 
-                                GLib.idle_add(launch_request, request, dict_rowcards_in_coll, quantity_card_req, wait_button)                                
+                                GLib.idle_add(launch_request, request, dict_rowcards_in_coll, quantity_card_req, wait_button, conn, c)
         
         box_search_coll = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         box_search_coll_top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
@@ -1616,6 +1636,57 @@ def set_coll_updated_pic(coll_object):
         '''Shows the updated picture if the user is searching in the collection.'''
         if coll_object.tree_coll.get_model() == coll_object.searchstore:
                 coll_object.pic_search_coll_updated.show()
+
+def gen_sdf_data():
+        # we need the ids of split and df cards
+        request = """SELECT id, name, nb_variante, names, edition, layout FROM cards WHERE layout = 'flip' OR layout = 'double-faced'"""
+        conn_db, c_db = functions.db.connect_db()
+        c_db.execute(request)
+        sdf_all_data = c_db.fetchall()
+        
+        for data in sdf_all_data:
+                id_card, name, nb_variante, names, edition, layout = data
+                if name == names.split("|")[0]:
+                        defs.SDF_RECTO_IDS_LIST.append(id_card)
+                        for data2 in sdf_all_data:
+                                id_card2, name2, nb_variante2, names2, edition2, layout2 = data2
+                                if layout2 == layout and edition2 == edition and nb_variante2 == nb_variante and names2 == names and name2 != name:
+                                        defs.SDF_RECTO_VERSO_IDS_DICT[id_card] = id_card2
+                                        break
+                else:
+                        defs.SDF_VERSO_IDS_LIST.append(id_card)
+        for key, value in defs.SDF_RECTO_VERSO_IDS_DICT.items():
+                defs.SDF_VERSO_RECTO_IDS_DICT[value] = key
+
+def connect_tmp_coll_with_sdf():
+        '''Creates a tmp database with the split and double-faced cards data and the collection data'''
+        conn_tmp = sqlite3.connect(":memory:")
+        conn_tmp.create_function('py_lara', 1, functions.various.py_lara)
+        conn_tmp.create_function('py_int', 1, functions.various.py_int)
+        conn_tmp.create_function('py_lower', 1, functions.various.py_lower)
+        conn_tmp.create_function('py_remove_hyphen', 1, functions.various.py_remove_hyphen)
+        c_tmp = conn_tmp.cursor()
+        
+        conn_coll = connect_db()[0]
+        
+        # we dump the coll db in the tmp db
+        query = "".join(line for line in conn_coll.iterdump())
+        conn_tmp.executescript(query)
+        disconnect_db(conn_coll)
+        
+        tmp_req = ""
+        for tmp in defs.SDF_RECTO_IDS_LIST:
+                tmp_req = tmp_req + "\"" + str(tmp) + "\", "
+        tmp_req = tmp_req[:-2]
+        
+        c_tmp.execute("""SELECT * FROM collection WHERE id_card IN (""" + tmp_req + """)""")
+        resp_coll = c_tmp.fetchall()
+        for data in resp_coll:
+                id_coll, id_card, date, condition, lang, foil, loaned_to, comment, deck, deck_side = data
+                c_tmp.execute("""INSERT INTO collection VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (defs.SDF_RECTO_VERSO_IDS_DICT[id_card], date, condition, lang, foil, loaned_to, comment, deck, deck_side))
+        conn_tmp.commit()
+        
+        return(conn_tmp, c_tmp)
 
 def connect_db():
         '''Return the connection to the collection'DB and the cursor'''

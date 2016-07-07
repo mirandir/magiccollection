@@ -403,7 +403,9 @@ class Collection:
                                                 self.searchstore[i][12] = 400
         
         def show_details(self, treeview, treepath, column, selection, button_show_details):
-                button_show_details.emit("clicked")
+                model, pathlist = selection.get_selected_rows()
+                if model[pathlist][0] not in defs.SDF_VERSO_IDS_LIST:
+                        button_show_details.emit("clicked")
         
         def send_id_to_loader_with_selectinfo(self, selection, integer, TreeViewColumn, simple_search, selectinfo_button, button_show_details, button_change_quantity, button_add_deck):
                 self.send_id_to_loader(selection, integer, TreeViewColumn, simple_search)
@@ -418,16 +420,21 @@ class Collection:
                 elif len(pathlist) == 1:
                         label_selectinfo.set_text(defs.STRINGS["info_select_coll"])
                         selectinfo_button.set_sensitive(True)
-                        button_show_details.set_sensitive(True)
-                        button_show_details.set_popover(functions.collection.gen_details_popover(button_show_details, selection))
-                        button_change_quantity.set_sensitive(True)
-                        button_change_quantity.set_popover(functions.collection.gen_quantity_popover(button_change_quantity, selection))
+                        if model[pathlist][0] not in defs.SDF_VERSO_IDS_LIST:
+                                button_show_details.set_sensitive(True)
+                                button_show_details.set_popover(functions.collection.gen_details_popover(button_show_details, selection))
+                                button_change_quantity.set_sensitive(True)
+                                button_change_quantity.set_popover(functions.collection.gen_quantity_popover(button_change_quantity, selection))
                         
-                        nb_avail = functions.collection.add_deck_test_avail(selection)
-                        if nb_avail > 0:
-                                button_add_deck.set_sensitive(True)
-                                button_add_deck.set_popover(functions.collection.gen_add_deck_popover(button_add_deck, selection))
+                                nb_avail = functions.collection.add_deck_test_avail(selection)
+                                if nb_avail > 0:
+                                        button_add_deck.set_sensitive(True)
+                                        button_add_deck.set_popover(functions.collection.gen_add_deck_popover(button_add_deck, selection))
+                                else:
+                                        button_add_deck.set_sensitive(False)
                         else:
+                                button_show_details.set_sensitive(False)
+                                button_change_quantity.set_sensitive(False)
                                 button_add_deck.set_sensitive(False)
                 else:
                         label_selectinfo.set_text(defs.STRINGS["info_selects_coll"].replace("%%%", str(len(pathlist))))

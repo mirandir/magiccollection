@@ -80,6 +80,7 @@ class MagicCollection(Gtk.Application):
                         # do we need to autoupdate the prices?
                         if functions.config.read_config("price_autodownload") == "1":
                                 functions.prices.check_prices("auto")
+                        functions.collection.gen_sdf_data()
                         self.window.create_gui()
                 else:
                         self.window.widget_overlay.destroy()

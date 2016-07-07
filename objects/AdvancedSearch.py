@@ -347,7 +347,7 @@ class AdvancedSearch:
                         cards = functions.various.prepare_cards_data_for_treeview(reponses)
                         
                         # we get a list of ids of cards in the collection
-                        conn, c = functions.collection.connect_db()
+                        conn, c = functions.collection.connect_tmp_coll_with_sdf()
                         c.execute("""SELECT id_card FROM collection""")
                         reponses_coll = c.fetchall()
                         functions.collection.disconnect_db(conn)
@@ -607,7 +607,9 @@ class AdvancedSearch:
         
         def show_details(self, treeview, treepath, column, selection, button_show_details):
                 if button_show_details.get_sensitive():
-                        button_show_details.emit("clicked")
+                        model, pathlist = selection.get_selected_rows()
+                        if model[pathlist][0] not in defs.SDF_VERSO_IDS_LIST:
+                                button_show_details.emit("clicked")
         
         def send_id_to_loader(self, selection, integer, TreeViewColumn, simple_search):
                 model, pathlist = selection.get_selected_rows()
@@ -621,8 +623,11 @@ class AdvancedSearch:
                                 if model[row][12] == 700:
                                         nb_row_in_coll += 1
                         if len(pathlist) == nb_row_in_coll:
-                                self.button_show_details.set_sensitive(True)
-                                self.button_show_details.set_popover(functions.collection.gen_details_popover(self.button_show_details, selection))
+                                if len(pathlist) == 1 and model[pathlist][0] in defs.SDF_VERSO_IDS_LIST:
+                                        self.button_show_details.set_sensitive(False)
+                                else:
+                                        self.button_show_details.set_sensitive(True)
+                                        self.button_show_details.set_popover(functions.collection.gen_details_popover(self.button_show_details, selection))
                         else:
                                 self.button_show_details.set_sensitive(False)
                 else:

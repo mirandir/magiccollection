@@ -118,96 +118,95 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         basecolors = str(colors)
                         
                         # Flip, split and double-faced cards have more than 1 line in the database
-                        if layout == "flip" or layout == "split" or layout == "double-faced":
-                                # we need more data to find the complete text & foreign name
-                                request = """SELECT * FROM cards WHERE layout = 'flip' OR layout = 'split' OR layout = 'double-faced'"""
-                                c.execute(request)
-                                split_flip_df_data = c.fetchall()
-                                
-                                names_tmp = names.split("|")
-                                
-                                if layout == "split":
-                                        final_text = ""
-                                        final_manacost = ""
-                                        list_cmc = []
-                                        final_colors = ""
-                                        final_artist = ""
-                                        # we try to get the complete manacost, text and the higher cmc
-                                        for nn in names_tmp:
-                                                for card_split_flip in split_flip_df_data:
-                                                        if card_split_flip[4] == edition_code:
-                                                                if nn == card_split_flip[1]:
-                                                                        final_manacost = final_manacost + card_split_flip[17] + "|"
-                                                                        list_cmc.append(card_split_flip[18])
-                                                                        if card_split_flip[22] not in final_artist:
-                                                                                final_artist = final_artist + card_split_flip[22] + ", "
-                                                                        final_text = final_text + card_split_flip[1] + "\n" + card_split_flip[23] + "\n---\n"
-                                                                        for char in card_split_flip[16]:
-                                                                                if char not in final_colors:
-                                                                                        final_colors = final_colors + char
-                                        manacost = final_manacost[:-1]
-                                        cmc = max(list_cmc)
-                                        text = final_text[:-5]
-                                        artist = final_artist[:-2]
-                                        colors = "".join(sorted(final_colors))
-                                
+                        # we need more data to find the complete text & foreign name
+                        request = """SELECT * FROM cards WHERE layout = 'flip' OR layout = 'split' OR layout = 'double-faced'"""
+                        c.execute(request)
+                        split_flip_df_data = c.fetchall()
+                        
+                        names_tmp = names.split("|")
+                        
+                        if layout == "split":
+                                final_text = ""
+                                final_manacost = ""
+                                list_cmc = []
+                                final_colors = ""
+                                final_artist = ""
+                                # we try to get the complete manacost, text and the higher cmc
+                                for nn in names_tmp:
+                                        for card_split_flip in split_flip_df_data:
+                                                if card_split_flip[4] == edition_code:
+                                                        if nn == card_split_flip[1]:
+                                                                final_manacost = final_manacost + card_split_flip[17] + "|"
+                                                                list_cmc.append(card_split_flip[18])
+                                                                if card_split_flip[22] not in final_artist:
+                                                                        final_artist = final_artist + card_split_flip[22] + ", "
+                                                                final_text = final_text + card_split_flip[1] + "\n" + card_split_flip[23] + "\n---\n"
+                                                                for char in card_split_flip[16]:
+                                                                        if char not in final_colors:
+                                                                                final_colors = final_colors + char
+                                manacost = final_manacost[:-1]
+                                cmc = max(list_cmc)
+                                text = final_text[:-5]
+                                artist = final_artist[:-2]
+                                colors = "".join(sorted(final_colors))
+                        
+                        if layout == "flip":
+                                final_text = ""
+                                zz = len(names_tmp)
+                                # we try to get the complete text
+                                for nn in names_tmp:
+                                        for card_split_flip in split_flip_df_data:
+                                                if card_split_flip[4] == edition_code:
+                                                        if nn == card_split_flip[1]:
+                                                                if "Creature" in card_split_flip[21]:
+                                                                        final_text = final_text + card_split_flip[1] + "\n" + card_split_flip[21] + "\n" + card_split_flip[23] + "\n" + card_split_flip[25] + "/" + card_split_flip[26]
+                                                                else:
+                                                                        final_text = final_text + card_split_flip[1] + "\n" + card_split_flip[21] + "\n" + card_split_flip[23]
+                                                                if zz == 1:
+                                                                        pass
+                                                                else:
+                                                                        final_text = final_text + "\n---\n"
+                                        zz -= 1
+                                text = final_text
+                        
+                        if layout != "double-faced":
                                 if layout == "flip":
-                                        final_text = ""
-                                        zz = len(names_tmp)
-                                        # we try to get the complete text
+                                        separator = " <> "
+                                elif layout == "split":
+                                        separator = " // "
+                                # we try to get the complete name for english and foreign name
+                                final_name = ""
+                                if layout == "split":
                                         for nn in names_tmp:
-                                                for card_split_flip in split_flip_df_data:
-                                                        if card_split_flip[4] == edition_code:
-                                                                if nn == card_split_flip[1]:
-                                                                        if "Creature" in card_split_flip[21]:
-                                                                                final_text = final_text + card_split_flip[1] + "\n" + card_split_flip[21] + "\n" + card_split_flip[23] + "\n" + card_split_flip[25] + "/" + card_split_flip[26]
-                                                                        else:
-                                                                                final_text = final_text + card_split_flip[1] + "\n" + card_split_flip[21] + "\n" + card_split_flip[23]
-                                                                        if zz == 1:
-                                                                                pass
-                                                                        else:
-                                                                                final_text = final_text + "\n---\n"
-                                                zz -= 1
-                                        text = final_text
+                                                final_name = final_name + separator + nn
+                                        name = final_name[4:]
+                                elif layout == "flip":
+                                        final_name = name
+                                        for nn in names_tmp:
+                                                if nn != name:
+                                                        final_name = final_name + separator + nn
+                                        name = final_name
                                 
-                                if layout != "double-faced":
-                                        if layout == "flip":
-                                                separator = " <> "
-                                        elif layout == "split":
-                                                separator = " // "
-                                        # we try to get the complete name for english and foreign name
-                                        final_name = ""
+                                if foreign__name == "":
+                                        foreign__name = name
+                                else:
+                                        final_nameforeign = ""
                                         if layout == "split":
                                                 for nn in names_tmp:
-                                                        final_name = final_name + separator + nn
-                                                name = final_name[4:]
+                                                        for card_split_flip in split_flip_df_data:
+                                                                if card_split_flip[4] == edition_code:
+                                                                        if nn == card_split_flip[1]:
+                                                                                final_nameforeign = final_nameforeign + separator + card_split_flip[7]
+                                                foreign__name = final_nameforeign[4:]
                                         elif layout == "flip":
-                                                final_name = name
+                                                final_nameforeign = foreign__name
                                                 for nn in names_tmp:
-                                                        if nn != name:
-                                                                final_name = final_name + separator + nn
-                                                name = final_name
-                                        
-                                        if foreign__name == "":
-                                                foreign__name = name
-                                        else:
-                                                final_nameforeign = ""
-                                                if layout == "split":
-                                                        for nn in names_tmp:
-                                                                for card_split_flip in split_flip_df_data:
-                                                                        if card_split_flip[4] == edition_code:
-                                                                                if nn == card_split_flip[1]:
+                                                        for card_split_flip in split_flip_df_data:
+                                                                if card_split_flip[4] == edition_code:
+                                                                        if nn == card_split_flip[1]:
+                                                                                if card_split_flip[7] != foreign__name:
                                                                                         final_nameforeign = final_nameforeign + separator + card_split_flip[7]
-                                                        foreign__name = final_nameforeign[4:]
-                                                elif layout == "flip":
-                                                        final_nameforeign = foreign__name
-                                                        for nn in names_tmp:
-                                                                for card_split_flip in split_flip_df_data:
-                                                                        if card_split_flip[4] == edition_code:
-                                                                                if nn == card_split_flip[1]:
-                                                                                        if card_split_flip[7] != foreign__name:
-                                                                                                final_nameforeign = final_nameforeign + separator + card_split_flip[7]
-                                                        foreign__name = final_nameforeign
+                                                foreign__name = final_nameforeign
                         # we disconnect the database
                         functions.db.disconnect_db(conn)
                         
@@ -254,14 +253,10 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         
                         if layout == "double-faced":
                                 # we get the id of the other face
-                                for tmp_name in names.split("|"):
-                                        if tmp_name != basename:
-                                                othername = tmp_name
-                                                break
-                                for tmp_card in split_flip_df_data:
-                                        if tmp_card[1] == othername and tmp_card[4] == edition_code:
-                                                id_otherface = tmp_card[0]
-                                                break
+                                if id_ in defs.SDF_RECTO_IDS_LIST:
+                                        id_otherface = defs.SDF_RECTO_VERSO_IDS_DICT[id_]
+                                else:
+                                        id_otherface = defs.SDF_VERSO_RECTO_IDS_DICT[id_]
                                 
                                 df_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="icon_flip_card-symbolic"), Gtk.IconSize.LARGE_TOOLBAR)
                                 df_button.connect("clicked", object_origin.load_card_from_outside, str(id_otherface), [], simple_search)

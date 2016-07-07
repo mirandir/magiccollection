@@ -59,7 +59,7 @@ def prepare_request(search_widgets_list, type_request):
         if type_request == "db":
                 request = "SELECT * FROM cards WHERE"
         elif type_request == "coll":
-                request = "SELECT * FROM cards, db_coll.collection AS coll WHERE cards.id = coll.id_card AND"
+                request = "SELECT * FROM db_cards.cards AS cards, collection AS coll WHERE cards.id = coll.id_card AND"
         
         where_requests = []
         go = 1

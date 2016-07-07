@@ -279,6 +279,12 @@ PREF_WINDOW_OPEN = False
 
 SIMPLY_SEARCH_ENTRY_HAD_FOCUS = None
 
+# Split and double-faced data
+SDF_RECTO_IDS_LIST = []
+SDF_VERSO_IDS_LIST = []
+SDF_RECTO_VERSO_IDS_DICT = {}
+SDF_VERSO_RECTO_IDS_DICT = {}
+
 # threads things
 COLL_LOCK = False
 BUTTON_COLL_LOCK = None
