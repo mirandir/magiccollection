@@ -399,7 +399,10 @@ def prepare_delete_rows_from_selection(selection):
         model, pathlist = selection.get_selected_rows()
         ids_db_list = ""
         for row in pathlist:
-                ids_db_list = ids_db_list + "\"" + model[row][0] + "\", "
+                tmp_id = model[row][0]
+                if tmp_id in defs.SDF_VERSO_IDS_LIST:
+                        tmp_id = defs.SDF_VERSO_RECTO_IDS_DICT[tmp_id]
+                ids_db_list = ids_db_list + "\"" + tmp_id + "\", "
         ids_db_list = ids_db_list[:-2]
         # we get data in the collection for this list
         conn, c = connect_db()
@@ -414,9 +417,13 @@ def prepare_delete_rows_from_selection(selection):
 def prepare_delete_card_quantity(cards_to_delete, selection):
         def update(selection):
                 model, pathlist = selection.get_selected_rows()
-                current_id = model[pathlist][0]
+                current_id = [model[pathlist][0]]
+                if current_id[0] in defs.SDF_RECTO_IDS_LIST:
+                        current_id.append(defs.SDF_RECTO_VERSO_IDS_DICT[current_id[0]])
+                elif current_id[0] in defs.SDF_VERSO_IDS_LIST:
+                        current_id.append(defs.SDF_VERSO_RECTO_IDS_DICT[current_id[0]])
                 for row in pathlist:
-                        if model[row][0] == current_id:
+                        if model[row][0] in current_id:
                                 selection.unselect_all()
                                 selection.select_path(row)
                                 break
@@ -466,9 +473,13 @@ def prepare_add_to_deck(popover, select_list_decks, ids_coll_dict, selection, si
         def update(selection):
                 model, pathlist = selection.get_selected_rows()
                 if len(pathlist) == 1:
-                        current_id = model[pathlist][0]
+                        current_id = [model[pathlist][0]]
+                        if current_id[0] in defs.SDF_VERSO_IDS_LIST:
+                                current_id.append(defs.SDF_VERSO_RECTO_IDS_DICT[current_id[0]])
+                        elif current_id[0] in defs.SDF_RECTO_IDS_LIST:
+                                current_id.append(defs.SDF_RECTO_VERSO_IDS_DICT[current_id[0]])
                         for row in pathlist:
-                                if model[row][0] == current_id:
+                                if model[row][0] in current_id:
                                         selection.unselect_all()
                                         selection.select_path(row)
                                         break
@@ -488,9 +499,13 @@ def prepare_add_to_deck_details(popover, selection, select_list_decks, details_s
                                 details_store[i][12] = Pango.Style.ITALIC
                 model, pathlist = selection.get_selected_rows()
                 if len(pathlist) == 1:
-                        current_id = model[pathlist][0]
+                        current_id = [model[pathlist][0]]
+                        if current_id[0] in defs.SDF_VERSO_IDS_LIST:
+                                current_id.append(defs.SDF_VERSO_RECTO_IDS_DICT[current_id[0]])
+                        elif current_id[0] in defs.SDF_RECTO_IDS_LIST:
+                                current_id.append(defs.SDF_RECTO_VERSO_IDS_DICT[current_id[0]])
                         for row in pathlist:
-                                if model[row][0] == current_id:
+                                if model[row][0] in current_id:
                                         selection.unselect_all()
                                         selection.select_path(row)
                                         break
@@ -547,15 +562,9 @@ def gen_delete_popover(button_delete, selection):
                                 if model[row][13] == Pango.Style.ITALIC:
                                         nb_rows_in_deck += 1
                                         break
-                        if len(pathlist) > 1 and nb_rows_in_deck == 0:
+                        if len(pathlist) > 0 and nb_rows_in_deck == 0:
                                 button_delete_select.set_sensitive(True)
                                 button_delete_select.grab_focus()
-                        elif len(pathlist) == 1 and nb_rows_in_deck == 0:
-                                if model[pathlist][0] not in defs.SDF_VERSO_IDS_LIST:
-                                        button_delete_select.set_sensitive(True)
-                                        button_delete_select.grab_focus()
-                                else:
-                                        button_delete_select.set_sensitive(False)
                         else:
                                 button_delete_select.set_sensitive(False)
         
@@ -606,13 +615,8 @@ def gen_estimate_popover(button_estimate, selection):
                 estimate_box.show_all()
                 
                 model, pathlist = selection.get_selected_rows()
-                if len(pathlist) > 1:
+                if len(pathlist) > 0:
                         button_estimate_select.set_sensitive(True)
-                elif len(pathlist) == 1:
-                        if model[pathlist][0] not in defs.SDF_VERSO_IDS_LIST:
-                                button_estimate_select.set_sensitive(True)
-                        else:
-                                button_estimate_select.set_sensitive(False)
                 else:
                         button_estimate_select.set_sensitive(False)
         
@@ -639,7 +643,10 @@ def gen_estimate_popover(button_estimate, selection):
                         model, pathlist = selection.get_selected_rows()
                         ids_db_list = ""
                         for row in pathlist:
-                                ids_db_list = ids_db_list + "\"" + model[row][0] + "\", "
+                                tmp_id = model[row][0]
+                                if tmp_id in defs.SDF_VERSO_IDS_LIST:
+                                        tmp_id = defs.SDF_VERSO_RECTO_IDS_DICT[tmp_id]
+                                ids_db_list = ids_db_list + "\"" + tmp_id + "\", "
                         ids_db_list = ids_db_list[:-2]
                         
                         GLib.idle_add(functions.prices.show_estimate_dialog, "select", ids_db_list, None)
@@ -845,39 +852,44 @@ def gen_add_deck_popover(button_add_deck, selection):
                 cards_avail = {}
                 details_store = gen_details_store(selection)
                 
+                ids_checked = []
                 for i, row in enumerate(pathlist):
                         id_db_row = model[row][0]
-                        if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
-                                row_name = model[row][3]
-                        else:
-                                row_name = model[row][1]
-                
-                        nb_avail = 0
-                        for card in details_store:
-                                #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db, deck_side
-                                if card[13] == id_db_row:
-                                        if card[10] == "" and card[14] == "":
-                                                try:
-                                                        cards_avail[card[13]]
-                                                except KeyError:
-                                                        cards_avail[card[13]] = [card[0]]
-                                                else:
-                                                        cards_avail[card[13]].append(card[0])
-                                                nb_avail += 1
-                                                list_nb_avail.append(nb_avail)
-                                
-                        if nb_avail > 0:
-                                adjustment = Gtk.Adjustment(value=0, lower=0, upper=nb_avail, step_increment=1, page_increment=10, page_size=0)
-                                spinbutton = Gtk.SpinButton(adjustment=adjustment)
-                                spinbuttons_dict[id_db_row] = spinbutton
-                                if len(pathlist) < 6:
-                                        box_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
-                                        label_name = Gtk.Label()
-                                        label_name.set_markup("<b>" + row_name + "</b>")
-                                        box_card.pack_start(label_name, False, False, 0)
-                                        spinbutton.connect("value-changed", spin_value_changed, spinbuttons_dict, select_list_decks, ok_button)
-                                        box_card.pack_start(spinbutton, False, False, 0)
-                                        box_cards.pack_start(box_card, False, False, 0)
+                        if id_db_row in defs.SDF_VERSO_IDS_LIST:
+                                id_db_row = defs.SDF_VERSO_RECTO_IDS_DICT[id_db_row]
+                        if id_db_row not in ids_checked:
+                                if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
+                                        row_name = model[row][3]
+                                else:
+                                        row_name = model[row][1]
+                        
+                                nb_avail = 0
+                                for card in details_store:
+                                        #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db, deck_side
+                                        if card[13] == id_db_row:
+                                                if card[10] == "" and card[14] == "":
+                                                        try:
+                                                                cards_avail[card[13]]
+                                                        except KeyError:
+                                                                cards_avail[card[13]] = [card[0]]
+                                                        else:
+                                                                cards_avail[card[13]].append(card[0])
+                                                        nb_avail += 1
+                                                        list_nb_avail.append(nb_avail)
+                                        
+                                if nb_avail > 0:
+                                        adjustment = Gtk.Adjustment(value=0, lower=0, upper=nb_avail, step_increment=1, page_increment=10, page_size=0)
+                                        spinbutton = Gtk.SpinButton(adjustment=adjustment)
+                                        spinbuttons_dict[id_db_row] = spinbutton
+                                        if len(pathlist) < 6:
+                                                box_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+                                                label_name = Gtk.Label()
+                                                label_name.set_markup("<b>" + row_name + "</b>")
+                                                box_card.pack_start(label_name, False, False, 0)
+                                                spinbutton.connect("value-changed", spin_value_changed, spinbuttons_dict, select_list_decks, ok_button)
+                                                box_card.pack_start(spinbutton, False, False, 0)
+                                                box_cards.pack_start(box_card, False, False, 0)
+                                ids_checked.append(id_db_row)
                         
                 all_spinbutton = None
                 if len(pathlist) > 5:
@@ -1038,7 +1050,10 @@ def gen_details_store(selection):
                 except IndexError:
                         is_proxy = 0
                 if is_proxy == 0:
-                        ids_list = ids_list + "\"" + model[row][0] + "\", "
+                        cur_id = model[row][0]
+                        if cur_id in defs.SDF_VERSO_IDS_LIST:
+                                cur_id = defs.SDF_VERSO_RECTO_IDS_DICT[cur_id]
+                        ids_list = ids_list + "\"" + cur_id + "\", "
         ids_list = ids_list[:-2]
         # we get data in the collection for this list
         conn, c = connect_db()
@@ -1067,6 +1082,8 @@ def gen_details_store(selection):
                                 is_proxy = 0
                         if is_proxy == 0:
                                 card_id = model[row][0]
+                                if card_id in defs.SDF_VERSO_IDS_LIST:
+                                        card_id = defs.SDF_VERSO_RECTO_IDS_DICT[card_id]
                                 card_name = model[row][1]
                                 if card_name[0] == "|" and card_name[-1] == "|":
                                         # sideboard detected
@@ -1657,6 +1674,13 @@ def gen_sdf_data():
                         defs.SDF_VERSO_IDS_LIST.append(id_card)
         for key, value in defs.SDF_RECTO_VERSO_IDS_DICT.items():
                 defs.SDF_VERSO_RECTO_IDS_DICT[value] = key
+        
+        # Flip, split and double-faced cards have more than 1 line in the database
+        request = """SELECT * FROM cards WHERE layout = 'flip' OR layout = 'split' OR layout = 'double-faced'"""
+        c_db.execute(request)
+        defs.SPLIT_FLIP_DF_DATA = c_db.fetchall()
+        
+        functions.db.disconnect_db(conn_db)
 
 def connect_tmp_coll_with_sdf():
         '''Creates a tmp database with the split and double-faced cards data and the collection data'''

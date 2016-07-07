@@ -76,8 +76,6 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                 c.execute("""SELECT * FROM cards WHERE id = \"""" + cardid + """\"""")
                 reponse = c.fetchall()                
                 
-                split_flip_df_data = []
-                
                 if len(reponse) > 1:
                         print("Something is wrong in the database. IDs should be unique.")
                 else:
@@ -117,12 +115,6 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         basetext = str(text)
                         basecolors = str(colors)
                         
-                        # Flip, split and double-faced cards have more than 1 line in the database
-                        # we need more data to find the complete text & foreign name
-                        request = """SELECT * FROM cards WHERE layout = 'flip' OR layout = 'split' OR layout = 'double-faced'"""
-                        c.execute(request)
-                        split_flip_df_data = c.fetchall()
-                        
                         names_tmp = names.split("|")
                         
                         if layout == "split":
@@ -133,7 +125,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                 final_artist = ""
                                 # we try to get the complete manacost, text and the higher cmc
                                 for nn in names_tmp:
-                                        for card_split_flip in split_flip_df_data:
+                                        for card_split_flip in defs.SPLIT_FLIP_DF_DATA:
                                                 if card_split_flip[4] == edition_code:
                                                         if nn == card_split_flip[1]:
                                                                 final_manacost = final_manacost + card_split_flip[17] + "|"
@@ -155,7 +147,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                 zz = len(names_tmp)
                                 # we try to get the complete text
                                 for nn in names_tmp:
-                                        for card_split_flip in split_flip_df_data:
+                                        for card_split_flip in defs.SPLIT_FLIP_DF_DATA:
                                                 if card_split_flip[4] == edition_code:
                                                         if nn == card_split_flip[1]:
                                                                 if "Creature" in card_split_flip[21]:
@@ -193,7 +185,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                         final_nameforeign = ""
                                         if layout == "split":
                                                 for nn in names_tmp:
-                                                        for card_split_flip in split_flip_df_data:
+                                                        for card_split_flip in defs.SPLIT_FLIP_DF_DATA:
                                                                 if card_split_flip[4] == edition_code:
                                                                         if nn == card_split_flip[1]:
                                                                                 final_nameforeign = final_nameforeign + separator + card_split_flip[7]
@@ -201,7 +193,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                         elif layout == "flip":
                                                 final_nameforeign = foreign__name
                                                 for nn in names_tmp:
-                                                        for card_split_flip in split_flip_df_data:
+                                                        for card_split_flip in defs.SPLIT_FLIP_DF_DATA:
                                                                 if card_split_flip[4] == edition_code:
                                                                         if nn == card_split_flip[1]:
                                                                                 if card_split_flip[7] != foreign__name:
@@ -399,10 +391,9 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         else:
                                 name_for_add_popover = name.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                         
-                        #eventbox_card_pic.connect("enter-notify-event", mouse_on_pic, overlay_card_pic, card_pic, object_origin, simple_search, name_for_add_popover, edition_longname, id_, split_flip_df_data)
                         add_pic = Gtk.Image()
                         eventbox = Gtk.EventBox()
-                        eventbox.connect("button-press-event", add_button_clicked, eventbox_card_pic, overlay_card_pic, object_origin, simple_search, name_for_add_popover, edition_longname, id_, split_flip_df_data)
+                        eventbox.connect("button-press-event", add_button_clicked, eventbox_card_pic, overlay_card_pic, object_origin, simple_search, name_for_add_popover, edition_longname, id_)
                         overlay_card_pic.add_overlay(eventbox)
                         eventbox.add(add_pic)
                         eventbox.show_all()
@@ -630,7 +621,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
         else:
                 print("Something is wrong. We shouldn't get an empty cardid.")
 
-def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_origin, simple_search, name_for_add_popover_ss, edition_longname_ss, id_ss, split_flip_df_data):
+def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_origin, simple_search, name_for_add_popover_ss, edition_longname_ss, id_ss):
         """This function creates the popover which allows the user to add cards to his / her collection.
         
         @eventbox -> the Gtk.EventBox where the add button is displayed
@@ -642,7 +633,6 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         @name_for_add_popover_ss -> a str. If @simple_search is 1, this string contains the name of the displayed card, to show it in the popover. Not used if @simple_search is not 1.
         @edition_longname_ss -> a str. Like @name_for_add_popover_ss, but for the edition of the card.
         @id_ss -> a str. Like @name_for_add_popover_ss, but for the id of the card.
-        @split_flip_df_data -> a list which contains informations about the flip / split / double-faced cards in the database. This list is empty if the displayed card are not fliped / splited / double-faced.
         
         """
         
@@ -710,7 +700,7 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         for card in cards_selected_list:
                 id__ = card[0]
                 ed_code = functions.various.edition_longname_to_code(card[2])
-                for fsdf_cards in split_flip_df_data:
+                for fsdf_cards in defs.SPLIT_FLIP_DF_DATA:
                         if str(fsdf_cards[0]) == str(id__):
                                 # we find it, so it's a flip - split - double-faced card
                                 # if the name is different of the first names
@@ -718,7 +708,7 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
                                 if first_names != fsdf_cards[1]:
                                         # flip card, double-faced card : we need the correct name and the correct id
                                         # split card : we need the correct id
-                                        for fsdf_cards2 in split_flip_df_data:
+                                        for fsdf_cards2 in defs.SPLIT_FLIP_DF_DATA:
                                                 if fsdf_cards2[1] == first_names and fsdf_cards2[4] == ed_code:
                                                         # the id
                                                         cards_selected_list[i][0] = str(fsdf_cards2[0])

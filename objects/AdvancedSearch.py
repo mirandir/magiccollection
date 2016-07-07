@@ -607,9 +607,7 @@ class AdvancedSearch:
         
         def show_details(self, treeview, treepath, column, selection, button_show_details):
                 if button_show_details.get_sensitive():
-                        model, pathlist = selection.get_selected_rows()
-                        if model[pathlist][0] not in defs.SDF_VERSO_IDS_LIST:
-                                button_show_details.emit("clicked")
+                        button_show_details.emit("clicked")
         
         def send_id_to_loader(self, selection, integer, TreeViewColumn, simple_search):
                 model, pathlist = selection.get_selected_rows()
@@ -623,11 +621,8 @@ class AdvancedSearch:
                                 if model[row][12] == 700:
                                         nb_row_in_coll += 1
                         if len(pathlist) == nb_row_in_coll:
-                                if len(pathlist) == 1 and model[pathlist][0] in defs.SDF_VERSO_IDS_LIST:
-                                        self.button_show_details.set_sensitive(False)
-                                else:
-                                        self.button_show_details.set_sensitive(True)
-                                        self.button_show_details.set_popover(functions.collection.gen_details_popover(self.button_show_details, selection))
+                                self.button_show_details.set_sensitive(True)
+                                self.button_show_details.set_popover(functions.collection.gen_details_popover(self.button_show_details, selection))
                         else:
                                 self.button_show_details.set_sensitive(False)
                 else:

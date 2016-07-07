@@ -200,6 +200,10 @@ class Decks:
                 for id_db in ids_coll_dict.values():
                         if id_db not in new_id_db_to_italic:
                                 new_id_db_to_italic.append(id_db)
+                                if id_db in defs.SDF_VERSO_IDS_LIST:
+                                        new_id_db_to_italic.append(defs.SDF_VERSO_RECTO_IDS_DICT[id_db])
+                                elif id_db in defs.SDF_RECTO_IDS_LIST:
+                                        new_id_db_to_italic.append(defs.SDF_RECTO_VERSO_IDS_DICT[id_db])
                 
                 coll_object = defs.MAINWINDOW.collection
                 for i, row in enumerate(coll_object.mainstore):
@@ -274,15 +278,19 @@ class Decks:
                         id_db, side = data
                         ids_coll_dict_ids_card_list.append(id_db)
                 
+                to_unitalic_after_in_search = []
+                
                 coll_object = defs.MAINWINDOW.collection
                 for i, row in enumerate(coll_object.mainstore):
                         if row[0] not in dict_responses_coll.keys() and row[0] in ids_coll_dict_ids_card_list:
                                 coll_object.mainstore[i][13] = Pango.Style.NORMAL
+                                if row[0] in defs.SDF_RECTO_IDS_LIST:
+                                        to_unitalic_after_in_search.append(defs.SDF_RECTO_VERSO_IDS_DICT[row[0]])
                 
                 if coll_object.tree_coll.get_model() == coll_object.searchstore:
                         for i, row in enumerate(coll_object.searchstore):
-                                if row[0] not in dict_responses_coll.keys() and row[0] in ids_coll_dict_ids_card_list:
-                                        coll_object.mainstore[i][13] = Pango.Style.NORMAL
+                                if (row[0] not in dict_responses_coll.keys() and row[0] in ids_coll_dict_ids_card_list) or (row[0] in to_unitalic_after_in_search):
+                                        coll_object.searchstore[i][13] = Pango.Style.NORMAL
         
         def change_nb_proxies(self, deck_name, proxies_list_to_change):
                 '''Change the quantity of proxy cards in 'proxies_list_to_change' for the deck 'deck_name'.
@@ -468,6 +476,8 @@ class Decks:
                                 else:
                                         tmp_id_dict[id_card] = in_deck
                 
+                to_unitalic_after_in_search = []
+                
                 coll_object = defs.MAINWINDOW.collection
                 for i, row in enumerate(coll_object.mainstore):
                         if row[0] in tmp_id_dict.keys():
@@ -475,6 +485,8 @@ class Decks:
                                         coll_object.mainstore[i][13] = Pango.Style.ITALIC
                                 else:
                                         coll_object.mainstore[i][13] = Pango.Style.NORMAL
+                                        if row[0] in defs.SDF_RECTO_IDS_LIST:
+                                                to_unitalic_after_in_search.append(defs.SDF_RECTO_VERSO_IDS_DICT[row[0]])
                 coll_object.mainselect.emit("changed")
                 
                 if coll_object.tree_coll.get_model() == coll_object.searchstore:
@@ -484,6 +496,8 @@ class Decks:
                                                 coll_object.searchstore[i][13] = Pango.Style.ITALIC
                                         else:
                                                 coll_object.searchstore[i][13] = Pango.Style.NORMAL
+                                elif row[0] in to_unitalic_after_in_search:
+                                        coll_object.searchstore[i][13] = Pango.Style.NORMAL
         
         def switch_rows_sideboard(self, deck_name, ids_db_list):
                 '''Switches the sideboard position of the db list.

@@ -173,9 +173,12 @@ class Collection:
                                                 i += 1
                                         
                                         if self.tree_coll.get_model() == self.searchstore:
+                                                cur_ids = [current_id_]
+                                                if current_id_ in defs.SDF_RECTO_IDS_LIST:
+                                                        cur_ids.append(defs.SDF_RECTO_VERSO_IDS_DICT[current_id_])
                                                 for j, row in enumerate(self.searchstore):
                                                         id_ = row[0]
-                                                        if current_id_ == id_:
+                                                        if id_ in cur_ids:
                                                                 # another card like us is in the searchstore => curent nb + nb
                                                                 self.searchstore[j][15] = int(self.searchstore[j][15]) + int(nb)
                                                                 if comment != "":
@@ -248,10 +251,14 @@ class Collection:
                 # we need to find the ids_db of all current ids_coll
                 ids_list = ""
                 for id_ in cards_to_delete.values():
-                        ids_list = ids_list + "\"" + str(id_) + "\", "
+                        ids_list = ids_list + "\"" + id_ + "\", "
+                        if id_ in defs.SDF_RECTO_IDS_LIST:
+                                ids_list = ids_list + "\"" + defs.SDF_RECTO_VERSO_IDS_DICT[id_] + "\", "
                 ids_list = ids_list[:-2]
-                c_coll.execute("""SELECT id_card, comment FROM collection WHERE id_card IN (""" + ids_list + """)""")
-                reponses_coll = c_coll.fetchall()
+                conn_tmp, c_tmp = functions.collection.connect_tmp_coll_with_sdf()
+                c_tmp.execute("""SELECT id_card, comment FROM collection WHERE id_card IN (""" + ids_list + """)""")
+                reponses_coll = c_tmp.fetchall()
+                functions.collection.disconnect_db(conn_tmp)
                 
                 dict_responses_coll = {}
                 for card_coll in reponses_coll:
@@ -272,7 +279,13 @@ class Collection:
                                         else:
                                                 dict_responses_coll[id_card] = [dict_responses_coll[id_card][0] + 1, False]
                 
+                cards_to_delete_values = []
                 for id_deleted in cards_to_delete.values():
+                        cards_to_delete_values.append(id_deleted)
+                        if id_deleted in defs.SDF_RECTO_IDS_LIST:
+                                cards_to_delete_values.append(defs.SDF_RECTO_VERSO_IDS_DICT[id_deleted])
+                
+                for id_deleted in cards_to_delete_values:
                         if id_deleted not in dict_responses_coll.keys():
                                 dict_responses_coll[id_deleted] = [0, False]
                 
@@ -403,9 +416,7 @@ class Collection:
                                                 self.searchstore[i][12] = 400
         
         def show_details(self, treeview, treepath, column, selection, button_show_details):
-                model, pathlist = selection.get_selected_rows()
-                if model[pathlist][0] not in defs.SDF_VERSO_IDS_LIST:
-                        button_show_details.emit("clicked")
+                button_show_details.emit("clicked")
         
         def send_id_to_loader_with_selectinfo(self, selection, integer, TreeViewColumn, simple_search, selectinfo_button, button_show_details, button_change_quantity, button_add_deck):
                 self.send_id_to_loader(selection, integer, TreeViewColumn, simple_search)
@@ -420,21 +431,16 @@ class Collection:
                 elif len(pathlist) == 1:
                         label_selectinfo.set_text(defs.STRINGS["info_select_coll"])
                         selectinfo_button.set_sensitive(True)
-                        if model[pathlist][0] not in defs.SDF_VERSO_IDS_LIST:
-                                button_show_details.set_sensitive(True)
-                                button_show_details.set_popover(functions.collection.gen_details_popover(button_show_details, selection))
-                                button_change_quantity.set_sensitive(True)
-                                button_change_quantity.set_popover(functions.collection.gen_quantity_popover(button_change_quantity, selection))
-                        
-                                nb_avail = functions.collection.add_deck_test_avail(selection)
-                                if nb_avail > 0:
-                                        button_add_deck.set_sensitive(True)
-                                        button_add_deck.set_popover(functions.collection.gen_add_deck_popover(button_add_deck, selection))
-                                else:
-                                        button_add_deck.set_sensitive(False)
+                        button_show_details.set_sensitive(True)
+                        button_show_details.set_popover(functions.collection.gen_details_popover(button_show_details, selection))
+                        button_change_quantity.set_sensitive(True)
+                        button_change_quantity.set_popover(functions.collection.gen_quantity_popover(button_change_quantity, selection))
+                
+                        nb_avail = functions.collection.add_deck_test_avail(selection)
+                        if nb_avail > 0:
+                                button_add_deck.set_sensitive(True)
+                                button_add_deck.set_popover(functions.collection.gen_add_deck_popover(button_add_deck, selection))
                         else:
-                                button_show_details.set_sensitive(False)
-                                button_change_quantity.set_sensitive(False)
                                 button_add_deck.set_sensitive(False)
                 else:
                         label_selectinfo.set_text(defs.STRINGS["info_selects_coll"].replace("%%%", str(len(pathlist))))
