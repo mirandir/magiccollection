@@ -1005,4 +1005,6 @@ def clear_gui_del():
         except:
                 pass
         if defs.MAINWINDOW.collection.mainstore != None:
+                defs.MAINWINDOW.collection.mainselect.set_mode(Gtk.SelectionMode.NONE)
                 defs.MAINWINDOW.collection.mainstore.clear()
+                defs.MAINWINDOW.collection.mainselect.set_mode(Gtk.SelectionMode.MULTIPLE)
