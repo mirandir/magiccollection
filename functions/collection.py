@@ -884,7 +884,7 @@ def gen_add_deck_popover(button_add_deck, selection):
                                         if len(pathlist) < 6:
                                                 box_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
                                                 label_name = Gtk.Label()
-                                                label_name.set_markup("<b>" + row_name + "</b>")
+                                                label_name.set_markup("<b>" + row_name + "</b> - <small>" + model[row][2] + "</small>")
                                                 box_card.pack_start(label_name, False, False, 0)
                                                 spinbutton.connect("value-changed", spin_value_changed, spinbuttons_dict, select_list_decks, ok_button)
                                                 box_card.pack_start(spinbutton, False, False, 0)
