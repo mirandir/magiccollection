@@ -43,6 +43,7 @@ class MagicCollection(Gtk.Application):
                 Gtk.Application.__init__(self, application_id="org.mirandir.MagicCollection")
                 self.window = None
                 self.aboutwindow = None
+                self.tips = None
                 GLib.set_application_name(defs.STRINGS["app_name"])
                 GLib.set_prgname("magic_collection")
                 if functions.config.read_config("dark_theme") == "1":
@@ -80,7 +81,7 @@ class MagicCollection(Gtk.Application):
                         # do we need to autoupdate the prices?
                         if functions.config.read_config("price_autodownload") == "1":
                                 functions.prices.check_prices("auto")
-                        functions.collection.gen_sdf_data()
+                        functions.db.gen_sdf_data()
                         self.window.create_gui()
                 else:
                         self.window.widget_overlay.destroy()
@@ -108,6 +109,7 @@ class MagicCollection(Gtk.Application):
                 
                 section_oth = Gio.Menu()
                 # others menu entries
+                section_oth.append(defs.STRINGS["tips"], "app.tips")
                 section_oth.append(defs.STRINGS["about"], "app.about")
                 section_oth.append(defs.STRINGS["quit"], "app.quit")
                 menu.append_section(None, section_oth)
@@ -127,6 +129,10 @@ class MagicCollection(Gtk.Application):
                 exportdata_action = Gio.SimpleAction.new("exportdata", None)
                 exportdata_action.connect("activate", self.exportdata)
                 self.add_action(exportdata_action)
+                # option "tips"
+                tips_action = Gio.SimpleAction.new("tips", None)
+                tips_action.connect("activate", self.tips_cb)
+                self.add_action(tips_action)
                 # option "about"
                 about_action = Gio.SimpleAction.new("about", None)
                 about_action.connect("activate", self.about_cb, self)
@@ -144,6 +150,9 @@ class MagicCollection(Gtk.Application):
         
         def exportdata(self, action, param):
                 GLib.idle_add(functions.importexport.export_data)
+        
+        def tips_cb(self, action, param):
+                GLib.idle_add(functions.various.show_tips_window, self)
         
         def about_cb(self, action, parameters, app):
                 if self.aboutwindow == None:

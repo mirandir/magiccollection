@@ -805,3 +805,31 @@ def dialog_confimr_db(dialogconfirm):
                 GLib.idle_add(download_db)
         else:
                 check_db2()
+
+def gen_sdf_data():
+        # we need the ids of split and df cards
+        request = """SELECT id, name, nb_variante, names, edition, layout FROM cards WHERE layout = 'flip' OR layout = 'double-faced'"""
+        conn_db, c_db = connect_db()
+        c_db.execute(request)
+        sdf_all_data = c_db.fetchall()
+        
+        for data in sdf_all_data:
+                id_card, name, nb_variante, names, edition, layout = data
+                if name == names.split("|")[0]:
+                        defs.SDF_RECTO_IDS_LIST.append(id_card)
+                        for data2 in sdf_all_data:
+                                id_card2, name2, nb_variante2, names2, edition2, layout2 = data2
+                                if layout2 == layout and edition2 == edition and nb_variante2 == nb_variante and names2 == names and name2 != name:
+                                        defs.SDF_RECTO_VERSO_IDS_DICT[id_card] = id_card2
+                                        break
+                else:
+                        defs.SDF_VERSO_IDS_LIST.append(id_card)
+        for key, value in defs.SDF_RECTO_VERSO_IDS_DICT.items():
+                defs.SDF_VERSO_RECTO_IDS_DICT[value] = key
+        
+        # Flip, split and double-faced cards have more than 1 line in the database
+        request = """SELECT * FROM cards WHERE layout = 'flip' OR layout = 'split' OR layout = 'double-faced'"""
+        c_db.execute(request)
+        defs.SPLIT_FLIP_DF_DATA = c_db.fetchall()
+        
+        disconnect_db(conn_db)
