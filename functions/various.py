@@ -1008,3 +1008,58 @@ def clear_gui_del():
                 defs.MAINWINDOW.collection.mainselect.set_mode(Gtk.SelectionMode.NONE)
                 defs.MAINWINDOW.collection.mainstore.clear()
                 defs.MAINWINDOW.collection.mainselect.set_mode(Gtk.SelectionMode.MULTIPLE)
+
+def show_tips_window(mc):
+        if mc.tips == None:
+                tips_dialog = Gtk.Dialog()
+                mc.tips = tips_dialog
+                tips_dialog.set_default_size(200, -1)
+                tips_dialog.set_title(defs.STRINGS["tips"])
+                tips_dialog.set_icon_name("magic_collection")
+                if defs.MAINWINDOW != None:
+                        tips_dialog.set_transient_for(defs.MAINWINDOW)
+                        tips_dialog.set_modal(True)
+                notebook = Gtk.Notebook()
+                
+                scrolledwindow_general = Gtk.ScrolledWindow()
+                scrolledwindow_general.set_min_content_width(650)
+                scrolledwindow_general.set_min_content_height(300)
+                scrolledwindow_general.set_hexpand(False)
+                scrolledwindow_general.set_vexpand(True)
+                scrolledwindow_general.set_shadow_type(Gtk.ShadowType.IN)
+                box_general = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+                label_general = Gtk.Label(defs.STRINGS["tips_general_text"])
+                box_general.pack_start(label_general, False, True, 0)
+                scrolledwindow_general.add(box_general)
+                notebook.append_page(scrolledwindow_general, Gtk.Label(defs.STRINGS["tips_general"]))
+                
+                scrolledwindow_search = Gtk.ScrolledWindow()
+                scrolledwindow_search.set_min_content_width(650)
+                scrolledwindow_search.set_min_content_height(300)
+                scrolledwindow_search.set_hexpand(False)
+                scrolledwindow_search.set_vexpand(True)
+                scrolledwindow_search.set_shadow_type(Gtk.ShadowType.IN)
+                box_search = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+                label_search = Gtk.Label(defs.STRINGS["tips_search_text"])
+                box_search.pack_start(label_search, False, True, 0)
+                scrolledwindow_search.add(box_search)
+                notebook.append_page(scrolledwindow_search, Gtk.Label(defs.STRINGS["tips_search"]))
+                
+                for label in [label_general, label_search]:
+                        label.set_line_wrap(True)
+                        label.set_width_chars(75)
+                        label.set_selectable(True)
+                
+                for box in [box_general, box_search]:
+                        box.props.border_width = 12
+                
+                content_area = tips_dialog.get_content_area()
+                content_area.props.border_width = 0
+                content_area.pack_start(notebook, True, True, 0)
+                
+                notebook.show_all()
+                tips_dialog.run()
+                tips_dialog.destroy()
+                mc.tips = None
+        else:
+                mc.tips.present()

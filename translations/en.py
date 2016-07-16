@@ -34,6 +34,7 @@ def translate():
         translate["help"] = "Help"
         translate["doc"] = "Documentation"
         translate["website"] = "Website"
+        translate["tips"] = "Tips"
         translate["about"] = "About"
         translate["quit"] = "Quit"
         # About Window
