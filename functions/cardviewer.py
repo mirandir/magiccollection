@@ -82,6 +82,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         id_, name, nb_variante, names, edition_code, name_chinesetrad, name_chinesesimp, name_french, name_german, name_italian, name_japanese, name_korean, name_portuguesebrazil, name_portuguese, name_russian, name_spanish, colors, manacost, cmc, multiverseid, imageurl, type_, artist, text, flavor, power, toughness, loyalty, rarity, layout, number, variations = reponse[0]
                         
                         basename = str(name)
+                        show_add_button = True
                         
                         # we choose the foreign name to display
                         if foreign_name == "name_chinesetrad":
@@ -224,13 +225,115 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         # the card picture
                         card_pic = Gtk.Image()
                         
-                        # the top left button - can be a double-faced button, or a flip button, or an empty one
-                        df_button = Gtk.Button()
-                        df_button.set_relief(Gtk.ReliefStyle.NONE)
+                        # the top left button - can be a double-faced button, or a flip button, or a meld button, or an empty one
                         df_pic = Gtk.Image()
+                        
+                        if layout == "double-faced":
+                                df_button = Gtk.Button()
+                                context_df_button = df_button.get_style_context()
+                                style_provider_df_button = Gtk.CssProvider()
+                                # we get the id of the other face
+                                if id_ in defs.SDF_RECTO_IDS_LIST:
+                                        id_otherface = defs.SDF_RECTO_VERSO_IDS_DICT[id_]
+                                else:
+                                        id_otherface = defs.SDF_VERSO_RECTO_IDS_DICT[id_]
+                                
+                                df_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="icon_flip_card-symbolic"), Gtk.IconSize.LARGE_TOOLBAR)
+                                df_button.connect("clicked", object_origin.load_card_from_outside, str(id_otherface), [], simple_search)
+                                df_button.set_tooltip_text(defs.STRINGS["dfbutton_seeotherside_tooltip"])
+                                Gtk.StyleContext.add_provider(context_df_button, style_provider_df_button, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+                        elif layout == "flip" or basename == "Curse of the Fire Penguin":
+                                df_button = Gtk.Button()
+                                context_df_button = df_button.get_style_context()
+                                style_provider_df_button = Gtk.CssProvider()
+                                df_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="object-flip-vertical-symbolic"), Gtk.IconSize.SMALL_TOOLBAR)
+                                df_button.connect("clicked", vertical_flip_pic, card_pic)
+                                df_button.set_tooltip_text(defs.STRINGS["dfbutton_returncard_tooltip"])
+                                Gtk.StyleContext.add_provider(context_df_button, style_provider_df_button, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+                        elif layout == "meld":
+                                # we get the id(s)
+                                if id_ in defs.MELD_IDS_LIST:
+                                        df_button = Gtk.Button()
+                                        context_df_button = df_button.get_style_context()
+                                        style_provider_df_button = Gtk.CssProvider()
+                                        id_melded = defs.MELD_MELDED_IDS_DICT[id_]
+                                        df_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="icon_meld-symbolic"), Gtk.IconSize.LARGE_TOOLBAR)
+                                        df_button.connect("clicked", object_origin.load_card_from_outside, str(id_melded), [], simple_search)
+                                        df_button.set_tooltip_text(defs.STRINGS["dfbutton_meldsto_tooltip"])
+                                        Gtk.StyleContext.add_provider(context_df_button, style_provider_df_button, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+                                else:
+                                        show_add_button = False
+                                        df_button = Gtk.MenuButton()
+                                        context_df_button = df_button.get_style_context()
+                                        style_provider_df_button = Gtk.CssProvider()
+                                        df_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="icon_meld-symbolic"), Gtk.IconSize.LARGE_TOOLBAR)
+                                        df_button.set_tooltip_text(defs.STRINGS["dfbutton_meldedfrom_tooltip"])
+                                        Gtk.StyleContext.add_provider(context_df_button, style_provider_df_button, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+                                        
+                                        meld_menu = Gtk.Menu()
+                                        cards_meld_list = []
+                                        
+                                        for id_meld in defs.MELDED_MELD_IDS_DICT[id_]:
+                                                if id_meld != id_:
+                                                        for meld_data in defs.MELD_DATA:
+                                                                if meld_data[0] == id_meld:
+                                                                        name_meld = meld_data[1]
+                                                                        foreign_name_meld = defs.LOC_NAME_FOREIGN[functions.config.read_config("fr_language")]
+                                                                        if foreign_name_meld == "name_chinesetrad":
+                                                                                nb_foreign = 5
+                                                                        elif foreign_name_meld == "name_chinesesimp":
+                                                                                nb_foreign = 6
+                                                                        elif foreign_name_meld == "name_french":
+                                                                                nb_foreign = 7
+                                                                        elif foreign_name_meld == "name_german":
+                                                                                nb_foreign = 8
+                                                                        elif foreign_name_meld == "name_italian":
+                                                                                nb_foreign = 9
+                                                                        elif foreign_name_meld == "name_japanese":
+                                                                                nb_foreign = 10
+                                                                        elif foreign_name_meld == "name_korean":
+                                                                                nb_foreign = 11
+                                                                        elif foreign_name_meld == "name_portuguesebrazil":
+                                                                                nb_foreign = 12
+                                                                        elif foreign_name_meld == "name_portuguese":
+                                                                                nb_foreign = 13
+                                                                        elif foreign_name_meld == "name_russian":
+                                                                                nb_foreign = 14
+                                                                        elif foreign_name_meld == "name_spanish":
+                                                                                nb_foreign = 15
+                                                                        else:
+                                                                                nb_foreign = 8 # why not ?
+                                                                        nameforeign_meld = meld_data[nb_foreign]
+                                                                        variant_meld = meld_data[2]
+                                                                        if variant_meld != "":
+                                                                                space_meld = " "
+                                                                                variant_meld = "(" + variant_meld + ")"
+                                                                        else:
+                                                                                space_meld = ""
+                                                                        if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys() and foreign__name != "":
+                                                                                tmp_name_meld = nameforeign_meld + space_meld + variant_meld
+                                                                        else:
+                                                                                tmp_name_meld = name_meld + space_meld + variant_meld
+                                                                        cards_meld_list.append([id_meld, tmp_name_meld])
+                                                                        
+                                        cards_meld_list = sorted(cards_meld_list, key=getKey)
+                                        for tmp_name_id_meld in cards_meld_list:
+                                                id___, tmp_name_meld = tmp_name_id_meld
+                                                menu_item = Gtk.MenuItem(tmp_name_meld)
+                                                menu_item.connect("activate", object_origin.load_card_from_outside, id___, [meld_menu, None], 1)
+                                                menu_item.show()
+                                                meld_menu.append(menu_item)
+                                        df_button.set_popup(meld_menu)
+                        else:
+                                df_button = Gtk.Button()
+                                context_df_button = df_button.get_style_context()
+                                style_provider_df_button = Gtk.CssProvider()
+                                #df_pic.set_from_file(os.path.join(defs.PATH_MC, "images", "nothing.png"))
+                                df_button.set_sensitive(False)
+                                df_button.set_tooltip_text("")
+                        
+                        df_button.set_relief(Gtk.ReliefStyle.NONE)
                         # we load a specific CSS for this widget
-                        context_df_button = df_button.get_style_context()
-                        style_provider_df_button = Gtk.CssProvider()
                         if defs.GTK_MINOR_VERSION >= 20:
                                 widget_name = "button"
                         else:
@@ -243,26 +346,6 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         """
                         style_provider_df_button.load_from_data(bytes(css.encode()))
                         
-                        if layout == "double-faced":
-                                # we get the id of the other face
-                                if id_ in defs.SDF_RECTO_IDS_LIST:
-                                        id_otherface = defs.SDF_RECTO_VERSO_IDS_DICT[id_]
-                                else:
-                                        id_otherface = defs.SDF_VERSO_RECTO_IDS_DICT[id_]
-                                
-                                df_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="icon_flip_card-symbolic"), Gtk.IconSize.LARGE_TOOLBAR)
-                                df_button.connect("clicked", object_origin.load_card_from_outside, str(id_otherface), [], simple_search)
-                                df_button.set_tooltip_text(defs.STRINGS["dfbutton_seeotherside_tooltip"])
-                                Gtk.StyleContext.add_provider(context_df_button, style_provider_df_button, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-                        elif layout == "flip" or basename == "Curse of the Fire Penguin":
-                                df_pic = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="object-flip-vertical-symbolic"), Gtk.IconSize.SMALL_TOOLBAR)
-                                df_button.connect("clicked", vertical_flip_pic, card_pic)
-                                df_button.set_tooltip_text(defs.STRINGS["dfbutton_returncard_tooltip"])
-                                Gtk.StyleContext.add_provider(context_df_button, style_provider_df_button, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-                        else:
-                                #df_pic.set_from_file(os.path.join(defs.PATH_MC, "images", "nothing.png"))
-                                df_button.set_sensitive(False)
-                                df_button.set_tooltip_text("")
                         df_button.add(df_pic)
                         grid.attach(df_button, 0, 0, 1, 1)
                         first_widget = df_button
@@ -393,7 +476,8 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         
                         add_pic = Gtk.Image()
                         eventbox = Gtk.EventBox()
-                        eventbox.connect("button-press-event", add_button_clicked, eventbox_card_pic, overlay_card_pic, object_origin, simple_search, name_for_add_popover, edition_longname, id_)
+                        if show_add_button:
+                                eventbox.connect("button-press-event", add_button_clicked, eventbox_card_pic, overlay_card_pic, object_origin, simple_search, name_for_add_popover, edition_longname, id_)
                         overlay_card_pic.add_overlay(eventbox)
                         eventbox.add(add_pic)
                         eventbox.show_all()
@@ -587,7 +671,8 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                 try:
                                         pixbuf = functions.various.gdkpixbuf_new_from_file(path)
                                         pic_ok = 1
-                                        add_pic.set_from_file(os.path.join(defs.PATH_MC, "images", "add.png"))
+                                        if show_add_button:
+                                                add_pic.set_from_file(os.path.join(defs.PATH_MC, "images", "add.png"))
                                 except GLib.GError:
                                         os.remove(path)
                         
@@ -616,10 +701,15 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                         thread.start()
                         else:
                                 load_card_picture(path, pixbuf, card_pic, 1, layout, radius, flip_pic)
-                                add_pic.set_from_file(os.path.join(defs.PATH_MC, "images", "add.png"))
+                                if show_add_button:
+                                        add_pic.set_from_file(os.path.join(defs.PATH_MC, "images", "add.png"))
 
         else:
                 print("Something is wrong. We shouldn't get an empty cardid.")
+
+def getKey(item):
+        """We use this to correctly sort some characters."""
+        return(functions.various.remove_accented_char(item[1].lower().replace("œ", "oe").replace("æ", "ae")))
 
 def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_origin, simple_search, name_for_add_popover_ss, edition_longname_ss, id_ss):
         """This function creates the popover which allows the user to add cards to his / her collection.
@@ -650,10 +740,6 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
                         model, pathlist = select_list_decks.get_selected_rows()
                         if len(pathlist) == 0:
                                 select_list_decks.select_path(0)
-        
-        def getKey(item):
-                """We use this to correctly sort some characters."""
-                return(functions.various.remove_accented_char(item[1].lower().replace("œ", "oe").replace("æ", "ae")))
         
         cards_selected_list = []
         
@@ -686,12 +772,13 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
                                 # sideboard detected
                                 name_for_add_popover = name_for_add_popover[:-1].replace("|" + defs.STRINGS["decks_sideboard"], "")
                         if name_for_add_popover[:3] == "-- ":
-                                # proxy detected, we need to delete this "-- "
+                                # proxy detected, we need to delete the "-- "
                                 name_for_add_popover = name_for_add_popover[3:]
-                        cards_selected_list.append([str(id_), name_for_add_popover, edition])
-                        #FIXME: generating and closing the popover when many many rows are selected is slow and can freeze MC (??!!), so we limit to 500
-                        if count > 500:
-                                break
+                        if id_ not in defs.MELDED_IDS_LIST:
+                                cards_selected_list.append([str(id_), name_for_add_popover, edition])
+                                #FIXME: generating and closing the popover when many many rows are selected is slow and can freeze MC (??!!), so we limit to 500
+                                if count > 500:
+                                        break
         else:
                 cards_selected_list.append([str(id_ss), name_for_add_popover_ss, edition_longname_ss])
         

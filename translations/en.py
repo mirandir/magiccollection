@@ -222,6 +222,8 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["morebutton_tooltip"] = "More information"
         translate["dfbutton_seeotherside_tooltip"] = "See the other side"
         translate["dfbutton_returncard_tooltip"] = "Reverse the card"
+        translate["dfbutton_meldsto_tooltip"] = "Melds to..."
+        translate["dfbutton_meldedfrom_tooltip"] = "Melded from..."
         translate["cv_add_collection"] = "To the collection"
         translate["cv_add_proxies"] = "Like a proxy"
         translate["cv_add_proxies_s"] = "Like proxies"

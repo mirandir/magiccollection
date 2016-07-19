@@ -279,12 +279,18 @@ PREF_WINDOW_OPEN = False
 
 SIMPLY_SEARCH_ENTRY_HAD_FOCUS = None
 
-# Split and double-faced data
+# Split and double-faced, data
 SDF_RECTO_IDS_LIST = []
 SDF_VERSO_IDS_LIST = []
 SDF_RECTO_VERSO_IDS_DICT = {}
 SDF_VERSO_RECTO_IDS_DICT = {}
-SPLIT_FLIP_DF_DATA = None
+SPLIT_FLIP_DF_DATA = []
+# Melded, data
+MELD_IDS_LIST = []
+MELDED_IDS_LIST = []
+MELD_MELDED_IDS_DICT = {}
+MELDED_MELD_IDS_DICT = {}
+MELD_DATA = []
 
 # threads things
 COLL_LOCK = False

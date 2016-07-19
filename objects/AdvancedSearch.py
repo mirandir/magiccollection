@@ -399,7 +399,7 @@ class AdvancedSearch:
                                 
                                 add = True
                                 
-                                if card["layout"] == "flip" or card["layout"] == "double-faced":
+                                if card["layout"] == "flip" or card["layout"] == "double-faced" or card["layout"] == "meld":
                                         names = card["names"].split("|")
                                         if card["real_name"] != names[0]:
                                                 if type_s == "edition":

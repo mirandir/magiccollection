@@ -426,6 +426,12 @@ def prepare_request(search_widgets_list, type_request):
                                                 else:
                                                         tmp_request = "cards.layout != 'double-faced'"
                                                 tmp_enum_req = "(" + tmp_request + ")"
+                                        elif text == "~~":
+                                                if negate == 0:
+                                                        tmp_request = "cards.layout = 'meld'"
+                                                else:
+                                                        tmp_request = "cards.layout != 'meld'"
+                                                tmp_enum_req = "(" + tmp_request + ")"
                                         else:
                                                 nb_args = 0
                                                 list_text_to_find = py_lara(text).strip().split(" ")
@@ -807,29 +813,64 @@ def dialog_confimr_db(dialogconfirm):
                 check_db2()
 
 def gen_sdf_data():
-        # we need the ids of split and df cards
-        request = """SELECT id, name, nb_variante, names, edition, layout FROM cards WHERE layout = 'flip' OR layout = 'double-faced'"""
+        # we need the ids of split, meld and df cards to generate the dicts and the lists of ids
+        request = """SELECT id, name, nb_variante, names, edition, layout FROM cards WHERE layout = 'flip' OR layout = 'double-faced' OR layout = 'meld'"""
         conn_db, c_db = connect_db()
         c_db.execute(request)
         sdf_all_data = c_db.fetchall()
         
         for data in sdf_all_data:
                 id_card, name, nb_variante, names, edition, layout = data
-                if name == names.split("|")[0]:
-                        defs.SDF_RECTO_IDS_LIST.append(id_card)
-                        for data2 in sdf_all_data:
-                                id_card2, name2, nb_variante2, names2, edition2, layout2 = data2
-                                if layout2 == layout and edition2 == edition and nb_variante2 == nb_variante and names2 == names and name2 != name:
-                                        defs.SDF_RECTO_VERSO_IDS_DICT[id_card] = id_card2
-                                        break
+                names_splited = names.split("|")
+                if layout == "meld":
+                        # meld card
+                        if len(names_splited) == 2:
+                                # I'm a meld card.
+                                defs.MELD_IDS_LIST.append(id_card)
+                                # I meld to...
+                                meld_to = names_splited[1]
+                                for data2 in sdf_all_data:
+                                        id_card2, name2, nb_variante2, names2, edition2, layout2 = data2
+                                        if name2 == meld_to and layout2 == layout and edition2 == edition and nb_variante2 == nb_variante and name in names2.split("|"):
+                                                defs.MELD_MELDED_IDS_DICT[id_card] = id_card2
+                                                break
+                        elif len(names_splited) == 3:
+                                # I'm a melded card
+                                if id_card not in defs.MELDED_IDS_LIST:
+                                        defs.MELDED_IDS_LIST.append(id_card)
                 else:
-                        defs.SDF_VERSO_IDS_LIST.append(id_card)
+                        if name == names_splited[0]:
+                                # I'm a recto
+                                defs.SDF_RECTO_IDS_LIST.append(id_card)
+                                for data2 in sdf_all_data:
+                                        id_card2, name2, nb_variante2, names2, edition2, layout2 = data2
+                                        if layout2 == layout and edition2 == edition and nb_variante2 == nb_variante and names2 == names and name2 != name:
+                                                defs.SDF_RECTO_VERSO_IDS_DICT[id_card] = id_card2
+                                                break
+                        else:
+                                # I'm a verso
+                                defs.SDF_VERSO_IDS_LIST.append(id_card)
+        # reverses the dict. for SDF cards
         for key, value in defs.SDF_RECTO_VERSO_IDS_DICT.items():
                 defs.SDF_VERSO_RECTO_IDS_DICT[value] = key
         
-        # Flip, split and double-faced cards have more than 1 line in the database
-        request = """SELECT * FROM cards WHERE layout = 'flip' OR layout = 'split' OR layout = 'double-faced'"""
-        c_db.execute(request)
-        defs.SPLIT_FLIP_DF_DATA = c_db.fetchall()
+        # "reverses" the dict for meld cards
+        for meld_id, melded_id in defs.MELD_MELDED_IDS_DICT.items():
+                try:
+                        defs.MELDED_MELD_IDS_DICT[melded_id]
+                except KeyError:
+                        defs.MELDED_MELD_IDS_DICT[melded_id] = [meld_id]
+                else:
+                        if meld_id not in defs.MELDED_MELD_IDS_DICT[melded_id]:
+                                defs.MELDED_MELD_IDS_DICT[melded_id].append(meld_id)
         
+        # Flip, split, meld and double-faced cards have more than 1 line in the database
+        request = """SELECT * FROM cards WHERE layout = 'flip' OR layout = 'split' OR layout = 'double-faced' OR layout = 'meld'"""
+        c_db.execute(request)
+        defs.SPLIT_FLIP_DF_DATA = []
+        for data_card in c_db.fetchall():
+                if data_card[29] != "meld":
+                        defs.SPLIT_FLIP_DF_DATA.append(data_card)
+                elif data_card[29] == "meld":
+                        defs.MELD_DATA.append(data_card)
         disconnect_db(conn_db)
