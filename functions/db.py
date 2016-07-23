@@ -824,17 +824,17 @@ def gen_sdf_data():
                 names_splited = names.split("|")
                 if layout == "meld":
                         # meld card
-                        if len(names_splited) == 2:
+                        if names_splited[2] != name:
                                 # I'm a meld card.
                                 defs.MELD_IDS_LIST.append(id_card)
                                 # I meld to...
-                                meld_to = names_splited[1]
+                                meld_to = names_splited[2]
                                 for data2 in sdf_all_data:
                                         id_card2, name2, nb_variante2, names2, edition2, layout2 = data2
                                         if name2 == meld_to and layout2 == layout and edition2 == edition and nb_variante2 == nb_variante and name in names2.split("|"):
                                                 defs.MELD_MELDED_IDS_DICT[id_card] = id_card2
                                                 break
-                        elif len(names_splited) == 3:
+                        elif names_splited[2] == name:
                                 # I'm a melded card
                                 if id_card not in defs.MELDED_IDS_LIST:
                                         defs.MELDED_IDS_LIST.append(id_card)
