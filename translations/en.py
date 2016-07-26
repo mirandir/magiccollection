@@ -225,8 +225,8 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["dfbutton_meldsto_tooltip"] = "Melds to..."
         translate["dfbutton_meldedfrom_tooltip"] = "Melded from..."
         translate["cv_add_collection"] = "To the collection"
-        translate["cv_add_proxies"] = "Like a proxy"
-        translate["cv_add_proxies_s"] = "Like proxies"
+        translate["cv_add_proxies"] = "As a proxy"
+        translate["cv_add_proxies_s"] = "As proxies"
         # collection
         translate["db_coll_error"] = "Unable to read the collection."
         translate["coll_empty_welcome"] = "Welcome to " + translate["app_name"] + "!\n\Your collection is empty. You can search cards with the top left icon, or with the advanced search.\nWhen you find a card to add, move your mouse over his picture and click the '+'."

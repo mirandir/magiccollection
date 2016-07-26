@@ -1040,17 +1040,34 @@ def show_tips_window(mc):
                 scrolledwindow_search.set_vexpand(True)
                 scrolledwindow_search.set_shadow_type(Gtk.ShadowType.IN)
                 box_search = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-                label_search = Gtk.Label(defs.STRINGS["tips_search_text"])
+                tmp_text_for_label_search = ""
+                for text in [defs.STRINGS["tips_search_text_partname"], defs.STRINGS["tips_search_text_nonenglishname"], defs.STRINGS["tips_search_text_logicop"], defs.STRINGS["tips_search_text_op"], defs.STRINGS["tips_search_text_null"], defs.STRINGS["tips_search_text_spetext"], defs.STRINGS["tips_search_text_rarity"], defs.STRINGS["tips_search_text_manacost"], defs.STRINGS["tips_search_text_colors"], defs.STRINGS["tips_search_text_condition"]]:
+                        if text != "":
+                                tmp_text_for_label_search = tmp_text_for_label_search + "\n\n" + text
+                tmp_text_for_label_search = tmp_text_for_label_search[2:]
+                label_search = Gtk.Label(tmp_text_for_label_search)
                 box_search.pack_start(label_search, False, True, 0)
                 scrolledwindow_search.add(box_search)
                 notebook.append_page(scrolledwindow_search, Gtk.Label(defs.STRINGS["tips_search"]))
                 
-                for label in [label_general, label_search]:
+                scrolledwindow_proxies = Gtk.ScrolledWindow()
+                scrolledwindow_proxies.set_min_content_width(650)
+                scrolledwindow_proxies.set_min_content_height(300)
+                scrolledwindow_proxies.set_hexpand(False)
+                scrolledwindow_proxies.set_vexpand(True)
+                scrolledwindow_proxies.set_shadow_type(Gtk.ShadowType.IN)
+                box_proxies = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+                label_proxies = Gtk.Label(defs.STRINGS["tips_proxies_text"])
+                box_proxies.pack_start(label_proxies, False, True, 0)
+                scrolledwindow_proxies.add(box_proxies)
+                notebook.append_page(scrolledwindow_proxies, Gtk.Label(defs.STRINGS["tips_proxies"]))
+                
+                for label in [label_general, label_search, label_proxies]:
                         label.set_line_wrap(True)
                         label.set_width_chars(75)
                         label.set_selectable(True)
                 
-                for box in [box_general, box_search]:
+                for box in [box_general, box_search, box_proxies]:
                         box.props.border_width = 12
                 
                 content_area = tips_dialog.get_content_area()
