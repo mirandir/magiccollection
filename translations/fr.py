@@ -424,6 +424,6 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["tips_search_text_colors"] = """● Le champ '""" + translate["colors_ad"] + """' accepte également les noms anglais des couleurs, ainsi que leur première lettre."""
         translate["tips_search_text_condition"] = """● Le champ '""" + translate["add_condition"] + """' supporte les valeurs suivantes : '""" + translate["condition_mint"] + """', '""" + translate["condition_near_mint"] + """', '""" + translate["condition_excellent"] + """', '""" + translate["condition_played"] + """' et '""" + translate["condition_poor"] + """'."""
         translate["tips_proxies"] = "Proxies"
-        translate["tips_proxies_text"] = """● Vous pouvez ajouter des proxies à un deck en affichant la carte voulue, puis en cliquant sur le bouton d’ajout. Choisissez ensuite '""" + translate["cv_add_proxies"] + """'."""
+        translate["tips_proxies_text"] = """● Vous pouvez ajouter des proxies à un deck en affichant la carte voulue dans le mode Decks, puis en cliquant sur le bouton d’ajout. Choisissez ensuite '""" + translate["cv_add_proxies"] + """'."""
         #########################
         return(translate)

@@ -400,5 +400,27 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["import_conver"] = "Convert data"
         translate["import_oldformat_finish"] = translate["app_name"] + " finished converting your data, but some cards were not found. This can happen with some tokens that previously had color in their name. You should copy this list in a safe place, in order to add these cards again in " + translate["app_name"] + "."
         translate["import_oldformat_finish_ok"] = "Converting your data is complete."
+        # tips
+        translate["tips_general"] = "General"
+        translate["tips_general_text"] = """● You can select more than one card with regular shortcuts (Ctrl + mouse left, Shift + mouse left, Shift + arrows). Then you can perform operations on many cards at the same time.
+        
+● In the Collection, bolded lines have at least one card with a comment, and italicized lines have at least one card used in a deck.
+
+● In Decks, italicized lines are proxies or cards in the sideboard.
+
+● In the Advanced Search, bolded lines are cards in your collection."""
+        translate["tips_search"] = "Search"
+        translate["tips_search_text_partname"] = """● Type the complete name of a card is not mandatory to find it."""
+        translate["tips_search_text_nonenglishname"] = """● The database has the names of the cards for each language printed. You can type non-english names in a search."""
+        translate["tips_search_text_logicop"] = """● All search fields (unless '""" + translate["quantity_card_coll"] + """') allow the use of some limited logical operators ':""" + translate["operator_and"] + """:' and ':""" + translate["operator_or"] + """:'."""
+        translate["tips_search_text_op"] = """● In all search fields (unless '""" + translate["cmc_ad"] + "', '""" + translate["column_power"] + "', '""" + translate["column_toughness"] + """', '""" + translate["loyalty_ad"] + """' and '""" + translate["quantity_card_coll"] + """'), add one '!' before your search will look for the opposite."""
+        translate["tips_search_text_null"] = """● The fields '""" + translate["text_ad"] + """', '""" + translate["flavor_ad"] + """', '""" + translate["condition_coll"] + """', '""" + translate["lang_coll"] + """', '""" + translate["loaned_coll"] + """', '""" + translate["comment_coll"] + """' and '""" + translate["in_deck"] + """' allow the use of '¤' (or 'ø') to indicate an empty value. For example, type 'goblin' in the field '""" + translate["type_ad"] + "' and '¤' in the field '""" + translate["text_ad"] + """' will retrieve all goblins without text. This works with the empty value ('goblin' in the field '""" + translate["type_ad"] + """' and '!¤' in the field '""" + translate["text_ad"] + """' will retrieve all goblins with text)."""
+        translate["tips_search_text_spetext"] = """● In the field '""" + translate["name_ad"] + """', you can type '//' to retrieve all the splited cards, '<>' for the inverted cards, '||' for the double-faced cards and '~~' for cards with Meld."""
+        translate["tips_search_text_rarity"] = """● The field '""" + translate["column_rarity"] + """' allows the next values: '""" + translate["mythic"] + """', '""" + translate["rare"] + """', '""" + translate["uncommon"] + """', '""" + translate["common"] + """', '""" + translate["basic_land"] + """' and '""" + translate["special"] + """'."""
+        translate["tips_search_text_manacost"] = """● Values typed in the field '""" + translate["manacost_eg_ad"] + """' must be surrounded by brackets ('{' and '}')."""
+        translate["tips_search_text_colors"] = """● The field '""" + translate["colors_ad"] + """' allows the name and the first letter of the colors."""
+        translate["tips_search_text_condition"] = """● The field '""" + translate["add_condition"] + """' allows the next values: '""" + translate["condition_mint"] + """', '""" + translate["condition_near_mint"] + """', '""" + translate["condition_excellent"] + """', '""" + translate["condition_played"] + """' and '""" + translate["condition_poor"] + """'."""
+        translate["tips_proxies"] = "Proxies"
+        translate["tips_proxies_text"] = """● You can add proxies to a deck. Display the chosen card in the Decks, then click the add button. Choose '""" + translate["cv_add_proxies"] + """'."""
         #########################
         return(translate)
