@@ -785,7 +785,22 @@ def check_update_db():
                         fichierdatedb_tmp.close()
                         
                         del changelog_new[0]
-                        changelog_new = "".join(changelog_new)
+                        # we store only the lines which have no locale or our locale
+                        changelog_new_loc = ""
+                        for line in changelog_new:
+                                will_add = False
+                                try:
+                                        if line[0] == "<" and line[3] == ">":
+                                                if line[1:3] == defs.LANGUAGE:
+                                                        will_add = True
+                                                        line = line.replace("<" + defs.LANGUAGE + ">", "")
+                                        else:
+                                                will_add = True
+                                except:
+                                        will_add = True
+                                if will_add:
+                                        changelog_new_loc = changelog_new_loc + line + "\n"
+                        
                         infoversion = ""
                         mcversion = defs.VERSION
                         if StrictVersion(mcversion) < StrictVersion(minversionbdd_new):
@@ -793,19 +808,19 @@ def check_update_db():
                                 check_db2()
                         else:
                                 if (datebddcartes_new > datebddcartes):
-                                        if changelog_new == "":
+                                        if changelog_new_loc == "":
                                                 infochangelog = ""
                                         else:
-                                                infochangelog = "\n\n" + defs.STRINGS["changelog_db"] + "\n" + changelog_new
+                                                infochangelog = "\n\n" + defs.STRINGS["changelog_db"] + "\n" + changelog_new_loc
                                         dialogconfirm = Gtk.MessageDialog(defs.MAINWINDOW, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, defs.STRINGS["new_update_db"].replace("%%%", infoversion) + infochangelog)
-                                        GLib.idle_add(dialog_confimr_db, dialogconfirm)
+                                        GLib.idle_add(dialog_confirm_db, dialogconfirm)
                                 else:
                                         check_db2()
         else:
                 GLib.idle_add(functions.various.message_dialog, defs.STRINGS["no_internet_update_db"], 1)
                 check_db2()
 
-def dialog_confimr_db(dialogconfirm):
+def dialog_confirm_db(dialogconfirm):
         responseconfirm = dialogconfirm.run()
         dialogconfirm.destroy()
         # -8 yes, -9 no
