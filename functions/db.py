@@ -722,7 +722,6 @@ def download_db():
         go = 1
         if functions.various.check_internet():
                 GLib.idle_add(defs.MAINWINDOW.widget_overlay.get_child().set_markup, "<b><big>" + defs.STRINGS["downloading_db"] + "</big></b>")
-                #GLib.idle_add(functions.various.force_update_gui, 0)
                 
                 if os.path.isfile(os.path.join(defs.CACHEMC, "datedb_newtmp")) == False:
                         try:
@@ -733,31 +732,35 @@ def download_db():
                 if go == 1:
                         fichierdatedb_tmp = open(os.path.join(defs.CACHEMC, "datedb_newtmp"), "r", encoding="UTF-8")
                         datebddcartes_new = fichierdatedb_tmp.read(8)
+                        changelog_new = fichierdatedb_tmp.readlines()
+                        minversionbdd_new = changelog_new[0].split("|")[1].rstrip("\n\r")
                         fichierdatedb_tmp.close()
                         if os.path.isfile(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_new + ".sqlite.tar.xz_newtmp")):
                                 os.remove(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_new + ".sqlite.tar.xz_newtmp"))
                         
-                        try:
-                                urllib.request.urlretrieve(defs.SITEMC + "files/dbmc_" + datebddcartes_new + ".sqlite.tar.xz", os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_new + ".sqlite.tar.xz_newtmp"), functions.various.reporthook)
-                                #urllib.request.urlretrieve(defs.SITEMC + "files/dbmc_" + datebddcartes_new + ".sqlite.tar.xz", os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_new + ".sqlite.tar.xz_newtmp"))
-                                if os.path.isfile(os.path.join(defs.CACHEMC, "datedb")):
-                                        fichierdatedb_old = open(os.path.join(defs.CACHEMC, "datedb"), "r", encoding="UTF-8")
-                                        datebddcartes_old = fichierdatedb_old.read(8)
-                                        fichierdatedb_old.close()
-                                        os.remove(os.path.join(defs.CACHEMC, "datedb"))
-                                        if os.path.isfile(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_old + ".sqlite")):
-                                                os.remove(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_old + ".sqlite"))
-                                if os.path.isfile(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_new + ".sqlite.tar.xz")):
-                                        os.remove(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_new + ".sqlite.tar.xz"))
-                                os.rename(os.path.join(defs.CACHEMC, "datedb_newtmp"), os.path.join(defs.CACHEMC, "datedb"))
-                                os.rename(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_new + ".sqlite.tar.xz_newtmp"), os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_new + ".sqlite.tar.xz"))
-                                
-                        except:
-                                GLib.idle_add(functions.various.message_dialog, defs.STRINGS["error_download_db"], 0)
-                                #functions.various.message_dialog(defs.STRINGS["error_download_db"], 0)
+                        mcversion = defs.VERSION
+                        if StrictVersion(mcversion) >= StrictVersion(minversionbdd_new):
+                                try:
+                                        urllib.request.urlretrieve(defs.SITEMC + "files/dbmc_" + datebddcartes_new + ".sqlite.tar.xz", os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_new + ".sqlite.tar.xz_newtmp"), functions.various.reporthook)
+                                        #urllib.request.urlretrieve(defs.SITEMC + "files/dbmc_" + datebddcartes_new + ".sqlite.tar.xz", os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_new + ".sqlite.tar.xz_newtmp"))
+                                        if os.path.isfile(os.path.join(defs.CACHEMC, "datedb")):
+                                                fichierdatedb_old = open(os.path.join(defs.CACHEMC, "datedb"), "r", encoding="UTF-8")
+                                                datebddcartes_old = fichierdatedb_old.read(8)
+                                                fichierdatedb_old.close()
+                                                os.remove(os.path.join(defs.CACHEMC, "datedb"))
+                                                if os.path.isfile(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_old + ".sqlite")):
+                                                        os.remove(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_old + ".sqlite"))
+                                        if os.path.isfile(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_new + ".sqlite.tar.xz")):
+                                                os.remove(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_new + ".sqlite.tar.xz"))
+                                        os.rename(os.path.join(defs.CACHEMC, "datedb_newtmp"), os.path.join(defs.CACHEMC, "datedb"))
+                                        os.rename(os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_new + ".sqlite.tar.xz_newtmp"), os.path.join(defs.CACHEMC, "dbmc_" + datebddcartes_new + ".sqlite.tar.xz"))
+                                        
+                                except:
+                                        GLib.idle_add(functions.various.message_dialog, defs.STRINGS["error_download_db"], 0)
+                        else:
+                                GLib.idle_add(functions.various.message_dialog, defs.STRINGS["warning_ver_db"], 0)
         else:
                 GLib.idle_add(functions.various.message_dialog, defs.STRINGS["no_internet_download_db"], 1)
-                #functions.various.message_dialog(defs.STRINGS["no_internet_download_db"], 1)
         
         check_db2()
 
@@ -786,17 +789,18 @@ def check_update_db():
                         infoversion = ""
                         mcversion = defs.VERSION
                         if StrictVersion(mcversion) < StrictVersion(minversionbdd_new):
-                                infoversion = "\n" + defs.STRINGS["warning_ver_db"].replace("%%%", minversionbdd_new) + "\n"
-                        
-                        if (datebddcartes_new > datebddcartes):
-                                if changelog_new == "":
-                                        infochangelog = ""
-                                else:
-                                        infochangelog = "\n\n" + defs.STRINGS["changelog_db"] + "\n" + changelog_new
-                                dialogconfirm = Gtk.MessageDialog(defs.MAINWINDOW, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, defs.STRINGS["new_update_db"].replace("%%%", infoversion) + infochangelog)
-                                GLib.idle_add(dialog_confimr_db, dialogconfirm)
-                        else:
+                                GLib.idle_add(functions.various.message_dialog, defs.STRINGS["warning_ver_db"], 0)
                                 check_db2()
+                        else:
+                                if (datebddcartes_new > datebddcartes):
+                                        if changelog_new == "":
+                                                infochangelog = ""
+                                        else:
+                                                infochangelog = "\n\n" + defs.STRINGS["changelog_db"] + "\n" + changelog_new
+                                        dialogconfirm = Gtk.MessageDialog(defs.MAINWINDOW, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, defs.STRINGS["new_update_db"].replace("%%%", infoversion) + infochangelog)
+                                        GLib.idle_add(dialog_confimr_db, dialogconfirm)
+                                else:
+                                        check_db2()
         else:
                 GLib.idle_add(functions.various.message_dialog, defs.STRINGS["no_internet_update_db"], 1)
                 check_db2()

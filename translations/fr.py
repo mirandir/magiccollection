@@ -84,7 +84,7 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["no_internet_download_db"] = "Impossible de télécharger la mise à jour de la base de données : aucune connexion internet n'a été trouvée."
         translate["error_download_db"] = "Erreur lors du téléchargement de la base de données des cartes."
         translate["problem_db"] = "Impossible de télécharger ou de charger la base de données des cartes.\n" + translate["app_name"] + " ne peut pas fonctionner sans sa base de données."
-        translate["warning_ver_db"] = "Attention : cette version de la base de données ne fonctionnera qu'avec " + translate["app_name"] + " version %%% ou supérieure."
+        translate["warning_ver_db"] = "Cette version de la base de données n’est pas compatible avec votre version de " + translate["app_name"] + ". Mettez à jour " + translate["app_name"] + "."
         translate["changelog_db"] = "Nouveautés :"
         translate["new_update_db"] = "Une mise à jour de la base de données des cartes est disponible.%%%\nVoulez-vous la télécharger maintenant ?"
         translate["downloading_db"] = "Téléchargement de la base de données…"
