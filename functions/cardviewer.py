@@ -46,11 +46,12 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
         
         """
         
+        # we clear the box_card_viewer
         for widget in box_card_viewer.get_children():
                 box_card_viewer.remove(widget)
         
         if cardid == None:
-                # if cardid is None, we show a random mana picture
+                # if cardid is None, we show a random mana picture. If possible, we choose a different one
                 if len(defs.LIST_LANDS_SELECTED) == 5:
                         defs.LIST_LANDS_SELECTED = []
                 lchoice = random.choice(["b", "g", "r", "u", "w"])
@@ -67,14 +68,15 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
         elif cardid != "":
                 # we get an id, we load and display the card
                 
-                # we check if we must retrieve foreign names for flip / split cards
                 # FIXME : chinese variants !
                 foreign_name = defs.LOC_NAME_FOREIGN[functions.config.read_config("fr_language")]
                 
                 # we get the card data
                 conn, c = functions.db.connect_db()
                 c.execute("""SELECT * FROM cards WHERE id = \"""" + cardid + """\"""")
-                reponse = c.fetchall()                
+                reponse = c.fetchall()       
+                # we disconnect the database
+                functions.db.disconnect_db(conn)         
                 
                 if len(reponse) > 1:
                         print("Something is wrong in the database. IDs should be unique.")
@@ -87,28 +89,40 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         # we choose the foreign name to display
                         if foreign_name == "name_chinesetrad":
                                 foreign__name = name_chinesetrad
+                                nb_foreign = 5
                         elif foreign_name == "name_chinesesimp":
                                 foreign__name = name_chinesesimp
+                                nb_foreign = 6
                         elif foreign_name == "name_french":
                                 foreign__name = name_french
+                                nb_foreign = 7
                         elif foreign_name == "name_german":
                                 foreign__name = name_german
+                                nb_foreign = 8
                         elif foreign_name == "name_italian":
                                 foreign__name = name_italian
+                                nb_foreign = 9
                         elif foreign_name == "name_japanese":
                                 foreign__name = name_japanese
+                                nb_foreign = 10
                         elif foreign_name == "name_korean":
                                 foreign__name = name_korean
+                                nb_foreign = 11
                         elif foreign_name == "name_portuguesebrazil":
                                 foreign__name = name_portuguesebrazil
+                                nb_foreign = 12
                         elif foreign_name == "name_portuguese":
                                 foreign__name = name_portuguese
+                                nb_foreign = 13
                         elif foreign_name == "name_russian":
                                 foreign__name = name_russian
+                                nb_foreign = 14
                         elif foreign_name == "name_spanish":
                                 foreign__name = name_spanish
+                                nb_foreign = 15
                         else:
                                 foreign__name = name_german # why not ?
+                                nb_foreign = 8
                         
                         if foreign__name == "":
                                 foreign__name = name
@@ -118,6 +132,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         
                         names_tmp = names.split("|")
                         
+                        # some work is needed with split / flip cards
                         if layout == "split":
                                 final_text = ""
                                 final_manacost = ""
@@ -200,8 +215,6 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                                                                 if card_split_flip[7] != foreign__name:
                                                                                         final_nameforeign = final_nameforeign + separator + card_split_flip[7]
                                                 foreign__name = final_nameforeign
-                        # we disconnect the database
-                        functions.db.disconnect_db(conn)
                         
                         name_without_variants = str(name)
                         foreign__name_without_variants = str(foreign__name)                        
@@ -222,7 +235,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         first_widget = None
                         nb_columns = 0
                         
-                        # the card picture
+                        # the card picture - we need it now
                         card_pic = Gtk.Image()
                         
                         # the top left button - can be a double-faced button, or a flip button, or a meld button, or an empty one
@@ -278,31 +291,6 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                                         for meld_data in defs.MELD_DATA:
                                                                 if meld_data[0] == id_meld:
                                                                         name_meld = meld_data[1]
-                                                                        foreign_name_meld = defs.LOC_NAME_FOREIGN[functions.config.read_config("fr_language")]
-                                                                        if foreign_name_meld == "name_chinesetrad":
-                                                                                nb_foreign = 5
-                                                                        elif foreign_name_meld == "name_chinesesimp":
-                                                                                nb_foreign = 6
-                                                                        elif foreign_name_meld == "name_french":
-                                                                                nb_foreign = 7
-                                                                        elif foreign_name_meld == "name_german":
-                                                                                nb_foreign = 8
-                                                                        elif foreign_name_meld == "name_italian":
-                                                                                nb_foreign = 9
-                                                                        elif foreign_name_meld == "name_japanese":
-                                                                                nb_foreign = 10
-                                                                        elif foreign_name_meld == "name_korean":
-                                                                                nb_foreign = 11
-                                                                        elif foreign_name_meld == "name_portuguesebrazil":
-                                                                                nb_foreign = 12
-                                                                        elif foreign_name_meld == "name_portuguese":
-                                                                                nb_foreign = 13
-                                                                        elif foreign_name_meld == "name_russian":
-                                                                                nb_foreign = 14
-                                                                        elif foreign_name_meld == "name_spanish":
-                                                                                nb_foreign = 15
-                                                                        else:
-                                                                                nb_foreign = 8 # why not ?
                                                                         nameforeign_meld = meld_data[nb_foreign]
                                                                         variant_meld = meld_data[2]
                                                                         if variant_meld != "":
@@ -325,10 +313,10 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                                 meld_menu.append(menu_item)
                                         df_button.set_popup(meld_menu)
                         else:
+                                # the button is empty
                                 df_button = Gtk.Button()
                                 context_df_button = df_button.get_style_context()
                                 style_provider_df_button = Gtk.CssProvider()
-                                #df_pic.set_from_file(os.path.join(defs.PATH_MC, "images", "nothing.png"))
                                 df_button.set_sensitive(False)
                                 df_button.set_tooltip_text("")
                         
@@ -408,7 +396,6 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         if manacost == "" and cmc == "0":
                                 cmc_button = Gtk.MenuButton()
                                 empty_pic = Gtk.Image()
-                                #empty_pic.set_from_file(os.path.join(defs.PATH_MC, "images", "nothing.png"))
                                 cmc_button.add(empty_pic)
                                 cmc_button.set_sensitive(False)
                         else:
@@ -443,11 +430,11 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         grid.attach_next_to(cmc_button, label_name_1, Gtk.PositionType.RIGHT, 1, 1)
                         nb_columns += 1
                         
-                        # we show the label_name_2
+                        # we show the label_name_2, if needed
                         if label_name_1 != label_name_2:
                                 grid.attach_next_to(label_name_2, first_widget, Gtk.PositionType.BOTTOM, nb_columns, 1)
                         
-                        # the edition
+                        # the edition label
                         label_edition = Gtk.Label(edition_longname)
                         if len(edition_longname) > 29:
                                 label_edition.set_has_tooltip(True)
@@ -469,6 +456,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         overlay_card_pic = Gtk.Overlay()
                         eventbox_card_pic = Gtk.EventBox()
                         
+                        # we have to replace some characters in the name because the markup syntax
                         if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
                                 name_for_add_popover = foreign__name.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                         else:
@@ -487,7 +475,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         
                         path = os.path.join(defs.CACHEMCPIC, "cardback.png")
 
-                        # we try to load the image of the card. If we get a GLib error, then the picture is corrupted, and we delete it
+                        # we try to load cardback.png. If we get a GLib error, then the picture is corrupted, and we delete it
                         try:
                                 pixbuf = functions.various.gdkpixbuf_new_from_file(path)
                         except GLib.GError:
@@ -676,7 +664,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                 except GLib.GError:
                                         os.remove(path)
                         
-                        # we apply rounded corners to the picture
+                        # we apply rounded corners to the picture. The radius depends of the type of the card or of the origin of the picture
                         radius = 13
                         if imageurl != "":
                                 radius = 7
@@ -757,6 +745,7 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         except AttributeError:
                 count = 0
         if simple_search == 0 and count > 0:
+                # not a simple search, we need to get the data to display from the treeview
                 model, pathlist = selection.get_selected_rows()
                 for path in pathlist :
                         tree_iter = model.get_iter(path)
@@ -855,8 +844,10 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         popover_box.set_margin_right(5)
         overlay_labels = None
         
+        # we prepare the content of the popover
         if len(cards_selected_list) == 1:
                 label_add = Gtk.Label()
+                # if we are in the Decks mode, we ask for proxy
                 if nb_decks > 0:
                         label_add.set_markup(defs.STRINGS["add_card_question_without_collection"].replace("%%%", "<b>" + cards_selected_list[0][1] + " (" + cards_selected_list[0][2] + ")</b>"))
                 else:
@@ -870,6 +861,7 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
                 separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
                 popover_box.pack_start(separator, True, True, 0)
         else:
+                # if we are in the Decks mode, we ask for proxy
                 if nb_decks > 0:
                         label_add = Gtk.Label(defs.STRINGS["add_cards_question_without_collection"].replace("%%%", str(len(cards_selected_list))))
                 else:
@@ -908,6 +900,7 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         radiobutton_proxies = None
         select_list_decks = None
         side_checkbutton = None
+        # if we are in the Decks mode, we ask for proxy
         if nb_decks > 0:
                 box_radio_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
                 box_radio_buttons.set_halign(Gtk.Align.CENTER)
@@ -966,6 +959,7 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         popover_box.pack_start(expander, True, True, 0)
         popover.add(popover_box)
         
+        # if we are in the Decks mode, we ask for proxy
         if nb_decks > 0:
                 radiobutton_collection.connect("toggled", radiobutton_collection_toggled, expander, scrolledwindow_decks, side_checkbutton)
                 radiobutton_proxies.connect("toggled", radiobutton_proxies_toggled, expander, scrolledwindow_decks, select_list_decks, side_checkbutton)
@@ -997,7 +991,7 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         popover.show_all()
 
 def button_add_clicked(button_add, popover, spinbutton, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview, cards_selected_list, overlay_labels, radiobutton_proxies, select_list_decks, side_checkbutton):
-        """This is called when the user click on the add to the collection button. It add the selected cards to the collection or the deck selected if proxy mode is enabled.
+        """This is called when the user clicks on the add to the collection button. It adds the selected cards to the collection or to the deck selected if the proxy mode is enabled.
         
         @button_add -> the 'add to the collection' GtkButton
         @popover -> the 'add to the collection' GtkPopover
@@ -1013,6 +1007,7 @@ def button_add_clicked(button_add, popover, spinbutton, comboboxtext_condition, 
                 GLib.idle_add(defs.MAINWINDOW.decks.change_nb_proxies, deck_name, proxies_list_to_change)
         
         functions.various.lock_db(True, None)
+        
         button_add.set_sensitive(False)
         button_add.set_label(defs.STRINGS["add_button_wait"])
         nb = spinbutton.get_value_as_int()
@@ -1076,6 +1071,18 @@ def popover_add_close(popover, eventbox):
         defs.BUTTON_COLL_LOCK = None
 
 def load_card_picture(path, pixbuf, card_pic, gg_pic, layout, radius, flip_pic):
+        """Loads the picture from 'path' to 'card_pic'. We apply a radius and we modify the picture if needed by 'layout' or 'flip_pic'.
+        
+        @path -> the path to the file.
+        @pixbuf -> a GdK.Pixbuf from the file. We used it to calculate the size to display the picture.
+        @card_pic -> the Gtk.Image of the card.
+        @gg_pic -> an int. 1 if the picture of the card has been downloaded. 0 if cardback.png is used.
+        @layout -> a string, the layout of the card.
+        @radius -> an int, the radius to apply to the picture of the card.
+        @flip_pic -> a boolean, indicates if the picture need to be fliped.
+        
+        """
+        
         size = functions.various.card_pic_size()
         pixbuf_width = pixbuf.get_width()
         pixbuf_height = pixbuf.get_height()
@@ -1099,11 +1106,24 @@ def load_card_picture(path, pixbuf, card_pic, gg_pic, layout, radius, flip_pic):
         
         card_pic.set_size_request(size, size)
         if gg_pic == 1 and layout == "split" and ("Who  What  When  Where  Why" not in path):
-                rotate_card_pic(None, None, card_pic)
+                functions.various.rotate_card_pic(card_pic)
         if gg_pic == 1 and layout == "flip" and flip_pic:
                 vertical_flip_pic(None, card_pic)
 
 def waiting_for_downloader(card_pic, layout, edition_code, name, spinner, internet, radius, flip_pic, add_pic):
+        """This function is called when the thread which downloads the picture has finish. It checks if the card has been downloaded, and loads it. If not, cardback.png is used. In all cases, it adds the "Add button" above the picture.
+        
+        @card_pic -> the Gtk.Image of the card.
+        @layout -> a string, the layout of the card.
+        @edition_code -> the edition of the card.
+        @name -> the name of the card.
+        @spinner -> a Gtk.Spinner
+        @internet -> a boolean. True: internet is ok, False it's not.
+        @radius -> an int, the radius to apply to the picture of the card.
+        @flip_pic -> a boolean, indicates if the picture need to be fliped.
+        @add_pic -> the Gtk.Image of the "Add button".
+        
+        """
         gg_pic = 0
         if functions.various.check_card_pic(edition_code, name):
                 path = os.path.join(defs.CACHEMCPIC, functions.various.valid_filename_os(edition_code), functions.various.valid_filename_os(name) + ".full.jpg")
@@ -1141,16 +1161,23 @@ def dd_card_pic(object_origin, edition_code, name, multiverseid, imageurl, layou
                 internet = 0
                 
         GLib.idle_add(waiting_for_downloader, card_pic, layout, edition_code, name, spinner, internet, radius, flip_pic, add_pic)
-                        
-        #box_card_viewer.show_all()
-
-def rotate_card_pic(eventbox, event, card_pic):
-        functions.various.rotate_card_pic(card_pic)
 
 def vertical_flip_pic(button, card_pic):
+        """We flip the picture of the card.        
+        """
         functions.various.vertical_flip_pic(card_pic)
 
 def gen_more_popover(more_button, multiverseid, basename, nb_variante, edition_code, name, foreign__name, object_origin, current_id, type_, basetext, power, toughness, basecolors):
+        """Generates the "More information" popover (or None). We get the other editions of the card, the link to the Gatherer and the price.
+        
+        @rotate_card_pic -> the "More information" Gtk.Button.
+        @multiverseid, @basename, @nb_variante, @edition_code, @name, @foreign__name -> the characteristics of the card
+        @object_origin -> an AdvancedSearch, Collection or Decks object (indicates the origin of the card viewer request)
+        @current_id -> a string, the id of the card.
+        @type_, @basetext, @power, @toughness, @basecolors -> the characteristics of the card (2).
+        
+        """
+        
         def getKey(item):
                 return(item[0])
         
@@ -1251,6 +1278,12 @@ def gen_more_popover(more_button, multiverseid, basename, nb_variante, edition_c
                 return(popover)
 
 def gen_manacost_popover(cmc_button, manacost):
+        """Generates the popover for the Manacost button.
+        
+        @cmc_button -> the Gtk.Button
+        @manacost -> a string.
+        
+        """
         manacost_all = manacost.split("|")
         manacosts_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
         

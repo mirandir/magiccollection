@@ -46,7 +46,10 @@ import functions.config
 socket.setdefaulttimeout(5)
 
 def check_internet():
-        '''Checks if we have access to the internet.'''
+        """Checks if we have access to the internet.
+        
+        """
+        
         try:
                 urllib.request.urlopen("http://perdu.com", timeout=2)
                 return(True)
@@ -58,7 +61,10 @@ def check_internet():
                         return(False)
 
 def download_symbols():
-        '''Downloads the symbols' editions'''
+        """Downloads the symbols' editions.
+        
+        """
+        
         if check_internet():               
                 if os.path.isdir(os.path.join(defs.CACHEMCPIC, "icons")) == False:
                         os.mkdir(os.path.join(defs.CACHEMCPIC, "icons"))
@@ -98,17 +104,20 @@ def download_symbols():
                         i += 1
 
 def valid_filename_os(name):
-        '''Checks if the file name is valid for the current OS, and corrects it if necessary'''
+        """Checks if the filename is valid for the current OS, and corrects it if necessary.
+        
+        """
+        
         if defs.OS == "windows":
                 # the current OS is Windows
-                # last character must not be "." or " "
+                # the last character must not be "." or " "
                 if name[-1] == " " or name[-1] == ".":
                         name = name[:-1]
                 # we replace forbiden characters
                 carac_interdits = ["<", ">", ":", "\"", "/", "\\", "|", "?", "*"]
                 for ci in carac_interdits:
                         name = name.replace(ci, "")
-                # we change forbiden file names
+                # we change forbiden filenames
                 names_forb = ["CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"]
                 for ni in names_forb:
                         if name == ni:
@@ -116,11 +125,14 @@ def valid_filename_os(name):
                                 break
                 return(name)
         else:
-                # the current OS is not Windows, we replace "/"
+                # the current OS is not Windows, we replace only "/"
                 return(name.replace("/", ""))
 
 def check_folders_config():
-        '''Checks if needed folders and config files are here'''
+        """Checks if needed folders and config files are here.
+        
+        """
+        
         folders = [defs.HOMEMC, defs.CONFIGMC, defs.CACHEMC, defs.CACHEMCPIC, defs.CACHEMCPR, defs.BACKUPMC]
         for folder in folders:
                 if (os.path.isdir(folder)) == False:
@@ -140,14 +152,20 @@ def check_folders_config():
                                 pass
 
 def card_pic_size():
-        '''Returns the size wanted for a card picture'''
+        """Returns the size wanted for a card picture.
+        
+        """
+        
         if defs.DISPLAY_WIDTH < 1045 or defs.DISPLAY_HEIGHT < 768:
                 return(200)
         else:
                 return(311)
 
 def message_dialog(message, typ):
-        '''Display a message for the user. If "typ" is 1, the message is a notification about missing internet'''
+        """Displays a message for the user. If "typ" is 1, the message is a notification about missing internet.
+        
+        """
+        
         onaffiche = 1
         if typ == 1:
                 if functions.config.read_config("not_internet_popup") == "1":
@@ -161,12 +179,18 @@ def message_dialog(message, typ):
                 dialogdivers.destroy()
 
 def message_exit(message):
-        '''Display a message for the user, then exit MC'''
+        """Displays a message for the user, then exit MC.
+        
+        """
+        
         message_dialog(message, 0)
         sys.exit()
 
 def reporthook(block_no, block_size, file_size):
-        '''Update the % of downloading the db.'''
+        """Updates the % of download for the database.
+        
+        """
+        
         defs.DB_DOWNLOAD_PROGRESS += block_size
         pourcentage = (defs.DB_DOWNLOAD_PROGRESS / file_size) * 100
         if pourcentage > 100:
@@ -209,7 +233,10 @@ def downloadPicture(multiverseid, imageurl, name, edition_code):
                         return(False)
 
 def force_update_gui(s):
-        '''Force updating the GUI.'''
+        """Forces to update the GUI.
+        
+        """
+        
         while Gtk.events_pending():
                 Gtk.main_iteration()
         if s != 0:
@@ -241,7 +268,10 @@ def open_link_in_browser(widget, url, popover):
         return(True)
 
 def check_card_pic(code, name):
-        '''Checks if the card picture is already downloaded'''
+        """Checks if the card's picture is already downloaded.
+        
+        """
+        
         if os.path.isfile(os.path.join(defs.CACHEMCPIC, valid_filename_os(code), valid_filename_os(name) + ".full.jpg")):
                 return(True)
         else:
@@ -258,14 +288,20 @@ def py_lower(text):
         return(text.lower())
 
 def py_lara(text):
-        '''py_lower_and_remove_accents'''
+        """py_lower_and_remove_accents
+        
+        """
+        
         if text == "":
                 return(text)
         else:
                 return(remove_accented_char(text.lower().replace("æ", "ae").replace("œ", "oe")))
 
 def isSQLite3(filename):
-        '''Checks if the file is a SQLite3 db (from https://stackoverflow.com/questions/12932607/how-to-check-with-python-and-sqlite3-if-one-sqlite-database-file-exists)'''
+        """Checks if the file is a SQLite3 db (from https://stackoverflow.com/questions/12932607/how-to-check-with-python-and-sqlite3-if-one-sqlite-database-file-exists).
+        
+        """
+        
         if not os.path.isfile(filename):
                 return(False)
         if os.path.getsize(filename) < 100: # SQLite database file header is 100 bytes
@@ -292,7 +328,10 @@ def remove_accented_char(texte):
         return(texte)
 
 def gen_dict_editions():
-        '''Dict for editions' names'''
+        """Dict for editions' names.
+        
+        """
+        
         use_french_name = functions.config.read_config("ext_fr_name")
                 
         conn, c = functions.db.connect_db()
@@ -307,6 +346,10 @@ def gen_dict_editions():
                 defs.DICT_EDITIONS[info_edition[0]] = [nom_fr_ou_en, info_edition[1], info_edition[3], info_edition[4]]
 
 def prepare_cards_data_for_treeview(cards):
+        """Prepares the cards' data to be displayed in a treeview.
+        
+        """
+        
         # we check if we must retrieve foreign names for flip / split cards
         # FIXME : chinese variants !
         foreign_name = defs.LOC_NAME_FOREIGN[functions.config.read_config("fr_language")]
@@ -494,19 +537,28 @@ def draw_rounded(context, x, y, w, h, radius_x, radius_y):
         context.clip()
 
 def rotate_card_pic(gtkimage):
-        '''90° clock rotation.'''
+        """90° clock rotation.
+        
+        """
+        
         pixbuf = gtkimage.get_pixbuf()
         pixbuf = pixbuf.rotate_simple(GdkPixbuf.PixbufRotation.CLOCKWISE)
         gtkimage.set_from_pixbuf(pixbuf)
 
 def vertical_flip_pic(gtkimage):
-        '''180° clock rotation.'''
+        """180° clock rotation.
+        
+        """
+        
         pixbuf = gtkimage.get_pixbuf()
         pixbuf = pixbuf.rotate_simple(GdkPixbuf.PixbufRotation.UPSIDEDOWN)
         gtkimage.set_from_pixbuf(pixbuf)
 
 def compare_str_osx(model, row1, row2, user_data):
-        '''This function compares two strings without accent. It's used only on Mac OS X, where the default GTK sort functions seem bugus.'''
+        """This function compares two strings without accent. It's used only on macOS, where the default GTK sort functions seem bugus.
+        
+        """
+        
         sort_column, _ = model.get_sort_column_id()
         value1 = py_lara(model.get_value(row1, sort_column))
         value2 = py_lara(model.get_value(row2, sort_column))
@@ -519,7 +571,10 @@ def compare_str_osx(model, row1, row2, user_data):
                 return(1)
 
 def compare_str_and_int(model, row1, row2, user_data):
-        '''This function compares a list of strings and int. int values are sorted first.'''
+        """This function compares a list of strings and int. int values are sorted first.
+        
+        """
+        
         def isFloat(string):
                 try:
                         float(string)
@@ -559,7 +614,10 @@ def compare_str_and_int(model, row1, row2, user_data):
                 return(-1)
 
 def gen_treeview_columns(columns_to_display, treeview):
-        '''Generate the columns for a treeview which displays cards data'''               
+        """Generates the columns for a treeview which displays cards' data.
+        
+        """              
+        
         dict_columns_list = {}
         dict_renderers_list = {}
         w = 12
@@ -711,6 +769,9 @@ def gen_treeview_columns(columns_to_display, treeview):
         return([dict_columns_list, dict_renderers_list])
 
 def create_window_search_name(request_response, current_object_view):
+        """Generates the window for diplaying the results of a simple search.
+        
+        """
         
         def select_choice_card(selection, integer, TreeViewColumn, button_choose):
                 button_choose.set_sensitive(True)
@@ -844,6 +905,10 @@ def create_window_search_name(request_response, current_object_view):
         return(window, nb, store_results)
 
 def gen_details_widgets():
+        """Generates and returns a Gtk.Grid with all the widget for the details of a card.
+        
+        """
+        
         def checkbutton_loaned_toggled(cb, entry_loaned):
                 if cb.get_active():
                         entry_loaned.set_sensitive(True)
@@ -898,8 +963,12 @@ def gen_details_widgets():
         return(grid_details, label_add_condition, comboboxtext_condition, label_add_lang, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, label_add_comment, scrolledwindow, textview)
 
 def lock_db(lock_coll, lock_cards):
-        '''This function locks the database of the collection and/or the database of cards.
-        'lock_coll' and 'lock_cards' can be: True (we lock the db), False (we unlock the db), None (we do nothing).'''
+        """This function locks the database of the collection and/or the database of cards.
+        
+        @lock_coll and @lock_cards can be: True (we lock the db), False (we unlock the db), None (we do nothing).
+        
+        """
+        
         if lock_cards == True:
                 defs.AS_LOCK = True
         elif lock_cards == False:
@@ -914,7 +983,10 @@ def lock_db(lock_coll, lock_cards):
                         GLib.idle_add(defs.BUTTON_COLL_LOCK.set_sensitive, True)
 
 def update_entrycompletions(entry_lang, entry_loaned):
-        '''Retrieve a list of each language and each "loaned to" already writed in the collection, and add it to the entries.'''
+        """Retrieves a list of each language and each "loaned to" already writed in the collection, and add it to the entries.
+        
+        """
+        
         conn, c = functions.collection.connect_db()
         c.execute("""SELECT lang, loaned_to FROM collection WHERE lang != \"\"""")
         reponses_lang = c.fetchall()
@@ -948,7 +1020,10 @@ def update_entrycompletions(entry_lang, entry_loaned):
         entry_loaned.set_completion(entrycompletion_loaned)
 
 def gen_entrycompletion_editions(adsearch_item):
-        '''We generate the completion for the GtkEntry 'editions'.'''
+        """We generate the completion for the GtkEntry 'editions'.
+        
+        """
+        
         liststore_edition = Gtk.ListStore(str)
         entrycompletion_edition = Gtk.EntryCompletion()
         entrycompletion_edition.set_match_func(matchfunc_custom, 0)
@@ -960,7 +1035,10 @@ def gen_entrycompletion_editions(adsearch_item):
         return(entrycompletion_edition)
 
 def matchfunc_custom(completion, key, iter, column):
-        '''We check when we have to pop one or more edition's name.'''
+        """We check when we have to pop one or more edition's name.
+        
+        """
+        
         model = completion.get_model()
         ed_name = model.get_value(iter, column)
         if py_lara(key) in py_lara(ed_name):
@@ -969,20 +1047,30 @@ def matchfunc_custom(completion, key, iter, column):
                 return(False)
 
 def gdkpixbuf_new_from_file(path):
-        '''We wrap GdkPixbuf.Pixbuf.new_from_file, because it's not the same function on Windows. We return a GdkPixbuf.Pixbuf.'''
+        """We wrap GdkPixbuf.Pixbuf.new_from_file, because it's not the same function on Windows. We return a GdkPixbuf.Pixbuf.
+        
+        """
+        
         if defs.OS == "windows":
                 return(GdkPixbuf.Pixbuf.new_from_file_utf8(path))
         else:
                 return(GdkPixbuf.Pixbuf.new_from_file(path))
 
 def gdkpixbuf_new_from_file_at_size(path, width, height):
-        '''We wrap GdkPixbuf.Pixbuf.new_from_file_at_size, because it's not the same function on Windows. We return a GdkPixbuf.Pixbuf.'''
+        """We wrap GdkPixbuf.Pixbuf.new_from_file_at_size, because it's not the same function on Windows. We return a GdkPixbuf.Pixbuf.
+        
+        """
+        
         if defs.OS == "windows":
                 return(GdkPixbuf.Pixbuf.new_from_file_at_size_utf8(path, width, height))
         else:
                 return(GdkPixbuf.Pixbuf.new_from_file_at_size(path, width, height))
 
 def clear_gui_del():
+        """Erase many elements of the interface.
+        
+        """
+        
         if defs.MAINWINDOW.advancedsearch.mainstore != None:
                 for line in defs.MAINWINDOW.advancedsearch.mainstore:
                         if line[12] == 700:
@@ -1010,6 +1098,10 @@ def clear_gui_del():
                 defs.MAINWINDOW.collection.mainselect.set_mode(Gtk.SelectionMode.MULTIPLE)
 
 def show_tips_window(mc):
+        """Generates and displays the tips' window.
+        
+        """
+        
         if mc.tips == None:
                 tips_dialog = Gtk.Dialog()
                 mc.tips = tips_dialog

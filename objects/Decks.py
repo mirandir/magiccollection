@@ -74,7 +74,10 @@ class Decks:
                 self.mainbox.show_all()
         
         def create_new_deck(self, name_new_deck):
-                '''Create the new deck.'''
+                """Creates a new deck.
+                
+                """
+                
                 functions.decks.write_new_deck_to_db(name_new_deck)
                 
                 if self.store_list_decks == None:
@@ -83,7 +86,10 @@ class Decks:
                         self.gen_list_decks(name_new_deck)
         
         def rename_deck(self, name_old, name_new):
-                '''Rename a deck.'''
+                """Renames a deck.
+                
+                """
+                
                 conn_coll, c_coll = functions.collection.connect_db()
                 functions.various.lock_db(True, None)
                 
@@ -107,11 +113,17 @@ class Decks:
                                         break
         
         def update_deck_comment(self, deck_name, new_comment):
-                '''Write a new comment to the deck 'deck_name'.'''
+                """Writes a new comment to the deck 'deck_name'.
+                
+                """
+                
                 functions.decks.update_comment_deck_to_db(self, deck_name, new_comment)
         
         def display_deck_content(self, selection, integer, TreeViewColumn, tree_editions, button_delete_deck):
-                '''Displays the content of the deck 'deck_name' in self.right_content_bot.'''
+                """Displays the content of the deck 'deck_name' in self.right_content_bot.
+                
+                """
+                
                 if self.displaying_deck == 0:
                         model, treeiter = selection.get_selected()
                         if treeiter != None:
@@ -124,10 +136,13 @@ class Decks:
                                 selection.select_path(0)
         
         def add_cards_to_deck(self, deck_name, ids_coll_dict, side):
-                '''Add the cards in 'ids_coll_dict' to the deck 'deck_name'.
+                """Add the cards in 'ids_coll_dict' to the deck 'deck_name'.
+                
                 ids_coll_dict[id_coll] = id_db
                 side: 1 -> add to the sideboard, 0 -> add to the main deck
-                '''
+                
+                """
+                
                 conn_coll, c_coll = functions.collection.connect_db()
                 functions.various.lock_db(True, None)
                 
@@ -216,9 +231,12 @@ class Decks:
                                         coll_object.searchstore[i][13] = Pango.Style.ITALIC
         
         def delete_cards_from_deck(self, deck_name, ids_coll_dict):
-                '''Deletes the cards in 'ids_coll_dict' from the deck 'deck_name'.
+                """Deletes the cards in 'ids_coll_dict' from the deck 'deck_name'.
+                
                 ids_coll_dict[id_coll] = [id_db, side]
-                '''
+                
+                """
+                
                 conn_coll, c_coll = functions.collection.connect_db()
                 functions.various.lock_db(True, None)
                 for id_coll, data in ids_coll_dict.items():
@@ -293,9 +311,12 @@ class Decks:
                                         coll_object.searchstore[i][13] = Pango.Style.NORMAL
         
         def change_nb_proxies(self, deck_name, proxies_list_to_change):
-                '''Change the quantity of proxy cards in 'proxies_list_to_change' for the deck 'deck_name'.
+                """Change the quantity of proxy cards in 'proxies_list_to_change' for the deck 'deck_name'.
+                
                 proxies_list_to_change[[id_db, int (the modificator), side]]
-                '''
+                
+                """
+                
                 def _gen_dict_current_proxies(response_proxies):
                         dict_current_proxies = {}
                         for proxy_data in response_proxies.split(";;;"):
@@ -414,9 +435,12 @@ class Decks:
                                 functions.decks.update_nb_cards_current_deck(self)
         
         def move_row(self, old_deck, new_deck, ids_db_list):
-                '''Move all the cards in the list of ids_db from 'old_deck' to 'new_deck'. 'new_deck' can be "" to delete all these cards from 'old_deck'.
+                """Move all the cards in the list of ids_db from 'old_deck' to 'new_deck'. 'new_deck' can be "" to delete all these cards from 'old_deck'.
+                
                 ids_db_list = [[id_card, side], ...]
-                '''
+                
+                """
+                
                 conn_coll, c_coll = functions.collection.connect_db()
                 functions.various.lock_db(True, None)
                 for data in ids_db_list:
@@ -500,8 +524,11 @@ class Decks:
                                         coll_object.searchstore[i][13] = Pango.Style.NORMAL
         
         def switch_rows_sideboard(self, deck_name, ids_db_list):
-                '''Switches the sideboard position of the db list.
-                ids_db_list = [[id_db, proxy, current_side], ...]'''
+                """Switches the sideboard position of the db list.
+                ids_db_list = [[id_db, proxy, current_side], ...]
+                
+                """
+                
                 proxies_list_to_change = []
                 
                 functions.various.lock_db(True, None)
@@ -628,7 +655,10 @@ class Decks:
                 functions.decks.update_nb_cards_current_deck(self)
         
         def delete_deck(self, deck_name):
-                '''Delete a deck.'''
+                """Deletes a deck.
+                
+                """
+                
                 functions.various.lock_db(True, None)
                 conn_coll, c_coll = functions.collection.connect_db()
                 c_coll.execute("""SELECT id_coll, id_card FROM collection WHERE deck = ? OR deck_side = ?""", (deck_name, deck_name,))
@@ -692,7 +722,10 @@ class Decks:
                                                         coll_object.searchstore[i][13] = Pango.Style.NORMAL
                 
         def update_nb_decks(self):
-                '''Update the label which displays the number of decks.'''
+                """Update the label which displays the number of decks.
+                
+                """
+                
                 if self.label_nb_decks != None:
                         conn_coll, c_coll = functions.collection.connect_db()
                         c_coll.execute("""SELECT COUNT(*) FROM decks""")
@@ -704,6 +737,10 @@ class Decks:
                         return(None)
         
         def gen_list_decks(self, deck_to_select):
+                """Generates the list of the decks.
+                
+                """
+                
                 if self.store_list_decks != None:
                         self.displaying_deck = 1
                         self.store_list_decks.clear()
@@ -731,6 +768,10 @@ class Decks:
                                                         break
         
         def show_details(self, treeview, treepath, column, selection, button_show_details, button_change_quantity):
+                """Emulates a click on the button_show_details when the user double-clicks on the treeview.
+                
+                """
+                
                 model, pathlist = selection.get_selected_rows()
                 for row in pathlist:
                         if model[row][16] == 0:
@@ -742,6 +783,10 @@ class Decks:
                         break
         
         def send_id_to_loader(self, selection, integer, TreeViewColumn, simple_search):
+                """Loads a selection of cards and adapts the buttons. The first card is displayed in the card viewer.
+                
+                """
+                
                 model, pathlist = selection.get_selected_rows()
                 if pathlist != []:
                         tree_iter = model.get_iter(pathlist[0])
@@ -787,10 +832,15 @@ class Decks:
                         self.button_side.set_sensitive(False)
         
         def load_card(self, cardid, simple_search):
-                '''Load a card in the card viewer'''
+                """Loads a card in the card viewer.
+                
+                """
+                
                 GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
-                #functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)
         
         def load_card_from_outside(self, widget, cardid, list_widgets_to_destroy, simple_search):
+                """Loads a card in the card viewer, from another mode.
+                
+                """
+                
                 GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
-                #functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)

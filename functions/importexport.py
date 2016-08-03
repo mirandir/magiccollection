@@ -36,7 +36,10 @@ import functions.decks
 import functions.db
 
 def import_data():
-        '''This function imports the collection and the decks from a SQLite file.'''
+        """This function imports the collection and the decks from a SQLite file.
+        
+        """
+        
         if defs.COLL_LOCK:
                 functions.various.message_dialog(defs.STRINGS["import_collection_busy"], 0)
         else:
@@ -72,7 +75,10 @@ def import_data():
                                 functions.various.message_dialog(defs.STRINGS["import_success"], 0)
 
 def export_data():
-        '''This function exports the collection and the decks to a SQLite file.'''
+        """This function exports the collection and the decks to a SQLite file.
+        
+        """
+        
         if defs.COLL_LOCK:
                 functions.various.message_dialog(defs.STRINGS["export_collection_busy"], 0)
         else:
@@ -111,14 +117,20 @@ def export_data():
                 functions.various.lock_db(False, None)
 
 def test_oldformat():
-        '''Checks if we are in an old profil of MC.'''
+        """Checks if we are in an old profil of MC.
+        
+        """
+        
         if os.path.isfile(os.path.join(defs.HOMEMC, "collection.txt")) or os.path.isdir(os.path.join(defs.HOMEMC, "decks")):
                 return(True)
         else:
                 return(False)
 
 def import_oldformat():
-        '''This function converts the old format of the collection & decks to the new one. Should take some time.'''
+        """This function converts the old format of the collection & decks to the new one. Should take some time.
+        
+        """
+        
         defs.CONVERTING = True
         
         if os.path.isfile(os.path.join(defs.HOMEMC, "collection.sqlite")):
@@ -175,7 +187,10 @@ def import_oldformat():
         defs.CONVERTING = False
 
 def cards_finder_oldcollection(Collection):
-        '''This function try to found the old cards in the new database.'''
+        """This function try to found the old cards in the new database.
+        
+        """
+        
         def show_dialog(final_text_cards_not_found):
                 if final_text_cards_not_found != "":
                         dialog = Gtk.Dialog(title=defs.STRINGS["import_conver"], buttons=(Gtk.STOCK_OK, Gtk.ResponseType.OK))
@@ -287,7 +302,10 @@ def cards_finder_oldcollection(Collection):
         GLib.idle_add(show_dialog, final_text_cards_not_found)
 
 def read_oldcollection(filepath, Decks):
-        '''Reads the data in the collection located in filepath.'''
+        """Reads the data in the collection located in filepath (old format).
+        
+        """
+        
         if os.path.isfile(filepath):
                 Collection = {}
                 
@@ -378,7 +396,10 @@ def read_oldcollection(filepath, Decks):
                                 
 
 def read_olddeck(filepath):
-        '''Reads the data in the deck located in filepath.'''
+        """Reads the data in the deck located in filepath (old format).
+        
+        """
+        
         if os.path.isfile(filepath):
                 deck_dict = {}
                 deck_dict["cards"] = {}
@@ -409,7 +430,10 @@ def read_olddeck(filepath):
                 raise ValueError()
 
 def card_validator_oldformat(card_name, card_ex):
-        '''Corrects card data if needed.'''
+        """Fixes cards' data if needed.
+        
+        """
+        
         # variant ?
         nbvariant = None
         if card_name[-1] == ")" and "/" not in card_name:

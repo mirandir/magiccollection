@@ -33,7 +33,10 @@ import defs
 import functions.various
 
 def check_prices_presence():
-        '''Checks if the prices have been downloaded.'''
+        """Checks if the prices have been downloaded.
+        
+        """
+        
         if os.path.isfile(os.path.join(defs.CACHEMCPR, "dateprices")):
                 fileprices = open(os.path.join(defs.CACHEMCPR, "dateprices"), "r", encoding="UTF-8")
                 date_prices = fileprices.read(8)
@@ -54,7 +57,10 @@ def check_prices_presence():
                 return(False)
 
 def connect_db():
-        '''Return the connection to the DB and the cursor'''
+        """ Returns the connection to the DB and the cursor.
+        
+        """
+        
         filename = os.path.join(defs.CACHEMCPR, "prices_" + defs.PRICES_DATE + ".sqlite")
         if functions.various.isSQLite3(filename):
                 conn = sqlite3.connect(filename)
@@ -73,8 +79,12 @@ def disconnect_db(conn):
         conn.close()
 
 def check_prices(orig):
-        '''Function which checks if the prices are here, up to date, and launches download if not.
-        @orig is either "silent", "manual", "auto".'''
+        """Function which checks if the prices are here, up to date, and launches download if not.
+        
+        @orig is either "silent", "manual", "auto".
+        
+        """
+        
         if os.path.isfile(os.path.join(defs.CACHEMCPR, "dateprices")) == False:
                 download_prices(orig)
         else:
@@ -87,8 +97,12 @@ def check_prices(orig):
                         check_update_prices(orig)
 
 def download_prices(orig):
-        '''Downloads the prices of the cards.
-        @orig is either "silent", "manual", "auto".'''
+        """Downloads the prices of the cards.
+        
+        @orig is either "silent", "manual", "auto".
+        
+        """
+        
         defs.DB_DOWNLOAD_PROGRESS = 0
         go = 1
         if functions.various.check_internet():
@@ -131,7 +145,12 @@ def download_prices(orig):
         check_prices2(orig)
 
 def check_update_prices(orig):
-        '''Checks if a new db is available for the prices.'''
+        """Checks if a new db is available for the prices.
+        
+        @orig is either "silent", "manual", "auto".
+        
+        """
+        
         filedateprices = open(os.path.join(defs.CACHEMCPR, "dateprices"), "r", encoding="UTF-8")
         datedbprices = filedateprices.read(8)
         filedateprices.close()
@@ -186,7 +205,10 @@ def check_prices2(orig):
                         pass
 
 def get_price(ids_card_list):
-        '''Returns the average price of the card, if available. Else: min, high.'''
+        """Returns the average price of the cards in ids_card_list, if available. Else: min, else: high.
+        
+        """
+        
         conn, c = connect_db()
         
         # rates
@@ -242,7 +264,10 @@ def get_price(ids_card_list):
         return(dict_return, currency)
 
 def estimate_ids_list(list_ids_db_to_estimate, dict_coll_to_estimate):
-        '''Estimates each card in idslist, and returns the sum.'''
+        """Estimates each card in list_ids_db_to_estimate, and returns the sum.
+        
+        """
+        
         dict_prices, currency_to_disp = get_price(list_ids_db_to_estimate)
         est_sum = float(0)
         dict_price_not_found = {}
@@ -280,8 +305,12 @@ def get_data_for_estimate(ids_db_list, deckname):
         return(value, currency_to_disp, dict_price_not_found)
 
 def show_estimate_dialog(orig, ids_db_list, deckname):
-        '''Shows the estimation result to the user.
-        "orig" can be "select", "collection", or "deck". If "orig" is not "deck", "deckname" must be None.'''
+        """Shows the estimation result to the user.
+        
+        @orig can be "select", "collection", or "deck". If "orig" is not "deck", "deckname" must be None.
+        
+        """
+        
         def _get_data(orig, ids_db_list, box_display, deckname):
                 value, currency_to_disp, dict_price_not_found = get_data_for_estimate(ids_db_list, deckname)
                 

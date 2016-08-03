@@ -38,7 +38,7 @@ import functions.config
 import functions.importexport
 
 class MagicCollection(Gtk.Application):
-        '''App creation'''
+        '''Creation of the application.'''
         def __init__(self):
                 Gtk.Application.__init__(self, application_id="org.mirandir.MagicCollection")
                 self.window = None
@@ -194,7 +194,7 @@ class MagicCollection(Gtk.Application):
                         self.quit()
 
 class MC_Window(Gtk.ApplicationWindow):
-        '''Mainwindow creation'''
+        '''Creation of the mainwindow.'''
         def __init__(self, app):
                 Gtk.Window.__init__(self, title=defs.STRINGS["app_name"], application=app)
                 self.set_wmclass(defs.STRINGS["app_name"], defs.STRINGS["app_name"])
@@ -434,7 +434,7 @@ class MC_Window(Gtk.ApplicationWindow):
                         search_revealer.set_reveal_child(False)
         
         def create_gui(self):
-                '''GUI creation'''
+                '''Creation of the GUI.'''
                 self.main_stackswitcher = Gtk.StackSwitcher()
                 
                 self.collection = objects.Collection.Collection(self)

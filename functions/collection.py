@@ -34,7 +34,13 @@ import functions.various
 import functions.db
 
 def read_coll(box, coll_object):
-        '''Read the collection and display it in the 'box' widget'''
+        """Reads the collection and displays it in the 'box' widget.
+        
+        @box -> the box where display the collection.
+        @coll_object -> a Collection object.
+        
+        """
+        
         def create_widgets(box, coll_spinner):
                 def cw_real(box, coll_spinner):
                         # we create the toolbar
@@ -251,6 +257,9 @@ def read_coll(box, coll_object):
                 thread.start()
 
 def add_deck_test_avail(selection):
+        """Checks the number of cards available in the selection, and returns it.        
+        """
+        
         cards_avail = {}
         nb_avail = 0
         details_store = gen_details_store(selection)
@@ -268,7 +277,15 @@ def add_deck_test_avail(selection):
         return(nb_avail)
 
 def prepare_update_details(selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store, copy_details):
-        '''If copy_details is 1, we copy-paste all details of the current card on all cards in the store.'''
+        """Prepares the informations for updating the details according to the new data.
+        
+        @selection -> a Selection of cards
+        @comboboxtext_condition, @entry_lang, @checkbutton_foil, @checkbutton_loaned, @entry_loaned, @textview_comment -> the widgets of the Details' popover.
+        @details_store -> the Gtk.ListStore with the data.
+        @copy_details -> an int. If 1, we copy-paste all details of the current card on all cards in the store.
+        
+        """
+        
         def real_prepare_update_details(selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store):
                 # we get details
                 condition = ""
@@ -365,6 +382,12 @@ def prepare_update_details(selection, comboboxtext_condition, entry_lang, checkb
                 GLib.idle_add(real_prepare_update_details, selection, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, textview_comment, details_store)
 
 def prepare_delete_card(cards_to_delete):
+        """Prepares the deleting of cards.
+        
+        @cards_to_delete -> a dict, with cards_to_delete[id_coll] = id_db
+        
+        """
+        
         def update():
                 # we update the add_deck button
                 coll_object = defs.MAINWINDOW.collection
@@ -378,6 +401,10 @@ def prepare_delete_card(cards_to_delete):
         GLib.idle_add(update)
 
 def delete_from_treeview(widget, event, selection):
+        """Deletes the selection with the Delete key.
+        
+        """
+        
         model, pathlist = selection.get_selected_rows()
         if len(pathlist) > 0:
                 key = Gdk.keyval_name(event.keyval)
@@ -396,6 +423,10 @@ def delete_from_treeview(widget, event, selection):
                                         prepare_delete_rows_from_selection(selection)
 
 def prepare_delete_rows_from_selection(selection):
+        """Prepares deleting the selection.
+        
+        """
+        
         model, pathlist = selection.get_selected_rows()
         ids_db_list = ""
         for row in pathlist:
@@ -415,6 +446,12 @@ def prepare_delete_rows_from_selection(selection):
         GLib.idle_add(defs.MAINWINDOW.collection.del_collection, cards_to_delete)
 
 def prepare_delete_card_quantity(cards_to_delete, selection):
+        """Prepares deleting the selection from the "Modify quantity" popover.
+        
+        @cards_to_delete -> a dict, with cards_to_delete[id_coll] = id_db
+        
+        """
+        
         def update(selection):
                 model, pathlist = selection.get_selected_rows()
                 current_id = [model[pathlist][0]]
@@ -427,13 +464,17 @@ def prepare_delete_card_quantity(cards_to_delete, selection):
                                 selection.unselect_all()
                                 selection.select_path(row)
                                 break
+        
         GLib.idle_add(defs.MAINWINDOW.collection.del_collection, cards_to_delete)
         GLib.idle_add(update, selection)
 
-def refresh_select_when_hide(popover):
-        defs.MAINWINDOW.collection.mainselect.emit("changed")
-
 def prepare_delete_from_deck_details(selection, details_store):
+        """Prepares deleting cards from a deck, from the "Details" popover.
+        
+        @details_store -> the Gtk.ListStore with the data.
+        
+        """
+        
         def update(details_store, ids_coll_dict, deck_name, selection):
                 for i, row in enumerate(details_store):
                         if row[0] in ids_coll_dict.keys():
@@ -456,6 +497,7 @@ def prepare_delete_from_deck_details(selection, details_store):
                         coll_object.button_add_deck.set_popover(gen_add_deck_popover(coll_object.button_add_deck, coll_object.mainselect))
                 else:
                         coll_object.button_add_deck.set_sensitive(False)
+        
         model, pathlist = selection.get_selected_rows()
         ids_coll_dict = {}
         #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db, deck_side
@@ -466,10 +508,20 @@ def prepare_delete_from_deck_details(selection, details_store):
                         side = 1
                         deck_name = model[row][14]
                 ids_coll_dict[model[row][0]] = [model[row][13], side]
+        
         GLib.idle_add(defs.MAINWINDOW.decks.delete_cards_from_deck, deck_name, ids_coll_dict)
         GLib.idle_add(update, details_store, ids_coll_dict, deck_name, selection)
 
 def prepare_add_to_deck(popover, select_list_decks, ids_coll_dict, selection, side):
+        """Prepares adding cards to a deck.
+        
+        @select_list_decks -> the selection of the ListStore with decks' data.
+        @ids_coll_dict -> a dict, with ids_coll_dict[id_coll] = id_db.
+        @selection -> the selection.
+        @side -> an int, 1: add to the sideboard, 0: add to the main deck.
+        
+        """
+        
         def update(selection):
                 model, pathlist = selection.get_selected_rows()
                 if len(pathlist) == 1:
@@ -489,6 +541,16 @@ def prepare_add_to_deck(popover, select_list_decks, ids_coll_dict, selection, si
         GLib.idle_add(update, selection)
 
 def prepare_add_to_deck_details(popover, selection, select_list_decks, details_store, side_checkbutton, button_add_deck):
+        """Prepares adding cards to a deck from the "Details" popover.
+        
+        @selection -> the selection.
+        @select_list_decks -> the selection of the ListStore with decks' data.
+        @details_store -> the Gtk.ListStore with the data.
+        @side_checkbutton -> a Gtk.CheckButton.
+        @button_add_deck -> a Gtk.Button
+        
+        """
+        
         def update(details_store, ids_coll_dict, deck_name, selection, side, button_add_deck_pop):
                 for i, row in enumerate(details_store):
                         if row[0] in ids_coll_dict.keys():
@@ -533,11 +595,19 @@ def prepare_add_to_deck_details(popover, selection, select_list_decks, details_s
         GLib.idle_add(update, details_store, ids_coll_dict, deck_name, selection, side, button_add_deck)
 
 def delete_from_deck_details(button, selection, details_store, popover):
+        """Launches 'prepare_delete_from_deck_details' in another thread.
+        
+        """
+        
         thread = threading.Thread(target = prepare_delete_from_deck_details, args = (selection, details_store))
         thread.daemon = True
         thread.start()
 
 def gen_delete_popover(button_delete, selection):
+        """Generates and returns the "Delete" popover.
+        
+        """
+        
         def popover_show(popover, selection, delete_box):
                 for widget in delete_box.get_children():
                         delete_box.remove(widget)
@@ -600,6 +670,10 @@ def gen_delete_popover(button_delete, selection):
         return(popover)
 
 def gen_estimate_popover(button_estimate, selection):
+        """Generates and returns the "Estimate" popover.
+        
+        """
+        
         def popover_show(popover, selection, estimate_box):
                 for widget in estimate_box.get_children():
                         estimate_box.remove(widget)
@@ -668,7 +742,10 @@ def gen_estimate_popover(button_estimate, selection):
         return(popover)
 
 def gen_quantity_popover(button_change_quantity, selection):
-        '''Allows the user to change the quantity of the selected card.'''
+        """Generates and returns the "Change quantity" popover. It allows the user to change the quantity of the selected card.
+        
+        """
+        
         def spinbutton_value_changed(spinbutton, button_ok, current_quantity):
                 value = spinbutton.get_value_as_int()
                 if value != current_quantity and defs.COLL_LOCK == False:
@@ -749,7 +826,10 @@ def gen_quantity_popover(button_change_quantity, selection):
         return(popover)
 
 def gen_add_deck_popover(button_add_deck, selection):
-        '''Displays a popover which can add the current selection to a deck, if it's possible.'''
+        """Generates and returns a popover which can add the current selection to a deck, if it's possible.
+        
+        """
+        
         def select_changed(selection, ok_button, spinbuttons_dict, all_spinbutton_list):
                 model, treeiter = selection.get_selected()
                 if treeiter == None:
@@ -965,7 +1045,10 @@ def gen_add_deck_popover(button_add_deck, selection):
         return(popover)
 
 def gen_add_deck_details_popover(button_add_deck, selection, details_store):
-        '''Displays a popover which can add the current card to a deck (from the details popover).'''
+        """Generates and returns a popover which can add the current card to a deck (from the details popover).
+        
+        """
+        
         def select_changed(selection, ok_button):
                 model, treeiter = selection.get_selected()
                 if treeiter == None:
@@ -1040,7 +1123,10 @@ def gen_add_deck_details_popover(button_add_deck, selection, details_store):
         return(popover)
 
 def gen_details_store(selection):
-        '''Generate the details_store, which can be use by buttons and popover to gain informations about details of the current selection of cards.'''
+        """Generates the details_store, which can be use by buttons and popover to get informations about details of the current selection of cards.
+        
+        """
+        
         model, pathlist = selection.get_selected_rows()
         # first, we get the list of all cards' ids
         ids_list = ""
@@ -1122,7 +1208,10 @@ def gen_details_store(selection):
                 return(None)
 
 def gen_details_popover(button_show_details, selection):
-        '''Displays details for the current selection of cards.'''
+        """Generates and returns a popover with details for the current selection of cards.
+        
+        """
+        
         def select_changed(selection, integer, TreeViewColumn, comboboxtext_condition, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, scrolledwindow_comment, textview_comment, button_add_deck, button_copy_details, button_delete_deck, button_remove, label_state):
                 # we update the entrycompletions
                 functions.various.update_entrycompletions(entry_lang, entry_loaned)
@@ -1396,7 +1485,10 @@ def gen_details_popover(button_show_details, selection):
         return(popover)
 
 def show_hide_searchbar(togglebutton, searchbar):
-        '''Show / hide the searchbar'''
+        """Shows / hides the searchbar
+        
+        """
+        
         if togglebutton.get_active():
                 searchbar.show()
                 searchbar.set_search_mode(True)
@@ -1404,7 +1496,10 @@ def show_hide_searchbar(togglebutton, searchbar):
                 searchbar.set_search_mode(False)
 
 def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
-        '''Return a GtkGrid with all widgets for searching in the collection.'''
+        """Returns a GtkGrid with all widgets for searching in the collection.
+        
+        """
+        
         def comboboxtext_changed(comboboxtext, entry):
                 # we use the code in the Advanced Search
                 defs.MAINWINDOW.advancedsearch.comboboxtext_changed(comboboxtext, entry)
@@ -1650,12 +1745,18 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
         return(box_search_coll)
 
 def set_coll_updated_pic(coll_object):
-        '''Shows the updated picture if the user is searching in the collection.'''
+        """Shows the updated picture if the user is searching in the collection.
+        
+        """
+        
         if coll_object.tree_coll.get_model() == coll_object.searchstore:
                 coll_object.pic_search_coll_updated.show()
 
 def connect_tmp_coll_with_sdf():
-        '''Creates a tmp database with the split and double-faced cards data and the collection data'''
+        """Creates a tmp database with the split and double-faced cards data and the collection data.
+        
+        """
+        
         conn_tmp = sqlite3.connect(":memory:")
         conn_tmp.create_function('py_lara', 1, functions.various.py_lara)
         conn_tmp.create_function('py_int', 1, functions.various.py_int)
@@ -1685,7 +1786,10 @@ def connect_tmp_coll_with_sdf():
         return(conn_tmp, c_tmp)
 
 def connect_db():
-        '''Return the connection to the collection'DB and the cursor'''
+        """Returns the connection to the collection'DB and the cursor
+        
+        """
+        
         conn = sqlite3.connect(os.path.join(defs.HOMEMC, "collection.sqlite"))
         conn.create_function('py_lara', 1, functions.various.py_lara)
         conn.create_function('py_int', 1, functions.various.py_int)
@@ -1699,6 +1803,9 @@ def disconnect_db(conn):
         conn.close()
 
 def create_db_coll():
+        """Creates the database of the collection.
+        
+        """
         conn, c = connect_db()
         # we create the table 'collection'
         c.execute("""
@@ -1732,7 +1839,10 @@ def create_db_coll():
         disconnect_db(conn)
 
 def backup_coll(type_of_backup):
-        '''Creates a backup of the collection, only one per day unless "type_of_backup" is "forced".'''
+        """Creates a backup of the collection, only one time per day unless "type_of_backup" is "forced".
+        
+        """
+        
         # we get the list of all backups, and we sort them by date
         allfiles = os.listdir(defs.BACKUPMC)
         allbackups = []
@@ -1778,7 +1888,10 @@ def backup_coll(type_of_backup):
                                 return(tmpfilename)
 
 def restore_backup(filename):
-        '''Restore a backup file.'''
+        """Restores a backup file.
+        
+        """
+        
         if os.path.isfile(os.path.join(defs.BACKUPMC, filename)):
                 if functions.various.isSQLite3(os.path.join(defs.BACKUPMC, filename)):
                         if os.path.isfile(os.path.join(defs.HOMEMC, "collection.sqlite")):

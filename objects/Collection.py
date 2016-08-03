@@ -81,7 +81,10 @@ class Collection:
                 self.mainbox.show_all()
                 
         def add_collection(self, cards_list, spinner_labels):
-                '''Add cards to the collection. Each member of "cards_list" must have 6 elements : the card ID in the DB, condition, lang, foil, loaned_to, comment, nb.'''                       
+                """Adds cards to the collection. Each member of "cards_list" must have 6 elements : the card ID in the DB, condition, lang, foil, loaned_to, comment, nb.
+                
+                """                       
+                
                 def select_rows(rows_to_select):
                         try:
                                 self.select.unselect_all()
@@ -226,7 +229,10 @@ class Collection:
                         GLib.idle_add(spinner_labels.destroy)
         
         def del_all_collection_decks(self):
-                '''Delete all decks and all cards in the collection (caution).'''
+                """Deletes all decks and all cards of the collection (caution).
+                
+                """
+                
                 # we are not monsters, we make a backup
                 functions.collection.backup_coll("forced")
                 
@@ -236,7 +242,10 @@ class Collection:
                 functions.various.clear_gui_del()
         
         def del_collection(self, cards_to_delete):
-                '''Delete the cards in 'cards_to_delete'.'''
+                """Deletes the cards in 'cards_to_delete'.
+                
+                """
+                
                 conn_coll, c_coll = functions.collection.connect_db()
                 functions.various.lock_db(True, None)
                 
@@ -353,7 +362,10 @@ class Collection:
                 GLib.idle_add(functions.collection.set_coll_updated_pic, self)
         
         def update_details(self, cards_to_update, new_id_db_to_bold, new_id_db_to_unbold):
-                '''We update the details of the cards in 'cards_to_update'. 'new_id_db_to_bold' and 'new_id_db_to_unbold' can be lists of ids or "auto".'''
+                """We update the details of the cards in 'cards_to_update'. 'new_id_db_to_bold' and 'new_id_db_to_unbold' can be lists of ids or "auto".
+                
+                """
+                
                 conn_coll, c_coll = functions.collection.connect_db()
                 functions.various.lock_db(True, None)
                 
@@ -416,9 +428,17 @@ class Collection:
                                                 self.searchstore[i][12] = 400
         
         def show_details(self, treeview, treepath, column, selection, button_show_details):
+                """Emulates a click on the button_show_details when the user double-clicks on the treeview.
+                
+                """
+                
                 button_show_details.emit("clicked")
         
         def send_id_to_loader_with_selectinfo(self, selection, integer, TreeViewColumn, simple_search, selectinfo_button, button_show_details, button_change_quantity, button_add_deck):
+                """Loads a selection of cards and adapts the buttons. The first card is displayed in the card viewer.
+                
+                """
+                
                 self.send_id_to_loader(selection, integer, TreeViewColumn, simple_search)
                 model, pathlist = selection.get_selected_rows()
                 label_selectinfo = selectinfo_button.get_child()
@@ -461,6 +481,10 @@ class Collection:
                                 button_add_deck.set_sensitive(False)
                 
         def selectinfo_click(self, selectinfo_button, selection, popover):                
+                """Generates the 'selectinfo' popover.
+                
+                """
+                
                 def checkbutton_toggled(checkbutton, path, selection):
                         if checkbutton.get_active():
                                 selection.select_path(path)
@@ -534,6 +558,10 @@ class Collection:
                                 popover_box.show_all()
         
         def send_id_to_loader(self, selection, integer, TreeViewColumn, simple_search):
+                """Loads a selection of cards. The first one is displayed in the card viewer.
+                
+                """
+                
                 model, pathlist = selection.get_selected_rows()
                 if pathlist != []:
                         tree_iter = model.get_iter(pathlist[0])
@@ -541,10 +569,15 @@ class Collection:
                         self.load_card(id_, simple_search)
         
         def load_card(self, cardid, simple_search):
-                '''Load a card in the card viewer'''
+                """Loads a card in the card viewer.
+                
+                """
+                
                 GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
-                #functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)
         
         def load_card_from_outside(self, widget_orig, cardid, list_widgets_to_destroy, simple_search):
+                """Loads a card in the card viewer, from another mode.
+                
+                """
+                
                 GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
-                #functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)

@@ -31,6 +31,10 @@ import functions.collection
 import functions.db
 
 def gen_decks_display(decks_object, box):
+        """Generates the widgets for the Decks' mode.
+        
+        """
+        
         for widget in box.get_children():
                 box.remove(widget)
         
@@ -164,9 +168,17 @@ def gen_decks_display(decks_object, box):
                 decks_object.mainbox.show_all()
 
 def show_change_name_comment_deck(treeview, treepath, column, button_change_comm_deck):
+        """Emulates a click on the 'button_change_comm_deck' when the user double-clicks on the treeview.
+        
+        """
+        
         button_change_comm_deck.emit("clicked")
 
 def prepare_estimate_deck(button, select_list_decks):
+        """Prepares the data for the estimate window.
+        
+        """
+        
         model_deck, pathlist_deck = select_list_decks.get_selected_rows()
         deck_name = model_deck[pathlist_deck][1]
         request = """SELECT DISTINCT id_card FROM collection WHERE deck = \"""" + deck_name + """\" OR deck_side = \"""" + deck_name + """\""""
@@ -182,6 +194,10 @@ def prepare_estimate_deck(button, select_list_decks):
         GLib.idle_add(functions.prices.show_estimate_dialog, "deck", ids_db_list, deck_name)
 
 def prepare_delete_deck(button, select_list_decks, decks_object):
+        """Prepares deleting a deck.
+        
+        """
+        
         def real_work(decks_object, deck_name):
                 GLib.idle_add(decks_object.delete_deck, deck_name)
         model_deck, pathlist_deck = select_list_decks.get_selected_rows()
@@ -196,6 +212,10 @@ def prepare_delete_deck(button, select_list_decks, decks_object):
                 thread.start()
 
 def prepare_delete_from_deck(button, deck_name, selection, decks_object):
+        """Prepares deleting cards from a deck.
+        
+        """
+        
         model, pathlist = selection.get_selected_rows()
         ids_db_list_to_delete = []
         ids_db_list_proxies_to_delete = []
@@ -210,6 +230,10 @@ def prepare_delete_from_deck(button, deck_name, selection, decks_object):
                 GLib.idle_add(decks_object.change_nb_proxies, deck_name, ids_db_list_proxies_to_delete)
 
 def prepare_deck_comment_save(textbuffer, decks_object):
+        """Prepares saving the name and the comment of a deck to the database.
+        
+        """
+        
         def real_prepare_deck_comment_save(textbuffer, decks_object):
                 start = textbuffer.get_start_iter()
                 end = textbuffer.get_end_iter()
@@ -248,7 +272,10 @@ def textview_comment_save(textbuffer, decks_object, textview_comm):
                 thread.start()
 
 def gen_deck_content(deck_name, box, decks_object):
-        '''Displays the cards of the deck.'''
+        """Displays the cards of the deck in the Decks' mode.
+        
+        """
+        
         def _cards_from_deck_to_dict(responses):
                 dict_cards_in_deck = {}
                 for card_deck in responses: 
@@ -465,6 +492,10 @@ def gen_deck_content(deck_name, box, decks_object):
         decks_object.displaying_deck = 0
 
 def prepare_move_cards(select_list_decks, selection, old_deck, decks_object):
+        """Prepares moving a selection of cards from old_deck to a new deck.
+        
+        """
+        
         model_deck, pathlist_deck = select_list_decks.get_selected_rows()
         new_deck = model_deck[pathlist_deck][1]
         model, pathlist = selection.get_selected_rows()
@@ -487,10 +518,17 @@ def prepare_add_cards_deck(current_deck_name, ids_coll_dict, decks_object, side)
         GLib.idle_add(decks_object.add_cards_to_deck, current_deck_name, ids_coll_dict, side)
 
 def prepare_delete_cards_deck(current_deck_name, ids_coll_dict, decks_object):
+        """Launches delete_cards_from_deck in another thread.
+        
+        """
+        
         GLib.idle_add(decks_object.delete_cards_from_deck, current_deck_name, ids_coll_dict)
 
 def gen_deck_change_quantity_popover(button_change_quantity, selection, decks_object):
-        '''Generate the popover which allow to change the quantity of the card selected in the deck selected.'''
+        """Generates and returns the popover which allows the user to change the quantity of the selected card in the selected deck.
+        
+        """
+        
         def spinbutton_value_changed(spinbutton, button_ok, current_quantity):
                 value = spinbutton.get_value_as_int()
                 if value != current_quantity and defs.COLL_LOCK == False:
@@ -606,7 +644,10 @@ def gen_deck_change_quantity_popover(button_change_quantity, selection, decks_ob
         return(popover)
 
 def gen_move_deck_popover(button_move, selection, decks_object):
-        '''Create the popover which allow the user to move all the cards selected to one deck to another.'''
+        """Generates and returns the popover which allows the user to move all the cards selected from one deck to another.
+        
+        """
+        
         def select_changed(selection, ok_button):
                 model, treeiter = selection.get_selected()
                 if treeiter == None:
@@ -683,7 +724,10 @@ def gen_move_deck_popover(button_move, selection, decks_object):
         return(popover)
 
 def gen_edit_comm_name_deck_popover(button_change_comm_deck, decks_object, select_list_decks):
-        '''Create the popover which let the user to edit the comment of the deck.'''
+        """Generates and returns the popover which lets the user to edit the comment and the name of the selected deck.
+        
+        """
+        
         def popover_show(popover, decks_object, select_list_decks):
                 def real_show(popover, decks_object, select_list_decks):
                         def rename_deck(button, entry_name_deck, decks_object, popover, current_deck_name):
@@ -766,7 +810,10 @@ def gen_edit_comm_name_deck_popover(button_change_comm_deck, decks_object, selec
         return(popover)
 
 def gen_new_deck_popover(button_new_deck, decks_object):
-        '''Create the popover which create deck.'''
+        """Generates and returns the popover which creates a new deck.
+        
+        """
+        
         def popover_show(popover, decks_object):
                 def create_deck(button, entry_name_deck, decks_object, popover):
                         def real_create_deck(button, entry_name_deck, decks_object, popover):
@@ -825,7 +872,10 @@ def gen_new_deck_popover(button_new_deck, decks_object):
         return(popover)
 
 def gen_sideboard_popover(decks_object, button_side, selection, nb_row_in_side, nb_row_not_in_side):
-        '''Creates the popover which add / remove from the sideboard.'''
+        """Generates and returns the popover which add / remove cards from the sideboard.
+        
+        """
+        
         def popover_show(popover, decks_object, ids_db_list, sideboard_box, nb_row_in_side, nb_row_not_in_side):
                 def button_sideboard_clicked(button, deck_name, ids_db_list, popover, decks_object):
                         def switch_sideboard(deck_name, ids_db_list, popover, decks_object):
@@ -878,7 +928,10 @@ def gen_sideboard_popover(decks_object, button_side, selection, nb_row_in_side, 
         return(popover)
 
 def write_new_deck_to_db(name_new_deck):
-        '''Write the new deck to the collection database.'''
+        """Writes the new deck to the collection database.
+        
+        """
+        
         conn_coll, c_coll = functions.collection.connect_db()
         functions.various.lock_db(True, None)
         
@@ -888,7 +941,10 @@ def write_new_deck_to_db(name_new_deck):
         functions.various.lock_db(False, None)
 
 def update_comment_deck_to_db(decks_object, deck_name, new_comment):
-        '''Write the new comment of the deck to the collection database and update the list.'''
+        """Writes the new comment and the new name of the deck to the database and updates the list.
+        
+        """
+        
         def update_comment_in_decks_list(deck_name, decks_object):
                 if decks_object != None:
                         try:
@@ -908,7 +964,10 @@ def update_comment_deck_to_db(decks_object, deck_name, new_comment):
         GLib.idle_add(update_comment_in_decks_list, deck_name, decks_object)
 
 def update_nb_cards_current_deck(decks_object):
-        '''Counts the number of cards in the current deck, and update the GtkLabel "label_nb_cards".'''
+        """Counts the number of cards in the current deck, and updates the GtkLabel "label_nb_cards".
+        
+        """
+        
         nb_cards = 0
         nb_cards_side = 0
         for card_data_deck in decks_object.mainstore:

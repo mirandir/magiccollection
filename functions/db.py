@@ -34,7 +34,10 @@ import functions.various
 import functions.importexport
 
 def connect_db():
-        '''Return the connection to the DB and the cursor'''
+        """Returns the connection to the DB and the cursor
+        
+        """
+        
         filename = os.path.join(defs.CACHEMC, "dbmc_" + defs.DB_VERSION + ".sqlite")
         if functions.various.isSQLite3(filename):
                 conn = sqlite3.connect(filename)
@@ -53,7 +56,10 @@ def disconnect_db(conn):
         conn.close()
 
 def prepare_request(search_widgets_list, type_request):
-        '''Prepares the request to the database. 'type_request' is "coll" or "db".'''
+        """Prepares the request to the database. 'type_request' is "coll" or "db".
+        
+        """
+        
         py_lara = functions.various.py_lara
         
         if type_request == "db":
@@ -664,7 +670,10 @@ def prepare_request(search_widgets_list, type_request):
                 return([None, None])
 
 def check_db():
-        '''Function which checks if the db is here, up to date, and updates it if not'''
+        """Function which checks if the db is here, up to date, and updates it if not
+        
+        """
+        
         if os.path.isfile(os.path.join(defs.CACHEMC, "datedb")) == False:
                 download_db()
         else:
@@ -717,7 +726,10 @@ def check_db2():
         GLib.idle_add(defs.MAINWINDOW.app.load_mc)
 
 def download_db():
-        '''Function which downloads the database.'''
+        """Function which downloads the database.
+        
+        """
+        
         defs.DB_DOWNLOAD_PROGRESS = 0
         go = 1
         if functions.various.check_internet():
@@ -765,7 +777,10 @@ def download_db():
         check_db2()
 
 def check_update_db():
-        '''Checks if a new db is available'''
+        """Checks if a new db is available
+        
+        """
+        
         fichierdatedb = open(os.path.join(defs.CACHEMC, "datedb"), "r", encoding="UTF-8")
         datebddcartes = fichierdatedb.read(8)
         fichierdatedb.close()
@@ -832,6 +847,10 @@ def dialog_confirm_db(dialogconfirm):
                 check_db2()
 
 def gen_sdf_data():
+        """We add the data about split, meld and df cards to some dicts, because we don't want to retrieve them everytime from the database.
+        
+        """
+        
         # we need the ids of split, meld and df cards to generate the dicts and the lists of ids
         request = """SELECT id, name, nb_variante, names, edition, layout FROM cards WHERE layout = 'flip' OR layout = 'double-faced' OR layout = 'meld'"""
         conn_db, c_db = connect_db()

@@ -227,6 +227,10 @@ class AdvancedSearch:
                 self.mainbox.show_all()
         
         def update_button_search_and_reset(self, entry, entry1, entry2, entry3, entry4):
+                """Resets the entries.
+                
+                """
+                
                 text_in_entry = 0
                 for widget in [entry1, entry2, entry3, entry4]:
                         if widget.get_text() != "":
@@ -240,6 +244,10 @@ class AdvancedSearch:
                 self.button_reset_search.set_sensitive(sensitive)
         
         def update_current_store_bold(self, cards_data_for_update_store_as):
+                """Updates the mainstore about cards in the collection.
+                
+                """
+                
                 if self.mainstore != None:
                         i = 0
                         for row in self.mainstore:
@@ -250,11 +258,18 @@ class AdvancedSearch:
                         self.mainselect.emit("changed")
         
         def empty_box_results(self):
+                """Empties the results' box.
+                
+                """
+                
                 for widget in self.box_results.get_children():
                         self.box_results.remove(widget)
         
         def launch_ad_search(self, request, type_s, wait_button):
-                '''Launches an advanced search with request'''
+                """Launches an advanced search with 'request'.
+                
+                """
+                
                 conn, c = functions.db.connect_db()
                 c.execute(request)
                 reponses = c.fetchall()
@@ -263,12 +278,17 @@ class AdvancedSearch:
                 self.disp_result(reponses, type_s, wait_button)
         
         def disp_result(self, reponses, type_s, wait_button):
-                '''Display the result with GLib.idle_add'''
+                """Displays the result with GLib.idle_add.
+                
+                """
+                
                 GLib.idle_add(self.disp_result2, reponses, type_s, wait_button)
         
         def disp_result2(self, reponses, type_s, wait_button):
-                '''Display the result'''
-                # FIXME : si impossible de corriger les crashs dus aux threads, appeler 'disp_result' via GLib.idle_add semble ne pas crasher
+                """Displays the result.
+                
+                """
+                
                 def insert_data(store_results, cards_added, card, bold, italic):
                         store_results.insert_with_valuesv(-1, range(15), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic])
                         cards_added.append(card["name"] + "-" + card["nb_variant"] + "-" + card["edition_ln"])
@@ -440,7 +460,10 @@ class AdvancedSearch:
                 functions.various.lock_db(None, False)
         
         def prepare_request(self, widget, search_widgets_list, overlay_right_content_bot, select):
-                '''Prepares the request to the database'''
+                """Prepares the request to the database.
+                
+                """
+                
                 if defs.AS_LOCK == False:
                         request = functions.db.prepare_request(search_widgets_list, "db")[0]
                         if request != None:
@@ -482,6 +505,10 @@ class AdvancedSearch:
                 GLib.idle_add(label_wait.show, priority=GLib.PRIORITY_HIGH_IDLE)
         
         def edition_selected(self, selection, integer, TreeViewColumn, tree_editions, button_show_details):
+                """Displays the cards of the selected edition.
+                
+                """
+                
                 if defs.AS_LOCK == False:
                         model, treeiter = selection.get_selected()
                         if treeiter != None:
@@ -513,10 +540,18 @@ class AdvancedSearch:
                                         thread.start()
         
         def reset_search(self, button, entry1, entry2, entry3, entry4):
+                """Resets the entries.
+                
+                """
+                
                 for entry in [entry1, entry2, entry3, entry4]:
                         entry.set_text("")
         
         def entry_operator_choice(self, entry, icon, void):
+                """Displays data to the user when he selects a specific criteria.
+                
+                """
+                
                 popover = Gtk.Popover.new(entry)
                 tooltip_text = entry.get_icon_tooltip_text(Gtk.EntryIconPosition.PRIMARY)
                 
@@ -553,6 +588,10 @@ class AdvancedSearch:
                 popover.show_all()
         
         def on_button_radio_op(self, button, name, entry, popover):
+                """Changes the icons and the tooltip of the entry when the user selects a specific filter.
+                
+                """
+                
                 if button.get_active():
                         if name == "1":
                                 entry.set_icon_from_gicon(Gtk.EntryIconPosition.PRIMARY, Gio.ThemedIcon(name="equal-symbolic"))
@@ -568,6 +607,10 @@ class AdvancedSearch:
                                 entry.set_icon_tooltip_text(Gtk.EntryIconPosition.PRIMARY, defs.STRINGS["entry_diff"])
         
         def comboboxtext_changed(self, comboboxtext, entry):
+                """Displays data to the user when he selects a specific criteria.
+                
+                """
+                
                 search = ""
                 for infosearch in defs.SEARCH_ITEMS.values():
                         if infosearch[1] == comboboxtext.get_active_text():
@@ -592,6 +635,10 @@ class AdvancedSearch:
                         entry.set_completion(None)
                 
         def gen_list_editions(self):
+                """Generates the list of the editions.
+                
+                """
+                
                 self.store_editions.clear()
                 use_french_name = functions.config.read_config("ext_fr_name")
                 
@@ -610,10 +657,18 @@ class AdvancedSearch:
                 self.list_entrycompletion_editions.sort()
         
         def show_details(self, treeview, treepath, column, selection, button_show_details):
+                """Emulates a click on the button_show_details when the user double-clicks on the treeview.
+                
+                """
+                
                 if button_show_details.get_sensitive():
                         button_show_details.emit("clicked")
         
         def send_id_to_loader(self, selection, integer, TreeViewColumn, simple_search):
+                """Loads a selection of cards. The first one is displayed in the card viewer.
+                
+                """
+                
                 model, pathlist = selection.get_selected_rows()
                 if pathlist != []:
                         tree_iter = model.get_iter(pathlist[0])
@@ -633,10 +688,15 @@ class AdvancedSearch:
                         self.button_show_details.set_sensitive(False)
         
         def load_card(self, cardid, simple_search):
-                '''Load a card in the card viewer'''
+                """Loads a card in the card viewer.
+                
+                """
+                
                 GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
-                #functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)
         
         def load_card_from_outside(self, widget, cardid, list_widgets_to_destroy, simple_search):
+                """Loads a card in the card viewer, from another mode.
+                
+                """
+                
                 GLib.idle_add(functions.cardviewer.gen_card_viewer, cardid, self.card_viewer, self, simple_search)
-                #functions.cardviewer.gen_card_viewer(cardid, self.card_viewer, self, simple_search)

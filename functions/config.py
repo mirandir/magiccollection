@@ -30,7 +30,10 @@ import defs
 import functions.prices
 
 def read_config_file():
-        '''Read the configuration file.'''
+        """Reads the configuration file.
+        
+        """
+        
         configfile = open(os.path.join(defs.CONFIGMC, "config"), "r", encoding="UTF-8")
         config = configfile.readlines()
         configfile.close()
@@ -46,7 +49,10 @@ def read_config_file():
         return(configuration)
 
 def read_all_config():
-        '''Read all the configuration.'''
+        """Reads each item in the configuration file.
+        
+        """
+        
         configuration = read_config_file()
         dict_config = {}
         for param in defs.VARCONFIGDEFAULT.keys():
@@ -58,7 +64,10 @@ def read_all_config():
         return(dict_config)
 
 def read_config(param):
-        '''Return one param of config.'''
+        """Returns one param of config.
+        
+        """
+        
         if param in defs.VARCONFIGDEFAULT.keys():
                 configuration = read_config_file()
                 try:
@@ -70,7 +79,10 @@ def read_config(param):
                 print("param is unknown !")
 
 def change_config(param, value):
-        '''Change the configuration.'''
+        """Changes the configuration.
+        
+        """
+        
         configuration = read_config_file()
         if param in defs.VARCONFIGDEFAULT.keys():
                 try:
@@ -100,24 +112,29 @@ def gen_warning_pic():
         pic.set_tooltip_text(defs.STRINGS["config_need_restart"])
         pic.set_margin_left(6)
         return(pic)
+
 def comboboxtext_ext_sort_as_changed(comboboxtext):
         if comboboxtext.get_active() == 0:
                 change_config("ext_sort_as", "0")
         elif comboboxtext.get_active() == 1:
                 change_config("ext_sort_as", "1")
+
 def comboboxtext_prices_cur_changed(comboboxtext):
         if comboboxtext.get_active() == 0:
                 change_config("price_cur", "0")
         elif comboboxtext.get_active() == 1:
                 change_config("price_cur", "1")
+
 def comboboxtext_fr_language_changed(comboboxtext):
         nb_lang = comboboxtext.get_active()
         change_config("fr_language", defs.LOC_LANG_NAME[nb_lang][0])
+
 def checkbutton_toggled(checkbutton, param):
         if checkbutton.get_active():
                 change_config(param, "1")
         else:
                 change_config(param, "0")
+
 def checkbutton_dark_theme_toggled(checkbutton, param):
         settings = Gtk.Settings.get_default()
         if checkbutton.get_active():
@@ -126,6 +143,7 @@ def checkbutton_dark_theme_toggled(checkbutton, param):
         else:
                 change_config(param, "0")
                 settings.set_property("gtk-application-prefer-dark-theme", False)
+
 def checkbutton_not_internet_popup_toggled(checkbutton, param):
         if checkbutton.get_active():
                 change_config(param, "0")
@@ -133,6 +151,10 @@ def checkbutton_not_internet_popup_toggled(checkbutton, param):
                 change_config(param, "1")
 
 def show_pref_dialog():
+        """Generates and displays the configuration window.
+        
+        """
+        
         if defs.PREF_WINDOW_OPEN == False:
                 defs.PREF_WINDOW_OPEN = True
                 
@@ -340,6 +362,10 @@ def show_pref_dialog():
                 defs.PREF_WINDOW_OPEN = False
 
 def down_prices_manual(button, box_prices, box_button, label, dict_config):
+        """Starts the download of the prices (in another thread).
+        
+        """
+        
         def down_in_thread(box_prices, dict_config):
                 functions.prices.check_prices("manual")
                 GLib.idle_add(gen_prices_box_content, box_prices, dict_config)
@@ -356,7 +382,10 @@ def down_prices_manual(button, box_prices, box_button, label, dict_config):
         thread.start()
 
 def get_size(start_path):
-        '''Gets the size of a folder (from http://stackoverflow.com/questions/1392413/calculating-a-directory-size-using-python)'''
+        """Gets the size of a folder (from http://stackoverflow.com/questions/1392413/calculating-a-directory-size-using-python)
+        
+        """
+        
         total_size = 0
         for dirpath, dirnames, filenames in os.walk(start_path):
                 for f in filenames:
@@ -365,7 +394,10 @@ def get_size(start_path):
         return(total_size)
 
 def GetHumanReadableSize(size,precision=2):
-        '''Adapted from http://stackoverflow.com/a/32009595'''
+        """Adapted from http://stackoverflow.com/a/32009595
+        
+        """
+        
         suffixes=[defs.STRINGS["config_pic_cards_size_b"], defs.STRINGS["config_pic_cards_size_ko"], defs.STRINGS["config_pic_cards_size_mo"], defs.STRINGS["config_pic_cards_size_go"], defs.STRINGS["config_pic_cards_size_to"]]
         suffixIndex = 0
         while size > 1000 and suffixIndex < 4:
@@ -375,6 +407,10 @@ def GetHumanReadableSize(size,precision=2):
         return(end_val % (precision, size, suffixes[suffixIndex]))
 
 def get_size_pic_cache(label_pic_cards_size):
+        """Launches the calc. of the size of the cache.
+        
+        """
+        
         def update_label(label_pic_cards_size, size):
                 label_pic_cards_size.set_text(defs.STRINGS["config_pic_cards_size_all"] + size)
                 label_pic_cards_size.show()
@@ -382,6 +418,10 @@ def get_size_pic_cache(label_pic_cards_size):
         GLib.idle_add(update_label, label_pic_cards_size, size)
 
 def gen_pic_cards_downloaded_content(box_pic_cards_downloaded_content):
+        """Generates the content for the Manager of downloaded pictures.
+        
+        """
+        
         for widget in box_pic_cards_downloaded_content.get_children():
                 box_pic_cards_downloaded_content.remove(widget)
         
@@ -474,6 +514,10 @@ def gen_pic_cards_downloaded_content(box_pic_cards_downloaded_content):
                 box_pic_cards_downloaded_content.pack_start(del_all_pics_ed_button, False, True, 0)
         
 def gen_prices_box_content(box_prices, dict_config):
+        """Generates the content for the Manager of prices.
+        
+        """
+        
         for widget in box_prices.get_children():
                 box_prices.remove(widget)
         prices_here = functions.prices.check_prices_presence()
@@ -542,6 +586,10 @@ def gen_prices_box_content(box_prices, dict_config):
                         widget.set_margin_left(12)
 
 def gen_columns_choice(list_current_columns, list_all_columns, param_config, column_name):
+        """Generates a treeview which allows the user to change the configuration of the columns.
+        
+        """
+        
         def cell_toggled(cellrenderertoggle, path, liststore):
                 liststore[path][1] = not liststore[path][1]
                 gen_columns_config(liststore)
