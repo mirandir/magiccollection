@@ -249,6 +249,7 @@ def cards_finder_oldcollection(Collection):
                                                 r_card_name = r_card_name.replace(" (" + tmp_nbvariant + ")", "")
                                         r_card_name = r_card_name.replace(" (White)", "").replace(" (Blue)", "").replace(" (Black)", "").replace(" (Red)", "").replace(" (Green)", "")
                                         
+                                        r_card_name = r_card_name.replace('"', '""')
                                         c_db.execute("""SELECT id FROM cards WHERE name = \"""" + r_card_name + """\" AND nb_variante = \"""" + tmp_nbvariant + """\" AND edition = \"""" + ex_code + """\"""")
                                         responses = c_db.fetchall()
                                         if len(responses) == 0 or len(responses) > 1:
