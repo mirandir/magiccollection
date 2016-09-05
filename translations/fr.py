@@ -339,7 +339,7 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["config_no_reprints"] = "Ne pas afficher les différentes rééditions d'une même carte lors des recherches"
         translate["config_cardviewer"] = "Visionneur de carte"
         translate["config_show_en_name_in_card_viewer"] = "Afficher également le nom anglais dans le visionneur de carte"
-        translate["config_collection"] = "Collection"
+        translate["config_collection"] = "Ajout à la collection"
         translate["config_add_collection_show_details"] = "Afficher les détails lors de l'ajout de carte à la collection"
         translate["config_general_aspect"] = "Aspect général"
         translate["config_dark_theme"] = "Utiliser le thème sombre"

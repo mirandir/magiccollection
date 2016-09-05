@@ -336,7 +336,7 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["config_no_reprints"] = "Don't show the different prints of the same card"
         translate["config_cardviewer"] = "Cardviewer"
         translate["config_show_en_name_in_card_viewer"] = "Show the english name in the cardviewer"
-        translate["config_collection"] = "Collection"
+        translate["config_collection"] = "Add to the collection"
         translate["config_add_collection_show_details"] = "Show details when adding cards to the collection"
         translate["config_general_aspect"] = "General aspect"
         translate["config_dark_theme"] = "Use the dark-variant of the theme"
