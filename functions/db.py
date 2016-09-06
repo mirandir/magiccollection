@@ -402,8 +402,6 @@ def prepare_request(search_widgets_list, type_request):
                                                         text_to_find = "token"
                                                 elif text_to_find == defs.STRINGS["emblem"] or text_to_find == defs.STRINGS["emblems"]:
                                                         text_to_find = "emblem"
-                                                elif text_to_find == defs.STRINGS["counter"] or text_to_find == defs.STRINGS["counters"]:
-                                                        text_to_find = "counter"
                                         if negate == 0:
                                                 tmp_request = """cards.type LIKE \"%""" + text_to_find + """%\" ESCAPE '\\'"""
                                         else:
