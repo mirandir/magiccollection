@@ -163,7 +163,8 @@ VARCONFIGDEFAULT = {
 "decks_columns": decks_columns,
 "no_reprints": "0",
 "last_width": "0",
-"last_height": "0"
+"last_height": "0",
+"default_condition": "0"
 }
 
 # column names available for the configuration window

@@ -150,6 +150,29 @@ def checkbutton_not_internet_popup_toggled(checkbutton, param):
         else:
                 change_config(param, "1")
 
+def checkbutton_dv_condition_toggled(checkbutton, param, comboboxtext_dv_condition):
+        if checkbutton.get_active():
+                comboboxtext_dv_condition.set_sensitive(True)
+                condition = ""
+                for cond in defs.CONDITIONS.values():
+                        if cond[1] == comboboxtext_dv_condition.get_active_text():
+                                condition = cond[0]
+                                break
+                if condition != "":
+                        change_config(param, condition)
+        else:
+                comboboxtext_dv_condition.set_sensitive(False)
+                change_config(param, "0")
+
+def comboboxtext_dv_condition_changed(comboboxtext):
+        condition = ""
+        for cond in defs.CONDITIONS.values():
+                if cond[1] == comboboxtext.get_active_text():
+                        condition = cond[0]
+                        break
+        if condition != "":
+                change_config("default_condition", condition)
+
 def show_pref_dialog():
         """Generates and displays the configuration window.
         
@@ -324,6 +347,31 @@ def show_pref_dialog():
                 checkbutton_not_internet_popup.connect("toggled", checkbutton_not_internet_popup_toggled, "not_internet_popup")
                 box_internet.pack_start(checkbutton_not_internet_popup, False, True, 0)
                 
+                # default values
+                box_defaultvalues = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+                
+                label_dv_add_to_collection = Gtk.Label()
+                label_dv_add_to_collection.set_markup("<b>" + defs.STRINGS["config_defaultvalues_addcoll_details"] + "</b>")
+                box_defaultvalues.pack_start(label_dv_add_to_collection, False, True, 0)
+                
+                box_dv_condition = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+                checkbutton_dv_condition = Gtk.CheckButton(defs.STRINGS["config_defaultvalues_condition"])
+                box_dv_condition.pack_start(checkbutton_dv_condition, False, False, 0)
+                comboboxtext_dv_condition = Gtk.ComboBoxText()
+                tmp_dict_cond = {}
+                for number, list_ in defs.CONDITIONS.items():
+                        comboboxtext_dv_condition.append(list_[0], list_[1])
+                        tmp_dict_cond[list_[0]] = number
+                if dict_config["default_condition"] != "0":
+                        checkbutton_dv_condition.set_active(True)
+                        comboboxtext_dv_condition.set_active(int(tmp_dict_cond[dict_config["default_condition"]]))
+                else:
+                        comboboxtext_dv_condition.set_sensitive(False)
+                checkbutton_dv_condition.connect("toggled", checkbutton_dv_condition_toggled, "default_condition", comboboxtext_dv_condition)
+                comboboxtext_dv_condition.connect("changed", comboboxtext_dv_condition_changed)
+                box_dv_condition.pack_start(comboboxtext_dv_condition, False, False, 0)
+                box_defaultvalues.pack_start(box_dv_condition, False, True, 0)
+                
                 # prices
                 box_prices = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
                 gen_prices_box_content(box_prices, dict_config)
@@ -340,16 +388,17 @@ def show_pref_dialog():
                 gen_pic_cards_downloaded_content(box_pic_cards_downloaded_content)
                 
                 
-                for grid in [box_display, box_columns, box_internet, box_prices, box_pic_cards]:
+                for grid in [box_display, box_columns, box_internet, box_defaultvalues, box_prices, box_pic_cards]:
                         grid.props.border_width = 12
-                for label in [label_editions, label_ext_sort_as, label_searches, label_collection, label_pics_cards, label_connection, label_nonenglish_names, label_columns_order_disp, label_columns_order_disp_helper, label_pic_cards_downloaded]:
+                for label in [label_editions, label_ext_sort_as, label_searches, label_collection, label_pics_cards, label_connection, label_nonenglish_names, label_columns_order_disp, label_columns_order_disp_helper, label_dv_add_to_collection, label_pic_cards_downloaded]:
                         label.set_alignment(0.0, 0.5)
-                for widget in [label_ext_sort_as, checkbutton_no_reprints, checkbutton_add_collection_show_details, checkbutton_download_pic_collection_decks, checkbutton_download_pic_as, checkbutton_not_internet_popup, label_fr_language, label_columns_order_disp_helper, box_columns_coll_decks, scrolledwindow_columns_as, box_pic_cards_downloaded_content]:
+                for widget in [label_ext_sort_as, checkbutton_no_reprints, checkbutton_add_collection_show_details, checkbutton_download_pic_collection_decks, checkbutton_download_pic_as, checkbutton_not_internet_popup, label_fr_language, label_columns_order_disp_helper, box_columns_coll_decks, scrolledwindow_columns_as, box_pic_cards_downloaded_content, box_dv_condition]:
                         widget.set_margin_left(12)
                 
                 notebook.append_page(box_display, Gtk.Label(defs.STRINGS["config_display"]))
                 notebook.append_page(box_columns, Gtk.Label(defs.STRINGS["config_columns"]))
                 notebook.append_page(box_internet, Gtk.Label(defs.STRINGS["config_internet"]))
+                notebook.append_page(box_defaultvalues, Gtk.Label(defs.STRINGS["config_defaultvalues"]))
                 notebook.append_page(box_prices, Gtk.Label(defs.STRINGS["config_cardsprices"]))
                 notebook.append_page(box_pic_cards, Gtk.Label(defs.STRINGS["config_pic_cards"]))
                 

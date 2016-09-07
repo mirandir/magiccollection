@@ -966,6 +966,14 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         
         grid_details, label_add_condition, comboboxtext_condition, label_add_lang, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, label_add_comment, scrolledwindow, textview = functions.various.gen_details_widgets()
         
+        # we set the default values
+        df_condition = functions.config.read_config("default_condition")
+        if df_condition != "0":
+                for nb, cond in defs.CONDITIONS.items():
+                        if cond[0] == df_condition:
+                                comboboxtext_condition.set_active(int(nb))
+                                break
+        
         expander.add(grid_details)
         
         show_details = functions.config.read_config("add_collection_show_details")
