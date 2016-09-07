@@ -353,6 +353,7 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["config_defaultvalues"] = "Default values"
         translate["config_defaultvalues_addcoll_details"] = "Add to the collection - Details"
         translate["config_defaultvalues_condition"] = "Default value for Condition:"
+        translate["config_defaultvalues_lang"] = "Default value for Language:"
         translate["config_pics_cards"] = "Cards pictures"
         translate["config_download_pic_collection_decks"] = "Download the pictures in the Collection et the Decks"
         translate["config_download_pic_as"] = "Download the pictures in the Advanced search"

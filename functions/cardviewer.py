@@ -974,6 +974,11 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
                                 comboboxtext_condition.set_active(int(nb))
                                 break
         
+        df_lang = functions.config.read_config("default_lang")
+        if df_lang != "0":
+                entry_lang.set_text(df_lang)
+        
+        
         expander.add(grid_details)
         
         show_details = functions.config.read_config("add_collection_show_details")

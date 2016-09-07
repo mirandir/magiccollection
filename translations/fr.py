@@ -356,6 +356,7 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["config_defaultvalues"] = "Valeurs par défaut"
         translate["config_defaultvalues_addcoll_details"] = "Ajout à la collection - Détails"
         translate["config_defaultvalues_condition"] = "Valeur par défaut du champ État :"
+        translate["config_defaultvalues_lang"] = "Valeur par défaut du champ Langue :"
         translate["config_pics_cards"] = "Images des cartes"
         translate["config_download_pic_collection_decks"] = "Télécharger les images des cartes dans le mode Collection et le mode Decks"
         translate["config_download_pic_as"] = "Télécharger les images des cartes dans le mode Recherche avancée"

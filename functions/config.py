@@ -24,6 +24,7 @@ from gi.repository import Gtk, Gio, GLib
 import os
 import threading
 import shutil
+import time
 
 # import global values
 import defs
@@ -164,6 +165,16 @@ def checkbutton_dv_condition_toggled(checkbutton, param, comboboxtext_dv_conditi
                 comboboxtext_dv_condition.set_sensitive(False)
                 change_config(param, "0")
 
+def checkbutton_dv_lang_toggled(checkbutton, param, entry_dv_lang):
+        if checkbutton.get_active():
+                entry_dv_lang.set_sensitive(True)
+                cur_text = entry_dv_lang.get_text()
+                if cur_text != "":
+                        change_config(param, cur_text)
+        else:
+                entry_dv_lang.set_sensitive(False)
+                change_config(param, "0")
+
 def comboboxtext_dv_condition_changed(comboboxtext):
         condition = ""
         for cond in defs.CONDITIONS.values():
@@ -172,6 +183,39 @@ def comboboxtext_dv_condition_changed(comboboxtext):
                         break
         if condition != "":
                 change_config("default_condition", condition)
+
+def entry_dv_lang_changed(entry):
+        def prepare_update_dvlang(text):
+                def update_dvlang(text):
+                        change_config("default_lang", text)
+                
+                if defs.CURRENT_SAVE_DV_LANG == None:
+                        # we are the first thread, we need to note this
+                        defs.CURRENT_SAVE_DV_LANG = 1
+                else:
+                        defs.CURRENT_SAVE_DV_LANG += 1
+                my_number = int(defs.CURRENT_SAVE_DV_LANG)
+                defs.SAVEDV_LANG_TIMER = 250 # 250 ms
+                
+                # now, we wait until the end of the timer (or until another thread take our turn)
+                go = 1
+                while defs.SAVEDV_LANG_TIMER > 0:
+                        if my_number != defs.CURRENT_SAVE_DV_LANG:
+                                # too bad, we have to stop now
+                                go = 0
+                                break
+                        else:
+                                time.sleep(1 / 1000)
+                                defs.SAVEDV_LANG_TIMER -= 1
+                
+                if go == 1:
+                        defs.CURRENT_SAVE_DV_LANG = None
+                        GLib.idle_add(update_dvlang, text)
+        
+        if entry.get_sensitive():
+                thread = threading.Thread(target = prepare_update_dvlang, args = ([entry.get_text()]))
+                thread.daemon = True
+                thread.start()
 
 def show_pref_dialog():
         """Generates and displays the configuration window.
@@ -372,6 +416,23 @@ def show_pref_dialog():
                 box_dv_condition.pack_start(comboboxtext_dv_condition, False, False, 0)
                 box_defaultvalues.pack_start(box_dv_condition, False, True, 0)
                 
+                box_dv_lang = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+                checkbutton_dv_lang = Gtk.CheckButton(defs.STRINGS["config_defaultvalues_lang"])
+                box_dv_lang.pack_start(checkbutton_dv_lang, False, False, 0)
+                tmp_widgets = functions.various.gen_details_widgets()
+                tmp_grid = tmp_widgets[0]
+                entry_dv_lang = tmp_widgets[4]
+                tmp_grid.remove(entry_dv_lang)
+                if dict_config["default_lang"] != "0":
+                        checkbutton_dv_lang.set_active(True)
+                        entry_dv_lang.set_text(dict_config["default_lang"])
+                else:
+                        entry_dv_lang.set_sensitive(False)
+                checkbutton_dv_lang.connect("toggled", checkbutton_dv_lang_toggled, "default_lang", entry_dv_lang)
+                entry_dv_lang.connect("changed", entry_dv_lang_changed)
+                box_dv_lang.pack_start(entry_dv_lang, False, False, 0)
+                box_defaultvalues.pack_start(box_dv_lang, False, True, 0)
+                
                 # prices
                 box_prices = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
                 gen_prices_box_content(box_prices, dict_config)
@@ -392,7 +453,7 @@ def show_pref_dialog():
                         grid.props.border_width = 12
                 for label in [label_editions, label_ext_sort_as, label_searches, label_collection, label_pics_cards, label_connection, label_nonenglish_names, label_columns_order_disp, label_columns_order_disp_helper, label_dv_add_to_collection, label_pic_cards_downloaded]:
                         label.set_alignment(0.0, 0.5)
-                for widget in [label_ext_sort_as, checkbutton_no_reprints, checkbutton_add_collection_show_details, checkbutton_download_pic_collection_decks, checkbutton_download_pic_as, checkbutton_not_internet_popup, label_fr_language, label_columns_order_disp_helper, box_columns_coll_decks, scrolledwindow_columns_as, box_pic_cards_downloaded_content, box_dv_condition]:
+                for widget in [label_ext_sort_as, checkbutton_no_reprints, checkbutton_add_collection_show_details, checkbutton_download_pic_collection_decks, checkbutton_download_pic_as, checkbutton_not_internet_popup, label_fr_language, label_columns_order_disp_helper, box_columns_coll_decks, scrolledwindow_columns_as, box_pic_cards_downloaded_content, box_dv_condition, box_dv_lang]:
                         widget.set_margin_left(12)
                 
                 notebook.append_page(box_display, Gtk.Label(defs.STRINGS["config_display"]))

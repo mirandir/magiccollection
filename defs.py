@@ -164,7 +164,8 @@ VARCONFIGDEFAULT = {
 "no_reprints": "0",
 "last_width": "0",
 "last_height": "0",
-"default_condition": "0"
+"default_condition": "0",
+"default_lang": "0"
 }
 
 # column names available for the configuration window
@@ -300,6 +301,8 @@ BUTTON_COLL_LOCK = None
 AS_LOCK = False
 CURRENT_SAVEDETAILS_THREAD = None
 CURRENT_SAVE_COMMENT_DECK_THREAD = None
+CURRENT_SAVE_DV_LANG = None
+SAVEDV_LANG_TIMER = None
 SAVEDETAILS_TIMER = None
 SAVE_COMMENT_DECK_TIMER = None
 READ_COLL_FINISH = False
