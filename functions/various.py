@@ -484,6 +484,8 @@ def prepare_cards_data_for_treeview(cards):
                 elif rarity == "Special":
                         rarity = defs.STRINGS["special"]
                 
+                coll_ed_nb = card[30]
+                
                 id_str = str(id_)
                 
                 dict_card["id_"] = id_str
@@ -506,6 +508,7 @@ def prepare_cards_data_for_treeview(cards):
                 dict_card["nb_variant"] = str(card[2])
                 dict_card["names"] = names_r
                 dict_card["text"] = text
+                dict_card["coll_ed_nb"] = coll_ed_nb
                 
                 cards_ok[id_str] = dict_card
                 force_update_gui(0)
@@ -760,6 +763,14 @@ def gen_treeview_columns(columns_to_display, treeview):
                 dict_renderers_list["nb"] = renderer_text_nb
                 column_nb.set_sort_column_id(15)
         
+        if "coll_ed_nb" in columns_to_display:
+                renderer_text_coll_ed_nb = Gtk.CellRendererText()
+                renderer_text_coll_ed_nb.set_fixed_size(30, 25)
+                column_coll_ed_nb = Gtk.TreeViewColumn(defs.STRINGS["column_coll_ed_nb"], renderer_text_coll_ed_nb, text=18, weight=w, style=s)
+                dict_columns_list["coll_ed_nb"] = column_coll_ed_nb
+                dict_renderers_list["coll_ed_nb"] = renderer_text_coll_ed_nb
+                column_coll_ed_nb.set_sort_column_id(18)
+        
         for column in columns_to_display:
                 treeview.append_column(dict_columns_list[column])
         
@@ -802,8 +813,8 @@ def create_window_search_name(request_response, current_object_view):
         scrolledwindow.set_hexpand(True)
         scrolledwindow.set_vexpand(True)
         scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
-        # "id", "name", "edition", "name_french", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic"
-        store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style)
+        # "id", "name", "edition", "name_french", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", unused1, unused2, unused3, unused4, "coll_ed_nb"
+        store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int, str, str, str)
         tree_results = Gtk.TreeView(store_results)
         tree_results.set_enable_search(False)
         
@@ -875,7 +886,7 @@ def create_window_search_name(request_response, current_object_view):
                         add = False
                 
                 if add:
-                        store_results.insert_with_valuesv(-1, range(14), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic])
+                        store_results.insert_with_valuesv(-1, range(20), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic, "", 0, "", "", card["coll_ed_nb"]])
                         cards_added.append(card["name"] + "-" + card["nb_variant"] + "-" + card["edition_ln"])
                         nb += 1
         

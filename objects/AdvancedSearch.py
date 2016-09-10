@@ -290,7 +290,7 @@ class AdvancedSearch:
                 """
                 
                 def insert_data(store_results, cards_added, card, bold, italic):
-                        store_results.insert_with_valuesv(-1, range(15), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic])
+                        store_results.insert_with_valuesv(-1, range(20), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic, "", 0, "", "", card["coll_ed_nb"]])
                         cards_added.append(card["name"] + "-" + card["nb_variant"] + "-" + card["edition_ln"])
                         functions.various.force_update_gui(0)
                 
@@ -321,6 +321,7 @@ class AdvancedSearch:
                                 AS_object.mainstore.set_sort_func(3, functions.various.compare_str_osx, None)
                         AS_object.mainstore.set_sort_func(9, functions.various.compare_str_and_int, None)
                         AS_object.mainstore.set_sort_func(10, functions.various.compare_str_and_int, None)
+                        AS_object.mainstore.set_sort_func(18, functions.various.compare_str_and_int, None)
                         
                         tree_results.connect("row-activated", self.show_details, select, self.button_show_details)
                         
@@ -359,8 +360,8 @@ class AdvancedSearch:
                                 functions.various.force_update_gui(0)
                                        
                         scrolledwindow = Gtk.ScrolledWindow()
-                        # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic"
-                        store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style)
+                        # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", unused1, unused2, unused3, unused4, "coll_ed_nb"
+                        store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int, str, str, str)
                         _start(self, store_results, scrolledwindow)
                         cards_added = []
                         
@@ -681,7 +682,7 @@ class AdvancedSearch:
                                         nb_row_in_coll += 1
                         if len(pathlist) == nb_row_in_coll:
                                 self.button_show_details.set_sensitive(True)
-                                self.button_show_details.set_popover(functions.collection.gen_details_popover(self.button_show_details, selection))
+                                self.button_show_details.set_popover(functions.collection.gen_details_popover(self.button_show_details, selection, self))
                         else:
                                 self.button_show_details.set_sensitive(False)
                 else:

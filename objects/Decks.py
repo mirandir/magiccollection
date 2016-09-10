@@ -814,7 +814,7 @@ class Decks:
                                 self.button_show_details.set_sensitive(False)
                         else:
                                 self.button_show_details.set_sensitive(True)
-                                self.button_show_details.set_popover(functions.collection.gen_details_popover(self.button_show_details, selection))
+                                self.button_show_details.set_popover(functions.collection.gen_details_popover(self.button_show_details, selection, self))
                         self.delete_button.set_sensitive(True)
                         self.button_move.set_popover(functions.decks.gen_move_deck_popover(self.button_move, selection, self))
                         self.button_move.set_sensitive(True)

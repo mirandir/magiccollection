@@ -452,7 +452,7 @@ class Collection:
                         label_selectinfo.set_text(defs.STRINGS["info_select_coll"])
                         selectinfo_button.set_sensitive(True)
                         button_show_details.set_sensitive(True)
-                        button_show_details.set_popover(functions.collection.gen_details_popover(button_show_details, selection))
+                        button_show_details.set_popover(functions.collection.gen_details_popover(button_show_details, selection, self))
                         button_change_quantity.set_sensitive(True)
                         button_change_quantity.set_popover(functions.collection.gen_quantity_popover(button_change_quantity, selection))
                 
@@ -471,7 +471,7 @@ class Collection:
                                 selectinfo_button.set_sensitive(False)
                         
                         button_show_details.set_sensitive(True)
-                        button_show_details.set_popover(functions.collection.gen_details_popover(button_show_details, selection))
+                        button_show_details.set_popover(functions.collection.gen_details_popover(button_show_details, selection, self))
                         button_change_quantity.set_sensitive(False)
                         nb_avail = functions.collection.add_deck_test_avail(selection)
                         if nb_avail > 0:

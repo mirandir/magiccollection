@@ -336,7 +336,7 @@ def gen_deck_content(deck_name, box, decks_object):
                                         nameforeign = "|" + defs.STRINGS["decks_sideboard"] + card["nameforeign"] + "|"
                                         italic_card = Pango.Style.ITALIC
                                 
-                                decksstore.insert_with_valuesv(-1, range(18), [card["id_"], name, card["edition_ln"], nameforeign, card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card, 0, side])
+                                decksstore.insert_with_valuesv(-1, range(19), [card["id_"], name, card["edition_ln"], nameforeign, card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card, 0, side, card["coll_ed_nb"]])
                 
                         if id_ in dict_proxies_in_deck.keys():
                                 nb_card = dict_proxies_in_deck[id_][0]
@@ -351,7 +351,7 @@ def gen_deck_content(deck_name, box, decks_object):
                                         nameforeign = "|" + defs.STRINGS["decks_sideboard"] + "-- " + card["nameforeign"] + "|"
                                         italic_card = Pango.Style.ITALIC
                                 
-                                decksstore.insert_with_valuesv(-1, range(18), [card["id_"], name, card["edition_ln"], nameforeign, card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card, 1, side])
+                                decksstore.insert_with_valuesv(-1, range(19), [card["id_"], name, card["edition_ln"], nameforeign, card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card, 1, side, card["coll_ed_nb"]])
         
         for widget in box.get_children():
                 box.remove(widget)
@@ -451,8 +451,8 @@ def gen_deck_content(deck_name, box, decks_object):
         scrolledwindow.set_vexpand(True)
         scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
         
-        # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", "nb_variant", "nb", "proxy", "in_sideboard"
-        decks_object.mainstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int, int, int)
+        # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", "nb_variant", "nb", "proxy", "in_sideboard", "coll_ed_nb"
+        decks_object.mainstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int, int, int, str)
         tree_deck = Gtk.TreeView(decks_object.mainstore)
         decks_object.maintreeview = tree_deck
         tree_deck.set_enable_search(False)
@@ -463,6 +463,7 @@ def gen_deck_content(deck_name, box, decks_object):
                 decks_object.mainstore.set_sort_func(3, functions.various.compare_str_osx, None)
         decks_object.mainstore.set_sort_func(9, functions.various.compare_str_and_int, None)
         decks_object.mainstore.set_sort_func(10, functions.various.compare_str_and_int, None)
+        decks_object.mainstore.set_sort_func(18, functions.various.compare_str_and_int, None)
         
         select = tree_deck.get_selection()
         select.set_mode(Gtk.SelectionMode.MULTIPLE)
@@ -597,7 +598,7 @@ def gen_deck_change_quantity_popover(button_change_quantity, selection, decks_ob
                         break
                 
                 if proxy == 0:
-                        details_store = functions.collection.gen_details_store(selection)
+                        details_store = functions.collection.gen_details_store(selection, decks_object)
                         ids_cards_free_list = []
                         ids_cards_in_current_deck_list = []
                         ids_cards_in_current_deck_side_list = []

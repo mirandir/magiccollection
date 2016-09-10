@@ -164,8 +164,8 @@ def read_coll(box, coll_object):
                         scrolledwindow.set_vexpand(True)
                         scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
                         
-                        # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", "nb_variant", "nb"
-                        coll_object.mainstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int)
+                        # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", "nb_variant", "nb", unused1, unused2, "coll_ed_nb"
+                        coll_object.mainstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int, str, str, str)
                         tree_coll = Gtk.TreeView(coll_object.mainstore)
                         coll_object.tree_coll = tree_coll
                         tree_coll.set_enable_search(False)
@@ -176,6 +176,7 @@ def read_coll(box, coll_object):
                                 coll_object.mainstore.set_sort_func(3, functions.various.compare_str_osx, None)
                         coll_object.mainstore.set_sort_func(9, functions.various.compare_str_and_int, None)
                         coll_object.mainstore.set_sort_func(10, functions.various.compare_str_and_int, None)
+                        coll_object.mainstore.set_sort_func(18, functions.various.compare_str_and_int, None)
                         
                         select = tree_coll.get_selection()
                         coll_object.select = select
@@ -205,7 +206,7 @@ def read_coll(box, coll_object):
                                 bold_card = dict_rowcards_in_coll[id_][1]
                                 italic_card = dict_rowcards_in_coll[id_][2]
                                 
-                                coll_object.mainstore.insert_with_valuesv(-1, range(17), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card])
+                                coll_object.mainstore.insert_with_valuesv(-1, range(20), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card, "", "", card["coll_ed_nb"]])
                         
                         if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
                                 coll_object.mainstore.set_sort_column_id(3, Gtk.SortType.ASCENDING)
@@ -262,7 +263,7 @@ def add_deck_test_avail(selection):
         
         cards_avail = {}
         nb_avail = 0
-        details_store = gen_details_store(selection)
+        details_store = gen_details_store(selection, defs.MAINWINDOW.collection)
         if details_store != None:
                 for card in details_store:
                         #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db, deck_side
@@ -788,7 +789,7 @@ def gen_quantity_popover(button_change_quantity, selection):
                 for widget in quantity_box.get_children():
                         quantity_box.remove(widget)
                 
-                details_store = gen_details_store(selection)
+                details_store = gen_details_store(selection, defs.MAINWINDOW.collection)
                 id_db = details_store[0][13]
                 ids_coll_list = []
                 cards_in_deck = 0
@@ -930,7 +931,7 @@ def gen_add_deck_popover(button_add_deck, selection):
                 select_list_decks.connect("changed", select_changed, ok_button, spinbuttons_dict, all_spinbutton_list)
                 
                 cards_avail = {}
-                details_store = gen_details_store(selection)
+                details_store = gen_details_store(selection, defs.MAINWINDOW.collection)
                 
                 ids_checked = []
                 for i, row in enumerate(pathlist):
@@ -1122,18 +1123,19 @@ def gen_add_deck_details_popover(button_add_deck, selection, details_store):
         popover.add(add_deck_box)
         return(popover)
 
-def gen_details_store(selection):
+def gen_details_store(selection, object_origin):
         """Generates the details_store, which can be use by buttons and popover to get informations about details of the current selection of cards.
         
+        @object_origin -> an AdvancedSearch, Collection or Decks object (indicates the origin of the request)
         """
         
         model, pathlist = selection.get_selected_rows()
         # first, we get the list of all cards' ids
         ids_list = ""
         for row in pathlist:
-                try:
+                if object_origin.__class__.__name__ == "Decks":
                         is_proxy = model[row][16]
-                except IndexError:
+                else:
                         is_proxy = 0
                 if is_proxy == 0:
                         cur_id = model[row][0]
@@ -1158,13 +1160,13 @@ def gen_details_store(selection):
                 else:
                         dict_responses_coll[id_card].append([id_coll, date, condition, lang, foil, loaned_to, comment, deck, deck_side])
         if len(dict_responses_coll) > 0:
-                # id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db, deck_side
-                details_store = Gtk.ListStore(str, str, str, str, str, str, str, str, str, str, str, int, Pango.Style, str, str)
+                # id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db, deck_side, unused1, unused2, unused3, unused4
+                details_store = Gtk.ListStore(str, str, str, str, str, str, str, str, str, str, str, int, Pango.Style, str, str, str, str, str, str)
                 list_idscoll_added = []
                 for row in pathlist:
-                        try:
+                        if object_origin.__class__.__name__ == "Decks":
                                 is_proxy = model[row][16]
-                        except IndexError:
+                        else:
                                 is_proxy = 0
                         if is_proxy == 0:
                                 card_id = model[row][0]
@@ -1195,7 +1197,7 @@ def gen_details_store(selection):
                                                         italic = Pango.Style.ITALIC
                                                 
                                                 if str(id_coll) not in list_idscoll_added:
-                                                        details_store.append([str(id_coll), card_name, card_editionln, card_nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, card_id, deck_side])
+                                                        details_store.append([str(id_coll), card_name, card_editionln, card_nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, card_id, deck_side, "", "", "", ""])
                                                         list_idscoll_added.append(str(id_coll))
                         
                 if "name_foreign" in functions.config.read_config("coll_columns").split(";") and defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
@@ -1207,7 +1209,7 @@ def gen_details_store(selection):
         else:
                 return(None)
 
-def gen_details_popover(button_show_details, selection):
+def gen_details_popover(button_show_details, selection, object_origin):
         """Generates and returns a popover with details for the current selection of cards.
         
         """
@@ -1225,7 +1227,7 @@ def gen_details_popover(button_show_details, selection):
                         if len(pathlist) == 1:
                                 button_copy_details.set_sensitive(True)
                                 
-                                id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db, deck_side = model[pathlist]
+                                id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db, deck_side, unused1, unused2, unused3, unused4 = model[pathlist]
                                 
                                 y = date[:4]
                                 m = date[5:7]
@@ -1368,7 +1370,7 @@ def gen_details_popover(button_show_details, selection):
                         thread.start()
         
         def popover_show(popover, details_box):
-                details_store = gen_details_store(selection)
+                details_store = gen_details_store(selection, object_origin)
                 if details_store != None:
                         for widget in details_box.get_children():
                                 details_box.remove(widget)
@@ -1550,7 +1552,8 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
                 c.execute(request)
                 reponses_db = c.fetchall()
                 disconnect_db(conn)
-                coll_object.searchstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int)
+                # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", "nb_variant", "nb", unused1, unused2, "coll_ed_nb"
+                coll_object.searchstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int, str, str, str)
                 
                 cards = functions.various.prepare_cards_data_for_treeview(reponses_db)
                 nb_results = len(reponses_db)
@@ -1562,7 +1565,7 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
                         bold_card = dict_rowcards_in_coll[id_][1]
                         italic_card = dict_rowcards_in_coll[id_][2]
                         
-                        coll_object.searchstore.insert_with_valuesv(-1, range(17), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card])
+                        coll_object.searchstore.insert_with_valuesv(-1, range(20), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold_card, italic_card, card["nb_variant"], nb_card, "", "", card["coll_ed_nb"]])
                         if card["id_"] not in defs.SDF_VERSO_IDS_LIST:
                                 nb_cards_disp = nb_cards_disp + nb_card
                         else:
@@ -1577,6 +1580,7 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
                         coll_object.searchstore.set_sort_func(3, functions.various.compare_str_osx, None)
                 coll_object.searchstore.set_sort_func(9, functions.various.compare_str_and_int, None)
                 coll_object.searchstore.set_sort_func(10, functions.various.compare_str_and_int, None)
+                coll_object.searchstore.set_sort_func(17, functions.various.compare_str_and_int, None)
                 
                 coll_object.tree_coll.set_model(coll_object.searchstore)
                 coll_object.button_back_coll.set_sensitive(True)
