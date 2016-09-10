@@ -362,35 +362,6 @@ def show_pref_dialog():
                 scrolledwindow_columns_as = gen_columns_choice(dict_config["as_columns"].split(";"), defs.AS_COLUMNS_CHOICE, "as_columns", defs.STRINGS["config_columns_as"])
                 box_columns.pack_start(scrolledwindow_columns_as, False, True, 0)
                 
-                # internet
-                box_internet = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-                
-                label_pics_cards = Gtk.Label()
-                label_pics_cards.set_markup("<b>" + defs.STRINGS["config_pics_cards"] + "</b>")
-                box_internet.pack_start(label_pics_cards, False, True, 0)
-                
-                checkbutton_download_pic_collection_decks = Gtk.CheckButton(defs.STRINGS["config_download_pic_collection_decks"])
-                if dict_config["download_pic_collection_decks"] == "1":
-                                checkbutton_download_pic_collection_decks.set_active(True)
-                checkbutton_download_pic_collection_decks.connect("toggled", checkbutton_toggled, "download_pic_collection_decks")
-                box_internet.pack_start(checkbutton_download_pic_collection_decks, False, True, 0)
-                
-                checkbutton_download_pic_as = Gtk.CheckButton(defs.STRINGS["config_download_pic_as"])
-                if dict_config["download_pic_as"] == "1":
-                                checkbutton_download_pic_as.set_active(True)
-                checkbutton_download_pic_as.connect("toggled", checkbutton_toggled, "download_pic_as")
-                box_internet.pack_start(checkbutton_download_pic_as, False, True, 0)
-                
-                label_connection = Gtk.Label()
-                label_connection.set_markup("<b>" + defs.STRINGS["config_connection"] + "</b>")
-                box_internet.pack_start(label_connection, False, True, 0)
-                
-                checkbutton_not_internet_popup = Gtk.CheckButton(defs.STRINGS["config_not_internet_popup"])
-                if dict_config["not_internet_popup"] == "0":
-                                checkbutton_not_internet_popup.set_active(True)
-                checkbutton_not_internet_popup.connect("toggled", checkbutton_not_internet_popup_toggled, "not_internet_popup")
-                box_internet.pack_start(checkbutton_not_internet_popup, False, True, 0)
-                
                 # default values
                 box_defaultvalues = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
                 
@@ -433,6 +404,35 @@ def show_pref_dialog():
                 box_dv_lang.pack_start(entry_dv_lang, False, False, 0)
                 box_defaultvalues.pack_start(box_dv_lang, False, True, 0)
                 
+                # internet
+                box_internet = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+                
+                label_pics_cards = Gtk.Label()
+                label_pics_cards.set_markup("<b>" + defs.STRINGS["config_pics_cards"] + "</b>")
+                box_internet.pack_start(label_pics_cards, False, True, 0)
+                
+                checkbutton_download_pic_collection_decks = Gtk.CheckButton(defs.STRINGS["config_download_pic_collection_decks"])
+                if dict_config["download_pic_collection_decks"] == "1":
+                                checkbutton_download_pic_collection_decks.set_active(True)
+                checkbutton_download_pic_collection_decks.connect("toggled", checkbutton_toggled, "download_pic_collection_decks")
+                box_internet.pack_start(checkbutton_download_pic_collection_decks, False, True, 0)
+                
+                checkbutton_download_pic_as = Gtk.CheckButton(defs.STRINGS["config_download_pic_as"])
+                if dict_config["download_pic_as"] == "1":
+                                checkbutton_download_pic_as.set_active(True)
+                checkbutton_download_pic_as.connect("toggled", checkbutton_toggled, "download_pic_as")
+                box_internet.pack_start(checkbutton_download_pic_as, False, True, 0)
+                
+                label_connection = Gtk.Label()
+                label_connection.set_markup("<b>" + defs.STRINGS["config_connection"] + "</b>")
+                box_internet.pack_start(label_connection, False, True, 0)
+                
+                checkbutton_not_internet_popup = Gtk.CheckButton(defs.STRINGS["config_not_internet_popup"])
+                if dict_config["not_internet_popup"] == "0":
+                                checkbutton_not_internet_popup.set_active(True)
+                checkbutton_not_internet_popup.connect("toggled", checkbutton_not_internet_popup_toggled, "not_internet_popup")
+                box_internet.pack_start(checkbutton_not_internet_popup, False, True, 0)
+                
                 # prices
                 box_prices = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
                 gen_prices_box_content(box_prices, dict_config)
@@ -458,8 +458,8 @@ def show_pref_dialog():
                 
                 notebook.append_page(box_display, Gtk.Label(defs.STRINGS["config_display"]))
                 notebook.append_page(box_columns, Gtk.Label(defs.STRINGS["config_columns"]))
-                notebook.append_page(box_internet, Gtk.Label(defs.STRINGS["config_internet"]))
                 notebook.append_page(box_defaultvalues, Gtk.Label(defs.STRINGS["config_defaultvalues"]))
+                notebook.append_page(box_internet, Gtk.Label(defs.STRINGS["config_internet"]))
                 notebook.append_page(box_prices, Gtk.Label(defs.STRINGS["config_cardsprices"]))
                 notebook.append_page(box_pic_cards, Gtk.Label(defs.STRINGS["config_pic_cards"]))
                 
