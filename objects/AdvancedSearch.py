@@ -304,7 +304,11 @@ class AdvancedSearch:
                         scrolledwindow.set_vexpand(True)
                         scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
                         tree_results = Gtk.TreeView(store_results)
-                        tree_results.set_enable_search(False)
+                        tree_results.set_enable_search(True)
+                        if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
+                                tree_results.set_search_column(3)
+                        else:
+                                tree_results.set_search_column(1)
                         
                         # some work with columns
                         columns_to_display = functions.config.read_config("as_columns").split(";")

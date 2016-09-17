@@ -168,7 +168,11 @@ def read_coll(box, coll_object):
                         coll_object.mainstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int, str, str, str)
                         tree_coll = Gtk.TreeView(coll_object.mainstore)
                         coll_object.tree_coll = tree_coll
-                        tree_coll.set_enable_search(False)
+                        tree_coll.set_enable_search(True)
+                        if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
+                                tree_coll.set_search_column(3)
+                        else:
+                                tree_coll.set_search_column(1)
                         # some work with columns
                         columns_to_display = functions.config.read_config("coll_columns").split(";")
                         coll_columns_list = functions.various.gen_treeview_columns(columns_to_display, tree_coll)[0]
@@ -1541,6 +1545,10 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
                         coll_object.pic_search_coll_updated.hide()
                         
                 coll_object.tree_coll.set_model(coll_object.mainstore)
+                if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
+                        coll_object.tree_coll.set_search_column(3)
+                else:
+                        coll_object.tree_coll.set_search_column(1)
                 button.set_sensitive(False)
                 GLib.idle_add(coll_count_cards)
         
@@ -1593,6 +1601,10 @@ def gen_grid_search_coll(coll_object, searchbar, overlay_coll):
                         coll_object.label_nb_card_coll.set_label(defs.STRINGS["nb_card_found_coll"].replace("%%%", str(nb_results)))
                 else:
                         coll_object.label_nb_card_coll.set_label(defs.STRINGS["nb_card_found_coll_s"].replace("%%%", str(nb_results)))
+                if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
+                        coll_object.tree_coll.set_search_column(3)
+                else:
+                        coll_object.tree_coll.set_search_column(1)
                 coll_object.tree_coll.show()
                 if wait_button != None:
                         wait_button.destroy()

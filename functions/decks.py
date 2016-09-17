@@ -455,7 +455,11 @@ def gen_deck_content(deck_name, box, decks_object):
         decks_object.mainstore = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int, int, int, str)
         tree_deck = Gtk.TreeView(decks_object.mainstore)
         decks_object.maintreeview = tree_deck
-        tree_deck.set_enable_search(False)
+        tree_deck.set_enable_search(True)
+        if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
+                tree_deck.set_search_column(3)
+        else:
+                tree_deck.set_search_column(1)
         # some work with columns
         columns_to_display = functions.config.read_config("decks_columns").split(";")
         coll_columns_list = functions.various.gen_treeview_columns(columns_to_display, tree_deck)[0]
