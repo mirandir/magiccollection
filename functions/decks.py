@@ -495,6 +495,7 @@ def gen_deck_content(deck_name, box, decks_object):
         else:
                 decks_object.mainstore.set_sort_column_id(1, Gtk.SortType.ASCENDING)
         decks_object.displaying_deck = 0
+        tree_deck.grab_focus()
 
 def prepare_move_cards(select_list_decks, selection, old_deck, decks_object):
         """Prepares moving a selection of cards from old_deck to a new deck.

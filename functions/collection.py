@@ -225,6 +225,7 @@ def read_coll(box, coll_object):
                         box.pack_start(overlay_coll, True, True, 0)
                         
                         defs.READ_COLL_FINISH = True
+                        tree_coll.grab_focus()
                 GLib.idle_add(cw_real, box, coll_spinner)
         
         for widget in box.get_children():

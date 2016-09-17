@@ -330,6 +330,8 @@ class AdvancedSearch:
                         tree_results.connect("row-activated", self.show_details, select, self.button_show_details)
                         
                         AS_object.box_results.pack_start(scrolledwindow, True, True, 0)
+                        
+                        return(tree_results)
                 
                 def _end(store_results, wait_button):
                         if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
@@ -366,7 +368,7 @@ class AdvancedSearch:
                         scrolledwindow = Gtk.ScrolledWindow()
                         # "id", "name", "edition", "name_foreign", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", unused1, unused2, unused3, unused4, "coll_ed_nb"
                         store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int, str, str, str)
-                        _start(self, store_results, scrolledwindow)
+                        tree_results = _start(self, store_results, scrolledwindow)
                         cards_added = []
                         
                         cards = functions.various.prepare_cards_data_for_treeview(reponses)
@@ -460,6 +462,7 @@ class AdvancedSearch:
                                         self.label_nb_cards.set_text(str(nb_lines_added) + " " + defs.STRINGS["card_result"])
                         
                         scrolledwindow.show_all()
+                        tree_results.grab_focus()
                 else:
                         _no_result(self, wait_button)
                 functions.various.lock_db(None, False)
