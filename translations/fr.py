@@ -44,7 +44,7 @@ def translate():
 
 ''' + translate["app_name"] + ''' utilise mtgjson.com pour une partie
 de sa base de données.
-Merci à Sembiance et AndarilhoMTG pour l'extraordinaire travail réalisé sur ce site !
+Merci à Sembiance et lsmoura pour l'extraordinaire travail réalisé sur ce site !
 Les informations de prix sont fournies par TCGplayer.com.
 Elles sont affichées uniquement dans un but d'information, et elles
 n'engagent ni ''' + translate["app_name"] + ''' ni son auteur.'''

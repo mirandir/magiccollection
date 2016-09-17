@@ -43,7 +43,7 @@ def translate():
         translate["about_copyright"] = translate["app_name"] + ''' is not produced, affiliated or supported\nby Wizards of the Coast or Hasbro.
 
 ''' + translate["app_name"] + ''' uses mtgjson.com for his database.
-Many thanks to Sembiance and AndarilhoMTG for this website!
+Many thanks to Sembiance and lsmoura for this website!
 Price data are supplied by TCGplayer.com for information purpose only.'''
         
         translate["about_licence"] = translate["app_name"] + ''' is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License version 3 as published by the Free Software Foundation.
