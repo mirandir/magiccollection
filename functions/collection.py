@@ -911,6 +911,8 @@ def gen_add_deck_popover(button_add_deck, selection):
                 column_name_decks.set_sort_column_id(1)
                 store_list_decks.set_sort_column_id(1, Gtk.SortType.ASCENDING)
                 tree_decks.append_column(column_name_decks)
+                if defs.OS == "mac":
+                        store_list_decks.set_sort_func(1, functions.various.compare_str_osx, None)
                 
                 select_list_decks = tree_decks.get_selection()
                 
@@ -1086,6 +1088,9 @@ def gen_add_deck_details_popover(button_add_deck, selection, details_store):
                 column_name_decks.set_sort_column_id(1)
                 store_list_decks.set_sort_column_id(1, Gtk.SortType.ASCENDING)
                 tree_decks.append_column(column_name_decks)
+                
+                if defs.OS == "mac":
+                        store_list_decks.set_sort_func(1, functions.various.compare_str_osx, None)
                 
                 ok_button = Gtk.Button(defs.STRINGS["create_new_deck_ok"])
                 select_list_decks = tree_decks.get_selection()
