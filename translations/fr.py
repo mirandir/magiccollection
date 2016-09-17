@@ -51,7 +51,7 @@ n'engagent ni ''' + translate["app_name"] + ''' ni son auteur.'''
         
         translate["about_licence"] = translate["app_name"] + ''' est un logiciel libre : vous pouvez le redistribuer et/ou le modifier selon les termes de la Licence Publique Générale GNU 3, publiée par la Free Software Foundation.
 
-''' + translate["app_name"] + ''' est distribué dans l'espoir qu'il puisse vous être utile, mais SANS AUCUNE GARANTIE ; sans même de garantie de VALEUR MARCHANDE ou d'ADÉQUATION A UN BESOIN PARTICULIER. Consultez la Licence Publique Générale GNU 3 pour plus de détails.
+''' + translate["app_name"] + ''' est distribué dans l'espoir qu'il puisse vous être utile, mais SANS AUCUNE GARANTIE ; sans même de garantie de VALEUR MARCHANDE ou d'ADÉQUATION À UN BESOIN PARTICULIER. Consultez la Licence Publique Générale GNU 3 pour plus de détails.
 
 Vous devez avoir reçu une copie de la Licence Publique Générale GNU 3 en même temps que ''' + translate["app_name"] + ''' ; si ce n'est pas le cas, consultez <http://www.gnu.org/licenses/>.
 
@@ -59,6 +59,8 @@ Logo de ''' + translate["app_name"] + ''' par mirandir, sous licence CC BY-NC-ND
 
 Images d'indicateurs de couleur par BaconCatBug (voir <http://www.mtgsalvation.com/forums/creativity/artwork/494438-baconcatbugs-set-and-mana-symbol-megapack/>)
 Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
+        translate["about_contributors"] = "Contributeurs &amp; testeurs"
+        translate["about_contributors_list"] = "Purphoros&&&Lilian&&&Giz&&&Delphine&&&mnskill"
         
         # mainwindow
         translate["loading"] = "Chargement…"

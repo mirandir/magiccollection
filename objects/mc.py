@@ -173,6 +173,7 @@ class MagicCollection(Gtk.Application):
                         aboutdialog.set_authors(["mirandir [mirandir@orange.fr]"])
                         aboutdialog.set_license(defs.STRINGS["about_licence"])
                         aboutdialog.set_wrap_license(True)
+                        aboutdialog.add_credit_section(defs.STRINGS["about_contributors"], defs.STRINGS["about_contributors_list"].split("&&&"))
                         
                         self.aboutwindow = aboutdialog
                         aboutdialog.run()
