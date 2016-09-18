@@ -609,6 +609,8 @@ def gen_pic_cards_downloaded_content(box_pic_cards_downloaded_content):
                 
                 treeview.append_column(column_column_ed_name)
                 liststore.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+                if defs.OS == "mac":
+                        liststore.set_sort_func(1, functions.various.compare_str_osx, None)
                 
                 scrolledwindow.add(treeview)
                 scrolledwindow.show_all()
