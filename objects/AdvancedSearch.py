@@ -86,6 +86,7 @@ class AdvancedSearch:
                 scrolledwindow.set_min_content_height(150)
                 scrolledwindow.set_hexpand(True)
                 scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
+                # "displayed name", "code", "english name", "releasedate", "name (french)", "icon (bool)"
                 store_editions = Gtk.ListStore(str, str, str, str, str, str)
                 tree_editions = Gtk.TreeView(store_editions)
                 tree_editions.set_enable_search(False)
@@ -522,15 +523,11 @@ class AdvancedSearch:
                         if treeiter != None:
                                 button_show_details.set_sensitive(False)
                                 functions.various.lock_db(None, True)
-                                ed_name = model[treeiter][0].replace('"', '""')
-                                conn, c = functions.db.connect_db()
-                                c.execute("""SELECT code FROM editions WHERE name = \"""" + ed_name + """\" OR name_french = \"""" + ed_name + """\"""")
-                                reponse = c.fetchone()
-                                functions.db.disconnect_db(conn)
-                                request = """SELECT * FROM cards WHERE edition = \"""" + reponse[0] + """\""""
+                                ed_code = model[treeiter][1]
+                                request = """SELECT * FROM cards WHERE edition = \"""" + ed_code + """\""""
                                 
-                                if os.path.isfile(os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(reponse[0]) + ".png")):
-                                        GLib.idle_add(self.icon_edition.set_from_file, os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(reponse[0]) + ".png"))
+                                if os.path.isfile(os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(ed_code) + ".png")):
+                                        GLib.idle_add(self.icon_edition.set_from_file, os.path.join(defs.CACHEMCPIC, "icons", functions.various.valid_filename_os(ed_code) + ".png"))
                                         GLib.idle_add(self.icon_edition.show)
                                 else:
                                         GLib.idle_add(self.icon_edition.hide)
