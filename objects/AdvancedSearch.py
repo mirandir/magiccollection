@@ -225,6 +225,8 @@ class AdvancedSearch:
                 # we load nothing in the card viewer
                 self.load_card(None, 0)
                 
+                self.mainbox.set_focus_chain([entry1])
+                
                 self.mainbox.show_all()
         
         def update_button_search_and_reset(self, entry, entry1, entry2, entry3, entry4):

@@ -165,6 +165,9 @@ def gen_decks_display(decks_object, box):
                 decks_object.right_content.pack_start(decks_object.right_content_bot, True, True, 0)
                 
                 decks_object.update_nb_decks()
+                
+                decks_object.mainbox.set_focus_chain([button_new_deck])
+                
                 decks_object.mainbox.show_all()
 
 def show_change_name_comment_deck(treeview, treepath, column, button_change_comm_deck):
