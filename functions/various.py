@@ -354,12 +354,6 @@ def prepare_cards_data_for_treeview(cards):
         # FIXME : chinese variants !
         foreign_name = defs.LOC_NAME_FOREIGN[functions.config.read_config("fr_language")]
         
-        conn, c = functions.db.connect_db()
-        request = """SELECT name, """ + foreign_name + """, edition, colors FROM cards WHERE layout = 'flip' OR layout = 'split'"""
-        c.execute(request)
-        reponse_split_flip = c.fetchall()
-        functions.db.disconnect_db(conn)
-        
         # we choose the foreign name
         if foreign_name == "name_chinesetrad":
                 nb_foreign = 5
@@ -434,10 +428,10 @@ def prepare_cards_data_for_treeview(cards):
                                 name = final_name
                         
                         for nn in names:
-                                for card_split_flip in reponse_split_flip:
-                                        if card_split_flip[2] == card[4]:
-                                                if nn == card_split_flip[0]:
-                                                        for char in card_split_flip[3]:
+                                for card_split_flip in defs.SPLIT_FLIP_DF_DATA:
+                                        if card_split_flip[4] == card[4]:
+                                                if nn == card_split_flip[1]:
+                                                        for char in card_split_flip[16]:
                                                                 if char not in final_colors:
                                                                         final_colors = final_colors + char
                         colors = "".join(sorted(final_colors))
@@ -448,19 +442,19 @@ def prepare_cards_data_for_treeview(cards):
                                 final_nameforeign = ""
                                 if layout == "split":
                                         for nn in names:
-                                                for card_split_flip in reponse_split_flip:
-                                                        if card_split_flip[2] == card[4]:
-                                                                if nn == card_split_flip[0]:
-                                                                        final_nameforeign = final_nameforeign + separator + card_split_flip[1]
+                                                for card_split_flip in defs.SPLIT_FLIP_DF_DATA:
+                                                        if card_split_flip[4] == card[4]:
+                                                                if nn == card_split_flip[1]:
+                                                                        final_nameforeign = final_nameforeign + separator + card_split_flip[nb_foreign]
                                         nameforeign = final_nameforeign[4:]
                                 elif layout == "flip":
                                         final_nameforeign = nameforeign_r
                                         for nn in names:
-                                                for card_split_flip in reponse_split_flip:
-                                                        if card_split_flip[2] == card[4]:
-                                                                if nn == card_split_flip[0]:
-                                                                        if card_split_flip[1] != nameforeign_r:
-                                                                                final_nameforeign = final_nameforeign + separator + card_split_flip[1]
+                                                for card_split_flip in defs.SPLIT_FLIP_DF_DATA:
+                                                        if card_split_flip[4] == card[4]:
+                                                                if nn == card_split_flip[1]:
+                                                                        if card_split_flip[nb_foreign] != nameforeign_r:
+                                                                                final_nameforeign = final_nameforeign + separator + card_split_flip[nb_foreign]
                                         nameforeign = final_nameforeign
                 
                 if nameforeign == "":
