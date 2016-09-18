@@ -169,9 +169,9 @@ VARCONFIGDEFAULT = {
 }
 
 # column names available for the configuration window
-AS_COLUMNS_CHOICE = ["name", "edition", "name_foreign", "colors", "cmc", "type", "artist", "power", "toughness", "rarity", "coll_ed_nb"]
-COLL_COLUMNS_CHOICE = ["name", "edition", "name_foreign", "colors", "cmc", "type", "artist", "power", "toughness", "rarity", "nb", "coll_ed_nb"]
-DECKS_COLUMNS_CHOICE = ["name", "edition", "name_foreign", "colors", "cmc", "type", "artist", "power", "toughness", "rarity", "nb", "coll_ed_nb"]
+AS_COLUMNS_CHOICE = ["name", "edition", "name_foreign", "colors", "cmc", "type", "artist", "power", "toughness", "rarity", "coll_ed_nb", "price"]
+COLL_COLUMNS_CHOICE = ["name", "edition", "name_foreign", "colors", "cmc", "type", "artist", "power", "toughness", "rarity", "nb", "coll_ed_nb", "price"]
+DECKS_COLUMNS_CHOICE = ["name", "edition", "name_foreign", "colors", "cmc", "type", "artist", "power", "toughness", "rarity", "nb", "coll_ed_nb", "price"]
 
 # dict column name -> column name translated
 COLUMN_NAME_TRANSLATED = {
@@ -186,7 +186,8 @@ COLUMN_NAME_TRANSLATED = {
 "toughness": STRINGS["column_toughness"],
 "rarity": STRINGS["column_rarity_complete"],
 "nb": STRINGS["column_nb_complete"],
-"coll_ed_nb": STRINGS["column_coll_ed_nb_complete"]
+"coll_ed_nb": STRINGS["column_coll_ed_nb_complete"],
+"price": STRINGS["column_prices"]
 }
 
 SEARCH_ITEMS = {

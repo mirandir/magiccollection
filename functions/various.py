@@ -388,10 +388,21 @@ def prepare_cards_data_for_treeview(cards):
         
         cards_ok = {}
         
+        # we get the prices, if enable
+        prices_downloaded = False
+        if functions.prices.check_prices_presence():
+                prices_downloaded = True
+                ids_list_for_prices = []
+                for card in cards:
+                        if card[0] not in ids_list_for_prices:
+                                ids_list_for_prices.append(card[0])
+                dict_prices, currency = functions.prices.get_price(ids_list_for_prices)
+        
         for card in cards:
                 dict_card = {}
                 
                 id_ = card[0]
+                
                 real_name = card[1]
                 name = card[1]
                 # we choose the foreign name
@@ -486,9 +497,15 @@ def prepare_cards_data_for_treeview(cards):
                 
                 coll_ed_nb = card[30]
                 
-                id_str = str(id_)
+                if prices_downloaded:
+                        try:
+                                price = float(dict_prices[id_])
+                        except:
+                                price = float(0)
+                else:
+                        price = float(0)
                 
-                dict_card["id_"] = id_str
+                dict_card["id_"] = id_
                 dict_card["name"] = name
                 dict_card["edition_ln"] = edition_ln
                 dict_card["edition_code"] = edition_code
@@ -509,8 +526,9 @@ def prepare_cards_data_for_treeview(cards):
                 dict_card["names"] = names_r
                 dict_card["text"] = text
                 dict_card["coll_ed_nb"] = coll_ed_nb
+                dict_card["price"] = price
                 
-                cards_ok[id_str] = dict_card
+                cards_ok[id_] = dict_card
                 force_update_gui(0)
         
         return(cards_ok)
@@ -771,6 +789,18 @@ def gen_treeview_columns(columns_to_display, treeview):
                 dict_renderers_list["coll_ed_nb"] = renderer_text_coll_ed_nb
                 column_coll_ed_nb.set_sort_column_id(18)
         
+        if "price" in columns_to_display:
+                renderer_text_price = Gtk.CellRendererText()
+                renderer_text_price.set_fixed_size(30, 25)
+                column_price = Gtk.TreeViewColumn(defs.STRINGS["column_prices"], renderer_text_price, text=19, weight=w, style=s)
+                dict_columns_list["price"] = column_price
+                dict_renderers_list["price"] = renderer_text_price
+                column_price.set_sort_column_id(19)
+                column_price.set_cell_data_func(renderer_text_price, \
+                lambda col, cell, model, iter, unused:
+                cell.set_property("text",
+                "{0}".format(truncate(model.get(iter, 19)[0]))))
+        
         for column in columns_to_display:
                 treeview.append_column(dict_columns_list[column])
         
@@ -778,6 +808,14 @@ def gen_treeview_columns(columns_to_display, treeview):
                 column.set_resizable(True)
         
         return([dict_columns_list, dict_renderers_list])
+
+def truncate(number):
+        """Rounds and truncates a number to one decimal place. Used for all float numbers in the data-view. The numbers are saved with full float precision (from http://stackoverflow.com/questions/27675919/how-to-limit-number-of-decimal-places-to-be-displayed-in-gtk-cellrenderertext/28413823#28413823).
+        
+        """
+        
+        number = round(number, 3)
+        return(number)
 
 def create_window_search_name(request_response, current_object_view):
         """Generates the window for diplaying the results of a simple search.
@@ -813,8 +851,8 @@ def create_window_search_name(request_response, current_object_view):
         scrolledwindow.set_hexpand(True)
         scrolledwindow.set_vexpand(True)
         scrolledwindow.set_shadow_type(Gtk.ShadowType.IN)
-        # "id", "name", "edition", "name_nonenglish", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", unused1, unused2, unused3, unused4, "coll_ed_nb"
-        store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int, str, str, str)
+        # "id", "name", "edition", "name_nonenglish", "colors", colors_pixbuf, "cmc", "type", "artist", "power", "toughness", "rarity", "bold", "italic", unused1, unused2, unused3, unused4, "coll_ed_nb", "price"
+        store_results = Gtk.ListStore(str, str, str, str, str, GdkPixbuf.Pixbuf, int, str, str, str, str, str, int, Pango.Style, str, int, str, str, str, float)
         tree_results = Gtk.TreeView(store_results)
         tree_results.set_enable_search(True)
         if defs.LANGUAGE in defs.LOC_NAME_FOREIGN.keys():
@@ -890,7 +928,7 @@ def create_window_search_name(request_response, current_object_view):
                         add = False
                 
                 if add:
-                        store_results.insert_with_valuesv(-1, range(20), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic, "", 0, "", "", card["coll_ed_nb"]])
+                        store_results.insert_with_valuesv(-1, range(21), [card["id_"], card["name"], card["edition_ln"], card["nameforeign"], card["colors"], card["pix_colors"], card["cmc"], card["type_"], card["artist"], card["power"], card["toughness"], card["rarity"], bold, italic, "", 0, "", "", card["coll_ed_nb"], 0])
                         cards_added.append(card["name"] + "-" + card["nb_variant"] + "-" + card["edition_ln"])
                         nb += 1
         
