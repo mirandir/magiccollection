@@ -1219,3 +1219,55 @@ def show_tips_window(mc):
                 mc.tips = None
         else:
                 mc.tips.present()
+
+def show_shortcuts_window(mc):
+        """Generates and displays the window with shortcuts.
+        
+        """
+        
+        def delete_shortwin(shortwin, event, mc, *args):
+                mc.shortcutswindow = None
+                shortwin.destroy()
+                return(False)
+        
+        if mc.shortcutswindow == None:
+                shortwin = Gtk.ShortcutsWindow()
+                mc.shortcutswindow = shortwin
+                shortwin.set_icon_name("magic_collection")
+                if defs.MAINWINDOW != None:
+                        shortwin.set_transient_for(defs.MAINWINDOW)
+                        shortwin.set_modal(True)
+                shortwin.connect("delete-event", delete_shortwin, mc)
+                
+                section = Gtk.ShortcutsSection()
+                group = Gtk.ShortcutsGroup()
+                group.props.title = defs.STRINGS["shortcuts_globals"]
+                section.add(group)
+                
+                shortkey_simple_search = Gtk.ShortcutsShortcut(Gtk.ShortcutType.ACCELERATOR)
+                shortkey_simple_search.props.accelerator = "<Control>f"
+                shortkey_simple_search.props.title = defs.STRINGS["shortcuts_simple_search"]
+                
+                shortkey_collection_mode = Gtk.ShortcutsShortcut(Gtk.ShortcutType.ACCELERATOR)
+                shortkey_collection_mode.props.accelerator = "<Alt>c"
+                shortkey_collection_mode.props.title = defs.STRINGS["shortcuts_switch_collection"]
+                
+                shortkey_decks_mode = Gtk.ShortcutsShortcut(Gtk.ShortcutType.ACCELERATOR)
+                shortkey_decks_mode.props.accelerator = "<Alt>d"
+                shortkey_decks_mode.props.title = defs.STRINGS["shortcuts_switch_decks"]
+                
+                shortkey_as_mode = Gtk.ShortcutsShortcut(Gtk.ShortcutType.ACCELERATOR)
+                shortkey_as_mode.props.accelerator = "<Alt>s"
+                shortkey_as_mode.props.title = defs.STRINGS["shortcuts_switch_adsearch"]
+                
+                for widget in [section, group, shortkey_simple_search, shortkey_collection_mode, shortkey_decks_mode, shortkey_as_mode]:
+                        widget.show()
+                
+                for shortkey in [shortkey_simple_search, shortkey_collection_mode, shortkey_decks_mode, shortkey_as_mode]:
+                        group.add(shortkey)
+                        
+                shortwin.add(section)
+                
+                shortwin.show()
+        else:
+                mc.shortcutswindow.present()

@@ -43,6 +43,7 @@ class MagicCollection(Gtk.Application):
                 Gtk.Application.__init__(self, application_id="org.mirandir.MagicCollection")
                 self.window = None
                 self.aboutwindow = None
+                self.shortcutswindow = None
                 self.tips = None
                 GLib.set_application_name(defs.STRINGS["app_name"])
                 GLib.set_prgname("magic_collection")
@@ -110,6 +111,8 @@ class MagicCollection(Gtk.Application):
                 section_oth = Gio.Menu()
                 # others menu entries
                 section_oth.append(defs.STRINGS["tips"], "app.tips")
+                if defs.GTK_MINOR_VERSION >= 20:
+                        section_oth.append(defs.STRINGS["shortcuts"], "app.shortcuts")
                 section_oth.append(defs.STRINGS["about"], "app.about")
                 section_oth.append(defs.STRINGS["quit"], "app.quit")
                 menu.append_section(None, section_oth)
@@ -133,6 +136,11 @@ class MagicCollection(Gtk.Application):
                 tips_action = Gio.SimpleAction.new("tips", None)
                 tips_action.connect("activate", self.tips_cb)
                 self.add_action(tips_action)
+                # option "shortcuts"
+                if defs.GTK_MINOR_VERSION >= 20:
+                        shortcuts_action = Gio.SimpleAction.new("shortcuts", None)
+                        shortcuts_action.connect("activate", self.shortcuts_cb)
+                        self.add_action(shortcuts_action)
                 # option "about"
                 about_action = Gio.SimpleAction.new("about", None)
                 about_action.connect("activate", self.about_cb, self)
@@ -153,6 +161,9 @@ class MagicCollection(Gtk.Application):
         
         def tips_cb(self, action, param):
                 GLib.idle_add(functions.various.show_tips_window, self)
+        
+        def shortcuts_cb(self, action, param):
+                GLib.idle_add(functions.various.show_shortcuts_window, self)
         
         def about_cb(self, action, parameters, app):
                 if self.aboutwindow == None:

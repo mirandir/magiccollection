@@ -35,6 +35,7 @@ def translate():
         translate["doc"] = "Documentation"
         translate["website"] = "Website"
         translate["tips"] = "Tips"
+        translate["shortcuts"] = "Keyboard Shortcuts"
         translate["about"] = "About"
         translate["quit"] = "Quit"
         # About Window
@@ -430,5 +431,10 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["tips_search_text_condition"] = """● The field '""" + translate["add_condition"] + """' allows the next values: '""" + translate["condition_mint"] + """', '""" + translate["condition_near_mint"] + """', '""" + translate["condition_excellent"] + """', '""" + translate["condition_played"] + """' and '""" + translate["condition_poor"] + """'."""
         translate["tips_proxies"] = "Proxies"
         translate["tips_proxies_text"] = """● You can add proxies to a deck. Display the chosen card in the Decks, then click the add button. Choose '""" + translate["cv_add_proxies"] + """'."""
+        translate["shortcuts_globals"] = "Globals"
+        translate["shortcuts_simple_search"] = "Search by name"
+        translate["shortcuts_switch_collection"] = "Switch to the Collection"
+        translate["shortcuts_switch_decks"] = "Switch to the Decks"
+        translate["shortcuts_switch_adsearch"] = "Switch to the Advanced search"
         #########################
         return(translate)
