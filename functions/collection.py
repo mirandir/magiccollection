@@ -1237,7 +1237,6 @@ def gen_details_popover(button_show_details, selection, object_origin):
                         if len(pathlist) == 1:
                                 button_copy_details.set_sensitive(True)
                                 
-                                #id_coll, name, editionln, nameforeign, date, condition, lang, foil, loaned_to, comment, deck, bold, italic, id_db, deck_side, unused1, unused2, unused3, unused4 = model[pathlist]
                                 date = model[pathlist][4]
                                 condition = model[pathlist][5]
                                 lang = model[pathlist][6]

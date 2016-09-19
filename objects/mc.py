@@ -48,8 +48,7 @@ class MagicCollection(Gtk.Application):
                 GLib.set_application_name(defs.STRINGS["app_name"])
                 GLib.set_prgname("magic_collection")
                 if functions.config.read_config("dark_theme") == "1":
-                        settings = Gtk.Settings.get_default()
-                        settings.set_property("gtk-application-prefer-dark-theme", True)
+                        Gtk.Settings.get_default().set_property("gtk-application-prefer-dark-theme", True)
                 # we disable the floating scrollbars with Windows
                 if defs.OS == "windows":
                         os.environ["GTK_OVERLAY_SCROLLING"] = "0"
@@ -63,9 +62,6 @@ class MagicCollection(Gtk.Application):
                         for widget in self.window.get_children():
                                 if widget.__class__.__name__ == "MenuBar":
                                         widget.hide()
-                        
-                        '''print(defs.OS)
-                        print(defs.STRINGS["language_name"])'''
                         
                         # checking and loading database
                         thread = threading.Thread(target = functions.db.check_db)
