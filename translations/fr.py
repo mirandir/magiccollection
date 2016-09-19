@@ -350,7 +350,7 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["config_dark_theme"] = "Utiliser le thème sombre"
         translate["config_columns"] = "Colonnes"
         translate["config_columns_helper"] = "Vous pouvez changer l'ordre d'affichage en glissant-déplaçant les intitulés des colonnes."
-        translate["config_column_enabled"] = "Active"
+        translate["config_column_enabled"] = "Visible"
         translate["config_nonenglish_names"] = "Noms non-anglais"
         translate["config_fr_language"] = "Langue de la colonne affichant les noms non-anglais :"
         translate["config_columns_order_disp"] = "Affichage et ordre des colonnes"
