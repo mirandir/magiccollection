@@ -106,9 +106,9 @@ class MagicCollection(Gtk.Application):
                 
                 section_oth = Gio.Menu()
                 # others menu entries
-                section_oth.append(defs.STRINGS["tips"], "app.tips")
                 if defs.GTK_MINOR_VERSION >= 20:
                         section_oth.append(defs.STRINGS["shortcuts"], "app.shortcuts")
+                section_oth.append(defs.STRINGS["tips"], "app.tips")
                 section_oth.append(defs.STRINGS["about"], "app.about")
                 section_oth.append(defs.STRINGS["quit"], "app.quit")
                 menu.append_section(None, section_oth)
