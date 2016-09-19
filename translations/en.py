@@ -151,7 +151,7 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["column_rarity_complete"] = "Rarity"
         translate["column_nb"] = "#"
         translate["column_nb_complete"] = "Quantity"
-        translate["column_coll_ed_nb_complete"] = "Number"
+        translate["column_coll_ed_nb_complete"] = "Collection number"
         translate["column_coll_ed_nb"] = "N°"
         translate["column_prices"] = "Price"
         translate["cmc_only_number"] = "Searching by Converted Mana Cost can only be done with integers."

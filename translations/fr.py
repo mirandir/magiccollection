@@ -154,7 +154,7 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["column_rarity_complete"] = "Rareté"
         translate["column_nb"] = "#"
         translate["column_nb_complete"] = "Quantité"
-        translate["column_coll_ed_nb_complete"] = "Numéro"
+        translate["column_coll_ed_nb_complete"] = "Numéro de collection"
         translate["column_coll_ed_nb"] = "N°"
         translate["column_prices"] = "Prix"
         translate["cmc_only_number"] = "La recherche par Coût converti de mana ne peut se faire qu'avec des valeurs numériques entières."
