@@ -786,7 +786,14 @@ def gen_treeview_columns(columns_to_display, treeview):
         if "price" in columns_to_display:
                 renderer_text_price = Gtk.CellRendererText()
                 renderer_text_price.set_fixed_size(30, 25)
-                column_price = Gtk.TreeViewColumn(defs.STRINGS["column_prices"], renderer_text_price, text=19, weight=w, style=s)
+                label_col = defs.STRINGS["column_prices"]
+                if functions.prices.check_prices_presence():
+                        price_cur = functions.config.read_config("price_cur")
+                        if price_cur == "0":
+                                label_col = "$"
+                        elif price_cur == "1":
+                                label_col = "€"
+                column_price = Gtk.TreeViewColumn(label_col, renderer_text_price, text=19, weight=w, style=s)
                 dict_columns_list["price"] = column_price
                 dict_renderers_list["price"] = renderer_text_price
                 column_price.set_sort_column_id(19)
