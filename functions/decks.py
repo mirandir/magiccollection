@@ -747,7 +747,7 @@ def gen_edit_comm_name_deck_popover(button_change_comm_deck, decks_object, selec
                         
                         def entry_changed(entry, ok_button, list_decks_names):
                                 def real_entry_changed(entry, ok_button, list_decks_names):
-                                        if defs.COLL_LOCK == False and entry.get_text() != "" and entry.get_text().lower() not in list_decks_names:
+                                        if defs.COLL_LOCK == False and entry.get_text() != "" and entry.get_text() not in list_decks_names:
                                                 ok_button.set_sensitive(True)
                                         else:
                                                 ok_button.set_sensitive(False)
