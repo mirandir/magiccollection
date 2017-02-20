@@ -234,7 +234,10 @@ def read_coll(box, coll_object):
         conn, c = connect_db()
         
         # we are doing a vacuum here, to keep the size of the db under control
+        # workaround for Python 3.6
+        conn.isolation_level = None
         conn.execute("VACUUM")
+        conn.isolation_level = ""
         # we backup the collection
         backup_coll(None)
         
