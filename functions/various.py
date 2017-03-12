@@ -71,7 +71,7 @@ def download_symbols():
                         GLib.idle_add(defs.MAINWINDOW.widget_overlay.get_child().set_markup, "<b><big>" + defs.STRINGS["downloading_symbols"] + "</big></b>")
                         GLib.idle_add(functions.various.force_update_gui, 0)
                         try:
-                                urllib.request.urlretrieve("https://dl.dropboxusercontent.com/u/70787217/mc/symboles_editions/all.tar", os.path.join(defs.CACHEMCPIC, "icons", "all.tar"))
+                                urllib.request.urlretrieve("http://mirandir.mcollection.free.fr/images/mc/symboles_editions/all.tar", os.path.join(defs.CACHEMCPIC, "icons", "all.tar"))
                         except:
                                 pass
                         else:
@@ -96,7 +96,7 @@ def download_symbols():
                                 if os.path.isfile(os.path.join(defs.CACHEMCPIC, "icons", valid_filename_os(edition[0]) + ".png")) == False:
                                         GLib.idle_add(defs.MAINWINDOW.widget_overlay.get_child().set_markup, "<b><big>" + defs.STRINGS["downloading_symbols"] + " " + str(i) + "/" + str(nbicontotal) + "</big></b>")
                                         GLib.idle_add(functions.various.force_update_gui, 0)
-                                        url_icon = "https://dl.dropboxusercontent.com/u/70787217/mc/symboles_editions/" + edition[0] + ".png"
+                                        url_icon = "http://mirandir.mcollection.free.fr/images/mc/symboles_editions/" + edition[0] + ".png"
                                         try:
                                                 urllib.request.urlretrieve(url_icon, os.path.join(defs.CACHEMCPIC, "icons", valid_filename_os(edition[0]) + ".png"))
                                         except:
@@ -147,7 +147,7 @@ def check_folders_config():
         if os.path.isfile(os.path.join(defs.CACHEMCPIC, "cardback.png")) ==  False:
                 if check_internet():
                         try:
-                                urllib.request.urlretrieve("https://dl.dropboxusercontent.com/u/70787217/mc/cardback.png", os.path.join(defs.CACHEMCPIC, "cardback.png"))
+                                urllib.request.urlretrieve("http://mirandir.mcollection.free.fr/images/mc/cardback.png", os.path.join(defs.CACHEMCPIC, "cardback.png"))
                         except:
                                 pass
 
