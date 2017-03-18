@@ -217,6 +217,8 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["details"] = "Détails"
         translate["add_button_validate"] = "Ajouter"
         translate["add_button_wait"] = "Opération en cours…"
+        translate["add_button_add_to_deck"] = "Ajouter au deck :"
+        translate["add_button_add_to_deck_none"] = "(aucun)"
         translate["add_condition"] = "État"
         translate["condition_mint"] = "Mint"
         translate["condition_near_mint"] = "Near Mint"

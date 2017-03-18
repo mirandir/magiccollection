@@ -732,12 +732,12 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         cards_selected_list = []
         
         nb_decks = 0
-        if object_origin == defs.MAINWINDOW.decks:
-                conn_coll, c_coll = functions.collection.connect_db()
-                c_coll.execute("""SELECT id_deck, name FROM decks""")
-                decks_names = c_coll.fetchall()
-                nb_decks = len(decks_names)
-                functions.collection.disconnect_db(conn_coll)
+        conn_coll, c_coll = functions.collection.connect_db()
+        c_coll.execute("""SELECT id_deck, name FROM decks""")
+        decks_names = c_coll.fetchall()
+        nb_decks = len(decks_names)
+        functions.collection.disconnect_db(conn_coll)
+        
         # we get the current selection - in the mainselect treeview
         selection = object_origin.mainselect
         try:
@@ -848,7 +848,7 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         if len(cards_selected_list) == 1:
                 label_add = Gtk.Label()
                 # if we are in the Decks mode, we ask for proxy
-                if nb_decks > 0:
+                if object_origin == defs.MAINWINDOW.decks and nb_decks > 0:
                         label_add.set_markup(defs.STRINGS["add_card_question_without_collection"].replace("%%%", "<b>" + cards_selected_list[0][1] + " (" + cards_selected_list[0][2] + ")</b>"))
                 else:
                         label_add.set_markup(defs.STRINGS["add_card_question"].replace("%%%", "<b>" + cards_selected_list[0][1] + " (" + cards_selected_list[0][2] + ")</b>"))
@@ -862,7 +862,7 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
                 popover_box.pack_start(separator, True, True, 0)
         else:
                 # if we are in the Decks mode, we ask for proxy
-                if nb_decks > 0:
+                if object_origin == defs.MAINWINDOW.decks and nb_decks > 0:
                         label_add = Gtk.Label(defs.STRINGS["add_cards_question_without_collection"].replace("%%%", str(len(cards_selected_list))))
                 else:
                         label_add = Gtk.Label(defs.STRINGS["add_cards_question"].replace("%%%", str(len(cards_selected_list))))
@@ -901,7 +901,7 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         select_list_decks = None
         side_checkbutton = None
         # if we are in the Decks mode, we ask for proxy
-        if nb_decks > 0:
+        if object_origin == defs.MAINWINDOW.decks and nb_decks > 0:
                 box_radio_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
                 box_radio_buttons.set_halign(Gtk.Align.CENTER)
                 radiobutton_collection = Gtk.RadioButton(label=defs.STRINGS["cv_add_collection"])
@@ -946,7 +946,7 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         box_quantity = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         label_quantity = Gtk.Label(defs.STRINGS["quantity"])
         box_quantity.pack_start(label_quantity, False, False, 0)
-        adjustment = Gtk.Adjustment(value=1, lower=1, upper=100, step_increment=1, page_increment=10, page_size=0)
+        adjustment = Gtk.Adjustment(value=1, lower=1, upper=100, step_increment=1, page_increment=4, page_size=0)
         spinbutton = Gtk.SpinButton(adjustment=adjustment)
         box_quantity.pack_start(spinbutton, False, False, 0)
         popover_box.pack_start(box_quantity, False, False, 0)
@@ -960,26 +960,44 @@ def add_button_clicked(eventbox, signal, eventbox_pic_card, overlay, object_orig
         popover.add(popover_box)
         
         # if we are in the Decks mode, we ask for proxy
-        if nb_decks > 0:
+        if object_origin == defs.MAINWINDOW.decks and nb_decks > 0:
                 radiobutton_collection.connect("toggled", radiobutton_collection_toggled, expander, scrolledwindow_decks, side_checkbutton)
                 radiobutton_proxies.connect("toggled", radiobutton_proxies_toggled, expander, scrolledwindow_decks, select_list_decks, side_checkbutton)
         
         grid_details, label_add_condition, comboboxtext_condition, label_add_lang, entry_lang, checkbutton_foil, checkbutton_loaned, entry_loaned, label_add_comment, scrolledwindow, textview = functions.various.gen_details_widgets()
         
         # we set the default values
-        df_condition = functions.config.read_config("default_condition")
-        if df_condition != "0":
+        dv_condition = functions.config.read_config("default_condition")
+        if dv_condition != "0":
                 for nb, cond in defs.CONDITIONS.items():
-                        if cond[0] == df_condition:
+                        if cond[0] == dv_condition:
                                 comboboxtext_condition.set_active(int(nb))
                                 break
         
-        df_lang = functions.config.read_config("default_lang")
-        if df_lang != "0":
-                entry_lang.set_text(df_lang)
+        dv_lang = functions.config.read_config("default_lang")
+        if dv_lang != "0":
+                entry_lang.set_text(dv_lang)
         
+        box_expander = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
         
-        expander.add(grid_details)
+        if nb_decks > 0:
+                box_add_to_deck = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+                label_add_to_deck = Gtk.Label(defs.STRINGS["add_button_add_to_deck"])
+                combobox_add_to_deck = Gtk.ComboBoxText()
+                combobox_add_to_deck.append("none", defs.STRINGS["add_button_add_to_deck_none"])
+                tmp_list_deck_names = []
+                for deck in decks_names:
+                        tmp_list_deck_names.append(deck[1])
+                tmp_list_deck_names = sorted(tmp_list_deck_names)
+                for deck in tmp_list_deck_names:
+                        combobox_add_to_deck.append(deck, deck)
+                combobox_add_to_deck.set_active(0)
+                box_add_to_deck.pack_start(label_add_to_deck, False, True, 0)
+                box_add_to_deck.pack_start(combobox_add_to_deck, False, True, 0)
+                box_expander.pack_start(box_add_to_deck, False, True, 0)
+                
+        box_expander.pack_start(grid_details, False, True, 0)
+        expander.add(box_expander)
         
         show_details = functions.config.read_config("add_collection_show_details")
         if show_details == "1":

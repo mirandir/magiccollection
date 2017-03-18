@@ -214,6 +214,8 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["details"] = "Details"
         translate["add_button_validate"] = "Add"
         translate["add_button_wait"] = "Operation pending..."
+        translate["add_button_add_to_deck"] = "Add to deck:"
+        translate["add_button_add_to_deck_none"] = "(none)"
         translate["add_condition"] = "Condition"
         translate["condition_mint"] = "Mint"
         translate["condition_near_mint"] = "Near Mint"
