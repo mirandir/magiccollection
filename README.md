@@ -12,7 +12,7 @@ GNU/GPL v3
 * GTK+ >= 3.18
 * Python-GObject
 
-In Ubuntu:
+With Ubuntu:
 * python3 >= 3.4
 * python3-gi
 * libgtk-3-0 >= 3.18
