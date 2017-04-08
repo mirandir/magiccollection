@@ -630,14 +630,23 @@ def compare_str_and_int(model, row1, row2, user_data):
 
 def gen_treeview_columns(columns_to_display, treeview):
         """Generates the columns for a treeview which displays cards' data.
-        
-        """              
-        
+
+        """
+
         dict_columns_list = {}
         dict_renderers_list = {}
         w = 12
         s = 13
-        
+
+        def display_column(x, y, name, label, text, weight, style, column_id, expand):
+                renderer_text = Gtk.CellRendererText()
+                renderer_text.set_fixed_size(x, y)
+                column_name = Gtk.TreeViewColumn(label, renderer_text, text=text, weight=weight, style = style)
+                dict_columns_list[name] = column_name
+                dict_renderers_list[name] = renderer_text
+                column_name.set_sort_column_id(column_id)
+                column_name.set_expand(expand)
+
         if "id_coll" in columns_to_display:
                 w = 11
                 s = 12
@@ -647,25 +656,13 @@ def gen_treeview_columns(columns_to_display, treeview):
                 dict_columns_list["id_coll"] = column_id
                 dict_renderers_list["id_coll"] = renderer_text_id
                 #column_id.set_expand(True)
-        
+
         if "name" in columns_to_display:
-                renderer_text_name = Gtk.CellRendererText()
-                renderer_text_name.set_fixed_size(145, 25)
-                column_name = Gtk.TreeViewColumn(defs.STRINGS["column_english_name"], renderer_text_name, text=1, weight=w, style=s)
-                dict_columns_list["name"] = column_name
-                dict_renderers_list["name"] = renderer_text_name
-                column_name.set_sort_column_id(1)
-                column_name.set_expand(True)
-        
+                display_column(145, 25, "name", defs.STRINGS["column_english_name"], 1, w, s, 1, True)
+
         if "edition" in columns_to_display:
-                renderer_text_edition = Gtk.CellRendererText()
-                renderer_text_edition.set_fixed_size(80, 25)
-                column_edition = Gtk.TreeViewColumn(defs.STRINGS["column_edition"], renderer_text_edition, text=2, weight=w, style=s)
-                dict_columns_list["edition"] = column_edition
-                dict_renderers_list["edition"] = renderer_text_edition
-                column_edition.set_sort_column_id(2)
-                column_edition.set_expand(True)
-        
+                display_column(80, 25, "edition", defs.STRINGS["column_edition"], 2, w, s, 2, True)
+
         if "name_foreign" in columns_to_display:
                 # FIXME : chinese variants !
                 foreign_name = defs.LOC_NAME_FOREIGN[functions.config.read_config("fr_language")]
@@ -694,15 +691,9 @@ def gen_treeview_columns(columns_to_display, treeview):
                         foreign__name_label = defs.STRINGS["column_name_name_spanish"]
                 else:
                         foreign__name_label = defs.STRINGS["column_name_name_german"] # why not ?
-                
-                renderer_text_name_foreign = Gtk.CellRendererText()
-                renderer_text_name_foreign.set_fixed_size(195, 25)
-                column_name_foreign = Gtk.TreeViewColumn(foreign__name_label, renderer_text_name_foreign, text=3, weight=w, style=s)
-                dict_columns_list["name_foreign"] = column_name_foreign
-                dict_renderers_list["name_foreign"] = renderer_text_name_foreign
-                column_name_foreign.set_sort_column_id(3)
-                column_name_foreign.set_expand(True)
-        
+
+                display_column(195, 25, "name_foreign", foreign__name_label, 3, w, s, 3, True)
+
         if "colors" in columns_to_display:
                 renderer_pixbuf_colors = Gtk.CellRendererPixbuf()
                 renderer_pixbuf_colors.set_fixed_size(10, 25)
@@ -710,33 +701,16 @@ def gen_treeview_columns(columns_to_display, treeview):
                 dict_columns_list["colors"] = column_colors
                 dict_renderers_list["colors"] = renderer_pixbuf_colors
                 column_colors.set_sort_column_id(4)
-        
+
         if "cmc" in columns_to_display:
-                renderer_text_cmc = Gtk.CellRendererText()
-                renderer_text_cmc.set_fixed_size(20, 25)
-                column_cmc = Gtk.TreeViewColumn(defs.STRINGS["column_cmc"], renderer_text_cmc, text=6, weight=w, style=s)
-                dict_columns_list["cmc"] = column_cmc
-                dict_renderers_list["cmc"] = renderer_text_cmc
-                column_cmc.set_sort_column_id(6)
-        
+                display_column(20, 25, "cmc", defs.STRINGS["column_cmc"], 6, w, s, 6, True)
+
         if "type" in columns_to_display:
-                renderer_text_type = Gtk.CellRendererText()
-                renderer_text_type.set_fixed_size(100, 25)
-                column_type = Gtk.TreeViewColumn(defs.STRINGS["column_type"], renderer_text_type, text=7, weight=w, style=s)
-                dict_columns_list["type"] = column_type
-                dict_renderers_list["type"] = renderer_text_type
-                column_type.set_sort_column_id(7)
-                column_type.set_expand(True)
-        
+                display_column(100, 25, "type", defs.STRINGS["column_type"], 7, w, s, 7, True)
+
         if "artist" in columns_to_display:
-                renderer_text_artist = Gtk.CellRendererText()
-                renderer_text_artist.set_fixed_size(50, 25)
-                column_artist = Gtk.TreeViewColumn(defs.STRINGS["column_artist"], renderer_text_artist, text=8, weight=w, style=s)
-                dict_columns_list["artist"] = column_artist
-                dict_renderers_list["artist"] = renderer_text_artist
-                column_artist.set_sort_column_id(8)
-                column_artist.set_expand(True)
-        
+                display_column(50, 25, "artist", defs.STRINGS["column_artist"], 8, w, s, 8, True)
+
         if "power" in columns_to_display:
                 renderer_text_power = Gtk.CellRendererText()
                 renderer_text_power.set_fixed_size(10, 25)
@@ -747,7 +721,7 @@ def gen_treeview_columns(columns_to_display, treeview):
                 dict_columns_list["power"] = column_power
                 dict_renderers_list["power"] = renderer_text_power
                 column_power.set_sort_column_id(9)
-        
+
         if "toughness" in columns_to_display:
                 renderer_text_toughness = Gtk.CellRendererText()
                 renderer_text_toughness.set_fixed_size(10, 25)
@@ -758,31 +732,16 @@ def gen_treeview_columns(columns_to_display, treeview):
                 dict_columns_list["toughness"] = column_toughness
                 dict_renderers_list["toughness"] = renderer_text_toughness
                 column_toughness.set_sort_column_id(10)
-        
+
         if "rarity" in columns_to_display:
-                renderer_text_rarity = Gtk.CellRendererText()
-                renderer_text_rarity.set_fixed_size(30, 25)
-                column_rarity = Gtk.TreeViewColumn(defs.STRINGS["column_rarity"], renderer_text_rarity, text=11, weight=w, style=s)
-                dict_columns_list["rarity"] = column_rarity
-                dict_renderers_list["rarity"] = renderer_text_rarity
-                column_rarity.set_sort_column_id(11)
-        
+                display_column(30, 25, "rarity", defs.STRINGS["column_rarity"], 11, w, s, 11, False)
+
         if "nb" in columns_to_display:
-                renderer_text_nb = Gtk.CellRendererText()
-                renderer_text_nb.set_fixed_size(10, 25)
-                column_nb = Gtk.TreeViewColumn(defs.STRINGS["column_nb"], renderer_text_nb, text=15, weight=w, style=s)
-                dict_columns_list["nb"] = column_nb
-                dict_renderers_list["nb"] = renderer_text_nb
-                column_nb.set_sort_column_id(15)
-        
+                display_column(10, 25, "nb", defs.STRINGS["column_nb"], 15, w, s, 15, False)
+
         if "coll_ed_nb" in columns_to_display:
-                renderer_text_coll_ed_nb = Gtk.CellRendererText()
-                renderer_text_coll_ed_nb.set_fixed_size(30, 25)
-                column_coll_ed_nb = Gtk.TreeViewColumn(defs.STRINGS["column_coll_ed_nb"], renderer_text_coll_ed_nb, text=18, weight=w, style=s)
-                dict_columns_list["coll_ed_nb"] = column_coll_ed_nb
-                dict_renderers_list["coll_ed_nb"] = renderer_text_coll_ed_nb
-                column_coll_ed_nb.set_sort_column_id(18)
-        
+                display_column(30, 25, "coll_ed_nb", defs.STRINGS["column_coll_ed_nb"], 18, w, s, 18, False)
+
         if "price" in columns_to_display:
                 renderer_text_price = Gtk.CellRendererText()
                 renderer_text_price.set_fixed_size(30, 25)
@@ -801,13 +760,13 @@ def gen_treeview_columns(columns_to_display, treeview):
                 lambda col, cell, model, iter, unused:
                 cell.set_property("text",
                 "{0}".format(truncate(model.get(iter, 19)[0]))))
-        
+
         for column in columns_to_display:
                 treeview.append_column(dict_columns_list[column])
-        
+
         for name, column in dict_columns_list.items():
                 column.set_resizable(True)
-        
+
         return([dict_columns_list, dict_renderers_list])
 
 def truncate(number):
