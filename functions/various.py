@@ -628,6 +628,36 @@ def compare_str_and_int(model, row1, row2, user_data):
         if isFloat(value1) == False and isFloat(value2) == True:
                 return(-1)
 
+def get_foreign_name_label():
+        foreign_name = defs.LOC_NAME_FOREIGN[functions.config.read_config("fr_language")]
+        # we choose the name of column_name_foreign 
+        if foreign_name == "name_chinesetrad":
+                foreign__name_label = defs.STRINGS["column_name_name_chinesetrad"]
+        elif foreign_name == "name_chinesesimp":
+                foreign__name_label = defs.STRINGS["column_name_name_chinesesimp"]
+        elif foreign_name == "name_french":
+                foreign__name_label = defs.STRINGS["column_name_name_french"]
+        elif foreign_name == "name_german":
+                foreign__name_label = defs.STRINGS["column_name_name_german"]
+        elif foreign_name == "name_italian":
+                foreign__name_label = defs.STRINGS["column_name_name_italian"]
+        elif foreign_name == "name_japanese":
+                foreign__name_label = defs.STRINGS["column_name_name_japanese"]
+        elif foreign_name == "name_korean":
+                foreign__name_label = defs.STRINGS["column_name_name_korean"]
+        elif foreign_name == "name_portuguesebrazil":
+                foreign__name_label = defs.STRINGS["column_name_name_portuguesebrazil"]
+        elif foreign_name == "name_portuguese":
+                foreign__name_label = defs.STRINGS["column_name_name_portuguese"]
+        elif foreign_name == "name_russian":
+                foreign__name_label = defs.STRINGS["column_name_name_russian"]
+        elif foreign_name == "name_spanish":
+                foreign__name_label = defs.STRINGS["column_name_name_spanish"]
+        else:
+                foreign__name_label = defs.STRINGS["column_name_name_german"] # why not ?
+
+        return foreign__name_label
+
 def gen_treeview_columns(columns_to_display, treeview):
         """Generates the columns for a treeview which displays cards' data.
 
@@ -638,13 +668,13 @@ def gen_treeview_columns(columns_to_display, treeview):
         w = 12
         s = 13
 
-        def display_column(x, y, name, label, text, weight, style, column_id, expand):
+        def display_column(x, y, name, label, text, expand):
                 renderer_text = Gtk.CellRendererText()
                 renderer_text.set_fixed_size(x, y)
-                column_name = Gtk.TreeViewColumn(label, renderer_text, text=text, weight=weight, style = style)
+                column_name = Gtk.TreeViewColumn(label, renderer_text, text=text, weight=w, style = s)
                 dict_columns_list[name] = column_name
                 dict_renderers_list[name] = renderer_text
-                column_name.set_sort_column_id(column_id)
+                column_name.set_sort_column_id(text)
                 column_name.set_expand(expand)
 
         if "id_coll" in columns_to_display:
@@ -658,41 +688,14 @@ def gen_treeview_columns(columns_to_display, treeview):
                 #column_id.set_expand(True)
 
         if "name" in columns_to_display:
-                display_column(145, 25, "name", defs.STRINGS["column_english_name"], 1, w, s, 1, True)
+                display_column(145, 25, "name", defs.STRINGS["column_english_name"], 1, True)
 
         if "edition" in columns_to_display:
-                display_column(80, 25, "edition", defs.STRINGS["column_edition"], 2, w, s, 2, True)
+                display_column(80, 25, "edition", defs.STRINGS["column_edition"], 2, True)
 
         if "name_foreign" in columns_to_display:
-                # FIXME : chinese variants !
-                foreign_name = defs.LOC_NAME_FOREIGN[functions.config.read_config("fr_language")]
-                # we choose the name of column_name_foreign 
-                if foreign_name == "name_chinesetrad":
-                        foreign__name_label = defs.STRINGS["column_name_name_chinesetrad"]
-                elif foreign_name == "name_chinesesimp":
-                        foreign__name_label = defs.STRINGS["column_name_name_chinesesimp"]
-                elif foreign_name == "name_french":
-                        foreign__name_label = defs.STRINGS["column_name_name_french"]
-                elif foreign_name == "name_german":
-                        foreign__name_label = defs.STRINGS["column_name_name_german"]
-                elif foreign_name == "name_italian":
-                        foreign__name_label = defs.STRINGS["column_name_name_italian"]
-                elif foreign_name == "name_japanese":
-                        foreign__name_label = defs.STRINGS["column_name_name_japanese"]
-                elif foreign_name == "name_korean":
-                        foreign__name_label = defs.STRINGS["column_name_name_korean"]
-                elif foreign_name == "name_portuguesebrazil":
-                        foreign__name_label = defs.STRINGS["column_name_name_portuguesebrazil"]
-                elif foreign_name == "name_portuguese":
-                        foreign__name_label = defs.STRINGS["column_name_name_portuguese"]
-                elif foreign_name == "name_russian":
-                        foreign__name_label = defs.STRINGS["column_name_name_russian"]
-                elif foreign_name == "name_spanish":
-                        foreign__name_label = defs.STRINGS["column_name_name_spanish"]
-                else:
-                        foreign__name_label = defs.STRINGS["column_name_name_german"] # why not ?
-
-                display_column(195, 25, "name_foreign", foreign__name_label, 3, w, s, 3, True)
+                foreign__name_label = get_foreign_name_label()
+                display_column(195, 25, "name_foreign", foreign__name_label, 3, True)
 
         if "colors" in columns_to_display:
                 renderer_pixbuf_colors = Gtk.CellRendererPixbuf()
@@ -703,13 +706,13 @@ def gen_treeview_columns(columns_to_display, treeview):
                 column_colors.set_sort_column_id(4)
 
         if "cmc" in columns_to_display:
-                display_column(20, 25, "cmc", defs.STRINGS["column_cmc"], 6, w, s, 6, True)
+                display_column(20, 25, "cmc", defs.STRINGS["column_cmc"], 6, True)
 
         if "type" in columns_to_display:
-                display_column(100, 25, "type", defs.STRINGS["column_type"], 7, w, s, 7, True)
+                display_column(100, 25, "type", defs.STRINGS["column_type"], 7, True)
 
         if "artist" in columns_to_display:
-                display_column(50, 25, "artist", defs.STRINGS["column_artist"], 8, w, s, 8, True)
+                display_column(50, 25, "artist", defs.STRINGS["column_artist"], 8, True)
 
         if "power" in columns_to_display:
                 renderer_text_power = Gtk.CellRendererText()
@@ -734,13 +737,13 @@ def gen_treeview_columns(columns_to_display, treeview):
                 column_toughness.set_sort_column_id(10)
 
         if "rarity" in columns_to_display:
-                display_column(30, 25, "rarity", defs.STRINGS["column_rarity"], 11, w, s, 11, False)
+                display_column(30, 25, "rarity", defs.STRINGS["column_rarity"], 11, False)
 
         if "nb" in columns_to_display:
-                display_column(10, 25, "nb", defs.STRINGS["column_nb"], 15, w, s, 15, False)
+                display_column(10, 25, "nb", defs.STRINGS["column_nb"], 15, False)
 
         if "coll_ed_nb" in columns_to_display:
-                display_column(30, 25, "coll_ed_nb", defs.STRINGS["column_coll_ed_nb"], 18, w, s, 18, False)
+                display_column(30, 25, "coll_ed_nb", defs.STRINGS["column_coll_ed_nb"], 18, False)
 
         if "price" in columns_to_display:
                 renderer_text_price = Gtk.CellRendererText()
