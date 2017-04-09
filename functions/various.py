@@ -677,6 +677,8 @@ def gen_treeview_columns(columns_to_display, treeview):
                 column_name.set_sort_column_id(text)
                 column_name.set_expand(expand)
 
+                return column_name
+
         if "id_coll" in columns_to_display:
                 w = 11
                 s = 12
@@ -715,26 +717,16 @@ def gen_treeview_columns(columns_to_display, treeview):
                 display_column(50, 25, "artist", defs.STRINGS["column_artist"], 8, True)
 
         if "power" in columns_to_display:
-                renderer_text_power = Gtk.CellRendererText()
-                renderer_text_power.set_fixed_size(10, 25)
-                column_power = Gtk.TreeViewColumn(defs.STRINGS["column_power"], renderer_text_power, text=9, weight=w, style=s)
                 pic_power = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="power-symbolic"), Gtk.IconSize.MENU)
                 pic_power.show()
+                column_power = display_column(10, 25, "power", defs.STRINGS["column_power"], 9, False)
                 column_power.set_widget(pic_power)
-                dict_columns_list["power"] = column_power
-                dict_renderers_list["power"] = renderer_text_power
-                column_power.set_sort_column_id(9)
 
         if "toughness" in columns_to_display:
-                renderer_text_toughness = Gtk.CellRendererText()
-                renderer_text_toughness.set_fixed_size(10, 25)
-                column_toughness = Gtk.TreeViewColumn(defs.STRINGS["column_toughness"], renderer_text_toughness, text=10, weight=w, style=s)
                 pic_toughness = Gtk.Image.new_from_gicon(Gio.ThemedIcon(name="toughness-symbolic"), Gtk.IconSize.MENU)
                 pic_toughness.show()
+                column_toughness = display_column(10, 25, "toughness", defs.STRINGS["column_toughness"], 10, False)
                 column_toughness.set_widget(pic_toughness)
-                dict_columns_list["toughness"] = column_toughness
-                dict_renderers_list["toughness"] = renderer_text_toughness
-                column_toughness.set_sort_column_id(10)
 
         if "rarity" in columns_to_display:
                 display_column(30, 25, "rarity", defs.STRINGS["column_rarity"], 11, False)
