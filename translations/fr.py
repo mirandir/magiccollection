@@ -61,7 +61,7 @@ Logo de ''' + translate["app_name"] + ''' par mirandir, sous licence CC BY-NC-ND
 Images d'indicateurs de couleur par BaconCatBug (voir <http://www.mtgsalvation.com/forums/creativity/artwork/494438-baconcatbugs-set-and-mana-symbol-megapack/>)
 Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["about_contributors"] = "Contributeurs &amp; testeurs"
-        translate["about_contributors_list"] = "Purphoros&&&Lilian&&&Giz&&&Delphine&&&mnskill"
+        translate["about_contributors_list"] = "Purphoros&&&Lilian&&&Giz&&&Delphine&&&mnskill&&&Alice"
         
         # mainwindow
         translate["loading"] = "Chargement…"
