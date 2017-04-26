@@ -133,7 +133,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         names_tmp = names.split("|")
                         
                         # some work is needed with split / flip cards
-                        if layout == "split":
+                        if layout == "split" or layout == "aftermath":
                                 final_text = ""
                                 final_manacost = ""
                                 list_cmc = []
@@ -182,12 +182,18 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                         separator = " <> "
                                 elif layout == "split":
                                         separator = " // "
+                                elif layout == "aftermath":
+                                        separator = " / "
                                 # we try to get the complete name for english and foreign name
                                 final_name = ""
                                 if layout == "split":
                                         for nn in names_tmp:
                                                 final_name = final_name + separator + nn
                                         name = final_name[4:]
+                                elif layout == "aftermath":
+                                        for nn in names_tmp:
+                                                final_name = final_name + separator + nn
+                                        name = final_name[3:]
                                 elif layout == "flip":
                                         final_name = name
                                         for nn in names_tmp:
@@ -206,6 +212,13 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                                                         if nn == card_split_flip[1]:
                                                                                 final_nameforeign = final_nameforeign + separator + card_split_flip[7]
                                                 foreign__name = final_nameforeign[4:]
+                                        elif layout == "aftermath":
+                                                for nn in names_tmp:
+                                                        for card_split_flip in defs.SPLIT_FLIP_DF_DATA:
+                                                                if card_split_flip[4] == edition_code:
+                                                                        if nn == card_split_flip[1]:
+                                                                                final_nameforeign = final_nameforeign + separator + card_split_flip[7]
+                                                foreign__name = final_nameforeign[3:]
                                         elif layout == "flip":
                                                 final_nameforeign = foreign__name
                                                 for nn in names_tmp:

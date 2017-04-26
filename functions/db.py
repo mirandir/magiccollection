@@ -414,9 +414,9 @@ def prepare_request(search_widgets_list, type_request):
                                 elif search_type == "name":
                                         if text == "//":
                                                 if negate == 0:
-                                                        tmp_request = "cards.layout = 'split'"
+                                                        tmp_request = "cards.layout = 'split' OR cards.layout = 'aftermath'"
                                                 else:
-                                                        tmp_request = "cards.layout != 'split'"
+                                                        tmp_request = "cards.layout != 'split' AND cards.layout != 'aftermath'"
                                                 tmp_enum_req = "(" + tmp_request + ")"
                                         elif text == "<>":
                                                 if negate == 0:
@@ -845,12 +845,12 @@ def dialog_confirm_db(dialogconfirm):
                 check_db2()
 
 def gen_sdf_data():
-        """We add the data about split, meld and df cards to some dicts, because we don't want to retrieve them everytime from the database.
+        """We add the data about aftermath, split, meld and df cards to some dicts, because we don't want to retrieve them everytime from the database.
         
         """
         
         # we need the ids of split, meld and df cards to generate the dicts and the lists of ids
-        request = """SELECT id, name, nb_variante, names, edition, layout FROM cards WHERE layout = 'flip' OR layout = 'double-faced' OR layout = 'meld'"""
+        request = """SELECT id, name, nb_variante, names, edition, layout FROM cards WHERE layout = 'flip' OR layout = 'double-faced' OR layout = 'meld' OR layout = 'aftermath'"""
         conn_db, c_db = connect_db()
         c_db.execute(request)
         sdf_all_data = c_db.fetchall()
@@ -901,7 +901,7 @@ def gen_sdf_data():
                                 defs.MELDED_MELD_IDS_DICT[melded_id].append(meld_id)
         
         # Flip, split, meld and double-faced cards have more than 1 line in the database
-        request = """SELECT * FROM cards WHERE layout = 'flip' OR layout = 'split' OR layout = 'double-faced' OR layout = 'meld'"""
+        request = """SELECT * FROM cards WHERE layout = 'flip' OR layout = 'split' OR layout = 'double-faced' OR layout = 'meld' OR layout = 'aftermath'"""
         c_db.execute(request)
         defs.SPLIT_FLIP_DF_DATA = []
         for data_card in c_db.fetchall():

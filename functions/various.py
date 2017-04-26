@@ -407,11 +407,13 @@ def prepare_cards_data_for_treeview(cards):
                 colors = card[16]
                 
                 layout = card[29]
-                if layout == "flip" or layout == "split":
+                if layout == "flip" or layout == "split" or layout == "aftermath":
                         if layout == "flip":
                                 separator = " <> "
                         elif layout == "split":
                                 separator = " // "
+                        elif layout == "aftermath":
+                                separator = " / "
                         
                         names = card[3].split("|")
                         final_name = ""
@@ -420,6 +422,10 @@ def prepare_cards_data_for_treeview(cards):
                                 for nn in names:
                                         final_name = final_name + separator + nn
                                 name = final_name[4:]
+                        elif layout == "aftermath":
+                                for nn in names:
+                                        final_name = final_name + separator + nn
+                                name = final_name[3:]
                         elif layout == "flip":
                                 final_name = real_name
                                 for nn in names:
@@ -447,6 +453,13 @@ def prepare_cards_data_for_treeview(cards):
                                                                 if nn == card_split_flip[1]:
                                                                         final_nameforeign = final_nameforeign + separator + card_split_flip[nb_foreign]
                                         nameforeign = final_nameforeign[4:]
+                                elif layout == "aftermath":
+                                        for nn in names:
+                                                for card_split_flip in defs.SPLIT_FLIP_DF_DATA:
+                                                        if card_split_flip[4] == card[4]:
+                                                                if nn == card_split_flip[1]:
+                                                                        final_nameforeign = final_nameforeign + separator + card_split_flip[nb_foreign]
+                                        nameforeign = final_nameforeign[3:]
                                 elif layout == "flip":
                                         final_nameforeign = nameforeign_r
                                         for nn in names:
