@@ -313,4 +313,4 @@ GTK_MINOR_VERSION = Gtk.get_minor_version()
 
 PRICES_DATE = None
 DB_VERSION = None
-VERSION = "0.8.117"
+VERSION = "0.8.118"
