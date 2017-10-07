@@ -102,6 +102,7 @@ class MagicCollection(Gtk.Application):
                 section_importexport.append_submenu(defs.STRINGS["importexport"], submenu_eximp)
                 submenu_eximp.append(defs.STRINGS["import"], "app.importdata")
                 submenu_eximp.append(defs.STRINGS["export"], "app.exportdata")
+                submenu_eximp.append(defs.STRINGS["export_text"], "app.exportcollection_text")
                 menu.append_section(None, section_importexport)
                 
                 section_oth = Gio.Menu()
@@ -128,6 +129,10 @@ class MagicCollection(Gtk.Application):
                 exportdata_action = Gio.SimpleAction.new("exportdata", None)
                 exportdata_action.connect("activate", self.exportdata)
                 self.add_action(exportdata_action)
+                # option "exportdata_text"
+                exportcollection_text_action = Gio.SimpleAction.new("exportcollection_text", None)
+                exportcollection_text_action.connect("activate", self.exportcollection_text)
+                self.add_action(exportcollection_text_action)
                 # option "tips"
                 tips_action = Gio.SimpleAction.new("tips", None)
                 tips_action.connect("activate", self.tips_cb)
@@ -154,6 +159,9 @@ class MagicCollection(Gtk.Application):
         
         def exportdata(self, action, param):
                 GLib.idle_add(functions.importexport.export_data)
+
+        def exportcollection_text(self, action, param):
+                GLib.idle_add(functions.importexport.export_collection_text)
         
         def tips_cb(self, action, param):
                 GLib.idle_add(functions.various.show_tips_window, self)

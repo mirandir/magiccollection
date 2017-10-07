@@ -35,6 +35,72 @@ import functions.collection
 import functions.decks
 import functions.db
 
+def export_collection_text():
+        """This function exports the collection as a human readable plain text file.
+        
+        """
+        
+        if defs.COLL_LOCK:
+                functions.various.message_dialog(defs.STRINGS["export_collection_busy"], 0) #Add a new STRINGS message to explicitly mention text export?
+        else:
+                functions.various.lock_db(True, None)
+                # we get the current date
+                today = date.today()
+                month = '%02d' % today.month
+                day = '%02d' % today.day
+                rtoday = str(today.year) + str(month) + str(day)
+                #Add a new STRINGS message to explicitly mention text export?
+                dialog = Gtk.FileChooserDialog(defs.STRINGS["export"], defs.MAINWINDOW, Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.OK))
+                dialog.set_do_overwrite_confirmation(True)
+                filefilter = Gtk.FileFilter()
+                filefilter.set_name(defs.STRINGS["text_filetype"])
+                filefilter.add_pattern("*.txt")
+                dialog.add_filter(filefilter)
+                
+                if defs.OS == "windows":
+                        user = functions.various.valid_filename_os(os.environ["USERNAME"])
+                else:
+                        user = functions.various.valid_filename_os(os.environ["USER"])
+                
+                dialog.set_current_name(defs.STRINGS["export_filename"].replace("%user%", user).replace("%date%", rtoday) + ".txt")
+                
+                response = dialog.run()
+                if response == Gtk.ResponseType.OK:
+                        filename = dialog.get_filename()
+                        # we test if we can write here
+                        try:
+                                out_txt = open(filename, 'w')
+                        except:
+                                functions.various.message_dialog(defs.STRINGS["export_write_impossible"], 0)
+                        else:
+                                #os.remove(filename)
+                                #shutil.copy(os.path.join(defs.HOMEMC, "collection.sqlite"), filename)
+                                out_txt.write(collection_text_string())
+                                out_txt.close()
+
+                dialog.destroy()
+                functions.various.lock_db(False, None)
+
+#TODO: Should be moved to functions.collection
+def collection_text_string():
+        """This function builds a string from current cards collection. For now the format is hard coded:
+        {name} - {extension} ({lang}) - {condition}
+        
+        """
+        res = ""
+        conn, cur = functions.collection.connect_db()
+
+        cur.execute("""ATTACH DATABASE ? AS dbmc""", (os.path.join(defs.CACHEMC, "dbmc_" + defs.DB_VERSION + ".sqlite"),))
+        cur.execute("""SELECT name, edition, lang, condition FROM collection AS col JOIN dbmc.cards AS car ON col.id_card=car.id""")
+        rows = cur.fetchall()
+
+        for row in rows:
+                res += "%s - %s (%s) - %s\n" % (row[0], row[1], row[2], row[3])
+
+        conn.close()
+
+        return res
+
 def import_data():
         """This function imports the collection and the decks from a SQLite file.
         

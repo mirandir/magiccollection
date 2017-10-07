@@ -31,6 +31,7 @@ def translate():
         translate["importexport"] = "Restore / Backup"
         translate["import"] = "Restore a backup"
         translate["export"] = "Backup your data"
+        translate["export_text"] = "Export your collection as text file" #Cannot be imported back
         translate["help"] = "Help"
         translate["doc"] = "Documentation"
         translate["website"] = "Website"
@@ -394,6 +395,7 @@ Math icons by Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["config_pic_cards_size_unit"] = "{VALUE} {SIZE}"
         # export
         translate["exportimport_filetype"] = "Files of " + translate["app_name"]
+        translate["text_filetype"] = "Text files"
         translate["export_collection_busy"] = "Unable to backup your data, the collection is busy."
         translate["export_filename"] = "Magic collection of %user% (%date%)"
         translate["export_write_impossible"] = "Unable to save th file.\nYou may not have the required permissions. Make sure the location is correct and try again."
