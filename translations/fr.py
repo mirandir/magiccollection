@@ -31,6 +31,7 @@ def translate():
         translate["importexport"] = "Restaurer / Sauvegarder"
         translate["import"] = "Restaurer une sauvegarde"
         translate["export"] = "Sauvegarder vos données"
+        translate["export_text"] = "Exporter votre collection au format texte" #Cannot be imported back
         translate["help"] = "Aide"
         translate["doc"] = "Documentation"
         translate["website"] = "Site internet"
@@ -397,6 +398,7 @@ Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-math
         translate["config_pic_cards_size_unit"] = "{VALUE} {SIZE}"
         # export
         translate["exportimport_filetype"] = "Fichiers " + translate["app_name"]
+        translate["text_filetype"] = "Fichiers texte"
         translate["export_collection_busy"] = "Impossible de sauvegarder vos données maintenant, la collection est en cours d'utilisation."
         translate["export_filename"] = "Collection Magic de %user% (%date%)"
         translate["export_write_impossible"] = "Impossible d'enregistrer le fichier.\nVous n'avez peut-être pas les permissions nécessaires. Vérifiez que vous avez saisi l'emplacement correctement et réessayez."
