@@ -1129,7 +1129,7 @@ def show_tips_window(mc):
         if mc.tips == None:
                 tips_dialog = Gtk.Dialog()
                 mc.tips = tips_dialog
-                tips_dialog.set_default_size(200, -1)
+                tips_dialog.set_default_size(750, 350)
                 tips_dialog.set_title(defs.STRINGS["tips"])
                 tips_dialog.set_icon_name("magic_collection")
                 if defs.MAINWINDOW != None:
@@ -1138,8 +1138,6 @@ def show_tips_window(mc):
                 notebook = Gtk.Notebook()
                 
                 scrolledwindow_general = Gtk.ScrolledWindow()
-                scrolledwindow_general.set_min_content_width(650)
-                scrolledwindow_general.set_min_content_height(300)
                 scrolledwindow_general.set_hexpand(False)
                 scrolledwindow_general.set_vexpand(True)
                 scrolledwindow_general.set_shadow_type(Gtk.ShadowType.IN)
@@ -1150,8 +1148,6 @@ def show_tips_window(mc):
                 notebook.append_page(scrolledwindow_general, Gtk.Label(defs.STRINGS["tips_general"]))
                 
                 scrolledwindow_search = Gtk.ScrolledWindow()
-                scrolledwindow_search.set_min_content_width(650)
-                scrolledwindow_search.set_min_content_height(300)
                 scrolledwindow_search.set_hexpand(False)
                 scrolledwindow_search.set_vexpand(True)
                 scrolledwindow_search.set_shadow_type(Gtk.ShadowType.IN)
@@ -1167,8 +1163,6 @@ def show_tips_window(mc):
                 notebook.append_page(scrolledwindow_search, Gtk.Label(defs.STRINGS["tips_search"]))
                 
                 scrolledwindow_proxies = Gtk.ScrolledWindow()
-                scrolledwindow_proxies.set_min_content_width(650)
-                scrolledwindow_proxies.set_min_content_height(300)
                 scrolledwindow_proxies.set_hexpand(False)
                 scrolledwindow_proxies.set_vexpand(True)
                 scrolledwindow_proxies.set_shadow_type(Gtk.ShadowType.IN)
@@ -1180,7 +1174,6 @@ def show_tips_window(mc):
                 
                 for label in [label_general, label_search, label_proxies]:
                         label.set_line_wrap(True)
-                        label.set_width_chars(75)
                         label.set_selectable(True)
                 
                 for box in [box_general, box_search, box_proxies]:
