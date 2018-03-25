@@ -31,7 +31,7 @@ def translate():
         translate["importexport"] = "Restore / Backup"
         translate["import"] = "Restore a backup"
         translate["export"] = "Backup your data"
-        translate["export_text"] = "Export your collection as text file" #Cannot be imported back
+        translate["export_text"] = "Export the collection as text file" # Cannot be imported back
         translate["help"] = "Help"
         translate["doc"] = "Documentation"
         translate["website"] = "Website"

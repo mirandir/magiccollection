@@ -84,7 +84,7 @@ def export_collection_text():
 #TODO: Should be moved to functions.collection
 def collection_text_string():
         """This function builds a string from current cards collection. For now the format is hard coded:
-        {name} - {extension} ({lang}) - {condition}
+        {name} - {extension} | {lang} | {condition}
         
         """
         res = ""
@@ -95,7 +95,12 @@ def collection_text_string():
         rows = cur.fetchall()
 
         for row in rows:
-                res += "%s - %s (%s) - %s\n" % (row[0], row[1], row[2], row[3])
+                newline = row[0] + " - " + functions.various.edition_code_to_english_longname(row[1])
+                if row[2] != "":
+                        newline = newline + " | " + row[2]
+                if row[3] != "":
+                        newline = newline + " | " + row[3]
+                res += newline + "\n"
 
         conn.close()
 

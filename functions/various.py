@@ -255,6 +255,9 @@ def edition_code_to_longname(code):
         else:
                 return(defs.DICT_EDITIONS[code][1])
 
+def edition_code_to_english_longname(code):
+        return(defs.DICT_EDITIONS[code][1])
+
 def edition_release_date(code):
         return(defs.DICT_EDITIONS[code][2])
 
