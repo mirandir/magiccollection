@@ -2,7 +2,7 @@
 # -*-coding:Utf-8 -*
 #
 
-# Copyright 2013-2017 mirandir
+# Copyright 2013-2018 mirandir
 
 # This file is part of Magic Collection.
 #
@@ -366,6 +366,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                         label_name_foreign.set_has_tooltip(True)
                                         label_name_foreign.set_tooltip_text(foreign__name)
                                 label_name_foreign.set_selectable(True)
+                                label_name_foreign.set_width_chars(20)
                                 label_name_foreign.set_max_width_chars(20)
                                 label_name_foreign.set_line_wrap(True)
                                 label_name_foreign.set_lines(2)
@@ -380,6 +381,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                 label_name.set_has_tooltip(True)
                                 label_name.set_tooltip_text(name)
                         label_name.set_selectable(True)
+                        label_name.set_width_chars(25)
                         label_name.set_max_width_chars(25)
                         label_name.set_line_wrap(True)
                         label_name.set_lines(1)
@@ -453,6 +455,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                 label_edition.set_has_tooltip(True)
                                 label_edition.set_tooltip_text(edition_longname)
                         label_edition.set_selectable(True)
+                        label_edition.set_width_chars(25)
                         label_edition.set_max_width_chars(25)
                         label_edition.set_line_wrap(True)
                         label_edition.set_lines(1)
@@ -519,10 +522,11 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                         
                         # the type
                         label_type = Gtk.Label(type_)
-                        if len(type_) > 24:
+                        if len(type_) > 25:
                                 label_type.set_has_tooltip(True)
                                 label_type.set_tooltip_text(type_)
                         label_type.set_selectable(True)
+                        label_type.set_width_chars(25)
                         label_type.set_max_width_chars(25)
                         label_type.set_line_wrap(True)
                         label_type.set_lines(1)
@@ -640,6 +644,7 @@ def gen_card_viewer(cardid, box_card_viewer, object_origin, simple_search):
                                 label_artist.set_has_tooltip(True)
                                 label_artist.set_tooltip_text(artist)
                         label_artist.set_selectable(True)
+                        label_artist.set_width_chars(25)
                         label_artist.set_max_width_chars(25)
                         label_artist.set_line_wrap(True)
                         label_artist.set_lines(1)
