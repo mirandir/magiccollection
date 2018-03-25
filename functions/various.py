@@ -156,10 +156,7 @@ def card_pic_size():
         
         """
         
-        if defs.DISPLAY_WIDTH < 1045 or defs.DISPLAY_HEIGHT < 768:
-                return(200)
-        else:
-                return(311)
+        return(311)
 
 def message_dialog(message, typ):
         """Displays a message for the user. If "typ" is 1, the message is a notification about missing internet.

@@ -120,7 +120,8 @@ Gtk.IconTheme.append_search_path(Gtk.IconTheme.get_default(), os.path.join(PATH_
 Gtk.IconTheme.append_search_path(Gtk.IconTheme.get_default(), os.path.join(PATH_MC, "images", "symbolic-mana"))
 Gtk.IconTheme.append_search_path(Gtk.IconTheme.get_default(), os.path.join(PATH_MC, "images", "icons"))
 
-# we add a custom size for gicons
+# we add custom sizes for gicons
+Gtk.icon_size_register("250_mana_symbol", 250, 250)
 Gtk.icon_size_register("150_mana_symbol", 150, 150)
 Gtk.icon_size_register("100_mana_symbol", 100, 100)
 Gtk.icon_size_register("12_config_warning", 12, 12)
