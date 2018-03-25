@@ -49,7 +49,7 @@ de sa base de données.
 Merci à Sembiance et lsmoura pour l'extraordinaire travail réalisé sur ce site !
 Les informations de prix sont fournies par TCGplayer.com.
 Elles sont affichées uniquement dans un but d'information, et elles
-n'engagent ni ''' + translate["app_name"] + ''' ni son auteur.'''
+n'engagent ni ''' + translate["app_name"] + ''' ni ses auteurs.'''
         
         translate["about_licence"] = translate["app_name"] + ''' est un logiciel libre : vous pouvez le redistribuer et/ou le modifier selon les termes de la Licence Publique Générale GNU 3, publiée par la Free Software Foundation.
 
@@ -62,7 +62,7 @@ Logo de ''' + translate["app_name"] + ''' par mirandir, sous licence CC BY-NC-ND
 Images d'indicateurs de couleur par BaconCatBug (voir <http://www.mtgsalvation.com/forums/creativity/artwork/494438-baconcatbugs-set-and-mana-symbol-megapack/>)
 Icônes mathématiques par Freepik (<http://www.flaticon.com/packs/mathbert-mathematics>)'''
         translate["about_contributors"] = "Contributeurs &amp; testeurs"
-        translate["about_contributors_list"] = "Purphoros&&&Lilian&&&Giz&&&Delphine&&&mnskill&&&Alice"
+        translate["about_contributors_list"] = "Purphoros&&&Lilian&&&Giz&&&Delphine&&&mnskill&&&Alice&&&Stuffist"
         
         # mainwindow
         translate["loading"] = "Chargement…"
