@@ -2,7 +2,7 @@
 # -*-coding:Utf-8 -*
 #
 
-# Copyright 2013-2017 mirandir
+# Copyright 2013-2018 mirandir
 
 # This file is part of Magic Collection.
 #
