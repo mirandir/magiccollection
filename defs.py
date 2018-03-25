@@ -162,8 +162,8 @@ VARCONFIGDEFAULT = {
 "coll_columns": coll_columns,
 "decks_columns": decks_columns,
 "no_reprints": "0",
-"last_width": "0",
-"last_height": "0",
+"last_width": "1000",
+"last_height": "700",
 "default_condition": "0",
 "default_lang": "0"
 }

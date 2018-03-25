@@ -224,22 +224,12 @@ class MC_Window(Gtk.ApplicationWindow):
                 self.connect("delete-event", self.delete_main_window)
                 self.connect("key-press-event", self.change_mode)
                 
-                #print(self.get_preferred_size())
                 last_width = int(functions.config.read_config("last_width"))
                 last_height = int(functions.config.read_config("last_height"))
                 if last_width > 99 and last_height > 99:
-                        self.set_default_size(last_width, last_height)
+                        self.resize(last_width, last_height)
                 else:
-                        if defs.DISPLAY_WIDTH > 1279:
-                                if defs.OS == "gnome":
-                                        self.set_default_size(1170, 570)
-                                else:
-                                        self.set_default_size(1000, 500)
-                        else:
-                                if defs.OS == "gnome":
-                                        self.set_default_size(1020, 500)
-                                else:
-                                        self.set_default_size(920, 500)
+                        self.resize(defs.VARCONFIGDEFAULT["last_width"], defs.VARCONFIGDEFAULT["last_height"])
                 
                 self.main_stack = Gtk.Stack()
                 
